@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.anonymous.combifi",
+            "sha256_cert_fingerprints": [
+                "90:44:8B:CE:10:C0:C8:B3:84:3B:E8:6B:5E:6C:12:E0:03:1C:7F:75:20:D2:14:3B:2E:73:08:B1:5A:FA:8B:07"
+            ]
+        }
+    }
+]
