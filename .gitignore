@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+.wrangler
 /.pnp
 .pnp.*
 .yarn/*
@@ -23,6 +24,7 @@
 # misc
 .DS_Store
 *.pem
+_local
 
 # debug
 npm-debug.log*
@@ -31,7 +33,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env*.local
+.env
 
 # vercel
 .vercel
