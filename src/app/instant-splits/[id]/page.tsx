@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { getRecord, getParticipantRecords, insertParticipantRecord, updateParticipantRecord } from './actions';
 import { Tables } from '@/lib/database.types';
+import SplitFriend from '@/components/settleComponents/SplitFriend';
 
 export const runtime = 'edge';
 
@@ -88,7 +89,7 @@ export default function RecordPage() {
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Failed to update record.');
     } finally {
-      setIsLoading(false);
+      resetUIState();
     }
   };
 
@@ -114,6 +115,17 @@ export default function RecordPage() {
     setIsUpdatingParticipant(false);
     setShowSettleComponent(false);
   };
+
+  const resetUIState = () => {  
+    setIsLoading(false);
+      // Reset UI state after record update
+      setSelectedParticipant(null);
+      setNewParticipantName('');
+      setMarkAsPaid(false);
+      setIsUpdatingParticipant(false);
+      setShowSettleComponent(false);
+      setParticipantAmount('0.00');
+  }
 
   if (!id) {
     return <div className="p-4 text-gray-800 dark:text-gray-200">No record ID provided.</div>;
@@ -370,122 +382,76 @@ export default function RecordPage() {
                 </div>
               )}
               
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                    {record.settle_mode !== 'HOST' ? 'or add yourself' : 'choose from the list above'}
-                  </span>
-                </div>
-              </div>
+              
               
               {record.settle_mode !== 'HOST' && (
-                <div className={`mt-4 transition-all duration-300 ${showNewNameInput || participants.length === 0 ? 'opacity-100' : 'opacity-80'}`}>
-                  <div 
-                    className={`border ${selectedParticipant ? 'border-gray-200 dark:border-gray-700' : 'border-indigo-300 dark:border-indigo-600'} rounded-xl p-4 bg-white dark:bg-gray-700 cursor-pointer`}
-                    onClick={handleNewNameToggle}
-                  >
-                    {showNewNameInput || participants.length === 0 ? (
-                      <div className="space-y-3">
+                <>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                      <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                        {record.settle_mode !== 'HOST' ? 'or add yourself' : 'choose from the list above'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={`mt-4 transition-all duration-300 ${showNewNameInput || participants.length === 0 ? 'opacity-100' : 'opacity-80'}`}>
+                    <div 
+                      className={`border ${selectedParticipant ? 'border-gray-200 dark:border-gray-700' : 'border-indigo-300 dark:border-indigo-600'} rounded-xl p-4 bg-white dark:bg-gray-700 cursor-pointer`}
+                      onClick={handleNewNameToggle}
+                    >
+                      {showNewNameInput || participants.length === 0 ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600 dark:text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                            </div>
+                            <label className="block text-gray-700 dark:text-gray-300 font-medium">Add your name</label>
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Enter your name"
+                            className="w-full rounded-lg py-2 px-3 border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                            value={newParticipantName}
+                            onChange={(e) => setNewParticipantName(e.target.value)}
+                            autoFocus
+                          />
+                        </div>
+                      ) : (
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600 dark:text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                           </div>
-                          <label className="block text-gray-700 dark:text-gray-300 font-medium">Add your name</label>
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">I&apos;m not listed above</span>
                         </div>
-                        <input
-                          type="text"
-                          placeholder="Enter your name"
-                          className="w-full rounded-lg py-2 px-3 border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-                          value={newParticipantName}
-                          onChange={(e) => setNewParticipantName(e.target.value)}
-                          autoFocus
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                        </div>
-                        <span className="text-gray-700 dark:text-gray-300 font-medium">I&apos;m not listed above</span>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>)}
 
             {showSettleComponent && record ? (
               <>
                 {record.settle_mode === 'FRIEND' && (
-                  <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
-                    <div className="text-center space-y-2 mb-4">
-                      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Friend Split</h3>
-                      <p className="text-gray-500 dark:text-gray-400 text-sm">
-                        You can adjust your amount and confirm payment
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {/* Name field for updating */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Your Name
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                          value={newParticipantName}
-                          onChange={(e) => setNewParticipantName(e.target.value)}
-                          placeholder="Enter your name"
-                        />
-                      </div>
-                      
-                      {/* Amount field */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Your Share Amount
-                        </label>
-                        <div className="relative">
-                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
-                          <input
-                            type="numeric"
-                            className="w-full pl-8 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                            value={participantAmount}
-                            onChange={(e) => setParticipantAmount(e.target.value)}
-                            placeholder="0.00"
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Mark as Paid toggle */}
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id="markAsPaid"
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                          checked={markAsPaid}
-                          onChange={(e) => setMarkAsPaid(e.target.checked)}
-                        />
-                        <label htmlFor="markAsPaid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                          Mark as paid
-                        </label>
-                      </div>
-                      
-                      <button
-                        className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
-                        onClick={handleUpdateRecord}
-                      >
-                        Confirm
-                      </button>
-                    </div>
-                  </div>
+                  <SplitFriend 
+                    record={record}
+                    selectedParticipant={selectedParticipant}
+                    newParticipantName={newParticipantName}
+                    setNewParticipantName={setNewParticipantName}
+                    handleUpdateRecord={handleUpdateRecord}
+                    setParticipantAmount={setParticipantAmount}
+                    participantAmount={participantAmount}
+                    participants={participants}
+                    markAsPaid={markAsPaid}
+                    setMarkAsPaid={setMarkAsPaid}
+                    handleBack={() => resetUIState()}
+                    />
                 )}
                 
                 {record.settle_mode === 'PERPAX' && (

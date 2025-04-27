@@ -10,15 +10,19 @@ interface SplitPerPaxProps {
   onUpdateAmount: () => Promise<void>;
   setParticipantAmount: (amount: string) => void;
   participantAmount: string;
+  markAsPaid: boolean;
+  setMarkAsPaid: (isPaid: boolean) => void;
 }
 
 export default function SplitPerPax({ 
   record, 
-  selectedParticipant, 
+  // selectedParticipant is used in our interface for consistency but not needed in this component
   participantName, 
   onUpdateAmount, 
   setParticipantAmount,
-  participantAmount 
+  participantAmount,
+  markAsPaid,
+  setMarkAsPaid 
 }: SplitPerPaxProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [perPaxAmount, setPerPaxAmount] = useState<number>(0);
@@ -104,6 +108,19 @@ export default function SplitPerPax({
       >
         {isLoading ? 'Updating...' : 'Confirm Amount'}
       </button>
+      
+      <div className="flex items-center mt-4 mb-4">
+        <input
+          type="checkbox"
+          id="markAsPaid"
+          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+          checked={markAsPaid}
+          onChange={(e) => setMarkAsPaid(e.target.checked)}
+        />
+        <label htmlFor="markAsPaid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+          Mark as paid
+        </label>
+      </div>
       
       <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
         Hi <b>{participantName}</b>, this expense has a fixed per-person amount of ${perPaxAmount.toFixed(2)}
