@@ -19,6 +19,8 @@ export default function RecordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [showRecordModal, setShowRecordModal] = useState(false);
+  const [showTitleModal, setShowTitleModal] = useState(false);
+  const [showAmountModal, setShowAmountModal] = useState(false);
 
   const fetchRecord = async () => {
     if (!id || !password) return;
@@ -59,8 +61,8 @@ export default function RecordPage() {
     }
   };
 
-  const openRecordModal = () => setShowRecordModal(true);
-  const closeRecordModal = () => setShowRecordModal(false);
+  const openTitleModal = () => setShowTitleModal(true);
+  const openAmountModal = () => setShowAmountModal(true);
 
   if (!id) {
     return <div className="p-4 text-gray-800 dark:text-gray-200">No record ID provided.</div>;
@@ -69,218 +71,252 @@ export default function RecordPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <div className="animate-pulse h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-4 mx-auto"></div>
-          <p className="text-gray-700 dark:text-gray-300">Loading...</p>
+        <div className="running-loader">
+          <div className="runner" />
+          <div className="ground" />
+          <p className="loading-text">
+            Loading...
+          </p>
         </div>
       </div>
     );
   }
 
+  // Compute display values
+  const hostParticipant = participants.find(p => p.is_host);
+  const displayTitle = record?.description || '';
+  const displayAmount = record?.amount.toFixed(2) || '0.00';
+
+  if (showPasswordModal) { 
+    return (
+      <div className="fixed inset-0 bg-white dark:bg-gray-900 bg-opacity-100 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-scaleIn">
+          <div className="flex flex-col justify-center items-center">
+            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900 dark:to-indigo-800 rounded-full p-5 mb-6 shadow-md">
+              <div className="w-[4rem] h-[4rem] flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-9 h-9 text-indigo-600 dark:text-indigo-300">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">Enter Password</h2>
+            <p className="text-center text-gray-600 dark:text-gray-300 mb-7">Please enter the password to access this instant split.</p>
+            
+            <input
+              type="password"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-5 shadow-sm transition-all duration-200"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <button
+              onClick={fetchRecord}
+              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 dark:from-indigo-600 dark:to-indigo-500 dark:hover:from-indigo-500 dark:hover:to-indigo-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md"
+            >
+              Access Record
+            </button>
+            
+            {status && (
+              <div className="mt-4 w-full">
+                <p className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-center">{status}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
-      {/* Gradient background with enhanced colors */}
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
+      {/* Gradient background with Vue-style colors */}
       <div
-        className="absolute top-0 left-0 w-full bg-gradient-to-r from-primary-400 via-primary-500 to-primary-400 dark:from-primary-700 dark:via-primary-600 dark:to-primary-700"
-        style={{ height: 'calc(200px + 5vh)' }}
+        className="absolute top-0 left-0 w-full bg-gradient-to-r from-indigo-400 to-indigo-500 dark:from-indigo-600 dark:to-indigo-700"
+        style={{ height: 'calc(180px + 5vh)' }}
       />
       <div
-        className="absolute top-[calc(200px+5vh)] left-0 w-full bg-gradient-to-br from-gray-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800"
+        className="absolute top-[calc(180px+5vh)] left-0 w-full bg-gradient-to-br from-slate-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800"
         style={{ height: '100%' }}
       />
       
-      {/* Content container with improved spacing */}
-      <div className="max-w-xl mx-auto px-4 py-10 absolute top-0 w-full">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-50 dark:text-gray-100 mb-3">
-            Instant Split
+      {/* Content container with spacing matching Vue page */}
+      <div className="max-w-xl mx-auto px-4 py-8 absolute top-0 w-full">
+        <div className="text-center mb-4">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Split and Pay
           </h1>
-          <p className="text-gray-100 dark:text-gray-200 text-base mb-2">
-            View and manage your split expense
+          <p className="text-white text-base mb-2">
+            <b>{hostParticipant?.name || 'Someone'}</b> has invited you to settle a <br/> shared expense
           </p>
         </div>
 
-        {/* Password Modal with improved styling and animations */}
-        {showPasswordModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 dark:bg-opacity-80 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-scaleIn">
-              <div className="flex flex-col justify-center items-center">
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900 dark:to-primary-800 rounded-full p-5 mb-6 shadow-md">
-                  <div className="w-[4rem] h-[4rem] flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-9 h-9 text-primary-600 dark:text-primary-300">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                    </svg>
-                  </div>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">Enter Password</h2>
-                <p className="text-center text-gray-600 dark:text-gray-300 mb-7">Please enter the password to access this split expense record.</p>
-                
-                <input
-                  type="password"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 mb-5 shadow-sm transition-all duration-200"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <button
-                  onClick={fetchRecord}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 dark:from-primary-600 dark:to-primary-500 dark:hover:from-primary-500 dark:hover:to-primary-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md"
-                >
-                  Access Record
-                </button>
-                
-                {status && (
-                  <div className="mt-4 w-full">
-                    <p className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-center">{status}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        
 
         {/* Main content when record is available with improved card styling */}
         {record && !showPasswordModal && (
           <>
             {/* Record card with enhanced shadows and gradients */}
-            <div className="bg-white dark:bg-gray-800 border-none rounded-2xl shadow-xl p-5 flex flex-col space-y-4 mb-6 transition-all duration-300 hover:shadow-lg">
+            <div className="border bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-4 flex flex-col space-y-4 mb-6">
               <div className="flex justify-between items-center space-x-6">
                 <div className="text-left overflow-hidden">
-                  <h2 className="text-xl text-gray-700 dark:text-gray-200 font-semibold">
-                    {record.title || 'Untitled Split'}
+                  <h2
+                    className="text-sm text-gray-700 dark:text-gray-300 font-normal truncate cursor-pointer max-w-[10rem]"
+                    onClick={openTitleModal}
+                  >
+                    {record.description || 'Untitled Split'}
                   </h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Created at: {new Date(record.created_at).toLocaleString()}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                    ${record.total_amount?.toFixed(2) || '0.00'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Total amount
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Participants section with improved styling */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-6 transition-all duration-300">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-5 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-primary-500 dark:text-primary-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                </svg>
-                Participants
-              </h2>
-              
-              {participants.length > 0 ? (
-                <div className="space-y-3">
-                  {participants.map((participant, index) => (
-                    <div 
-                      key={index}
-                      className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-650 transition-colors duration-200"
-                    >
-                      <span className="text-gray-800 dark:text-gray-200 font-medium">{participant.name || `Participant ${index + 1}`}</span>
-                      <span className="text-gray-800 dark:text-gray-200 font-semibold">${participant.amount?.toFixed(2) || '0.00'}</span>
+                  
+                  {/* Title Modal */}
+                  {showTitleModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg max-w-md w-full animate-scaleIn">
+                        <div className="flex flex-col justify-center items-center">
+                          <div className="bg-gray-100 dark:bg-gray-700 rounded-full p-4 mb-4">
+                            <div className="w-[4rem] h-[4rem] m-3 flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </div>
+                          </div>
+                          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Title</h2>
+                          <p className="text-sm font-base text-gray-400 dark:text-gray-500 mb-4">Review the title below and confirm.</p>
+                          <div className="w-full px-5">
+                            <input
+                              type="text"
+                              className="w-full text-xl font-semibold text-gray-700 dark:text-gray-300 p-3 mb-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
+                              value={displayTitle}
+                              disabled
+                            />
+                            <button
+                              onClick={() => setShowTitleModal(false)}
+                              className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-[2rem] transition-colors duration-200"
+                            >
+                              Got It!
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-gray-500 dark:text-gray-400 text-center py-8 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mx-auto mb-3 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  <p>No participants found</p>
-                </div>
-              )}
-            </div>
-
-            {/* Your Share section with improved UI */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-6 transition-all duration-300">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-5 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-primary-500 dark:text-primary-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
-                </svg>
-                Your Share
-              </h2>
-              
-              <div className="mb-5">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Amount
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 dark:text-gray-400">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200"
-                    value={participantAmount}
-                    onChange={(e) => setParticipantAmount(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <button
-                onClick={handleUpdateRecord}
-                className="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 dark:from-primary-600 dark:to-primary-500 dark:hover:from-primary-500 dark:hover:to-primary-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200 font-medium shadow-md flex items-center justify-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Save Changes
-              </button>
-            </div>
-
-            {/* Record details with improved collapsible UI */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-6 transition-all duration-300">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-primary-500 dark:text-primary-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                  </svg>
-                  Record Details
-                </h2>
-                <button 
-                  onClick={() => setShowRecordModal(!showRecordModal)}
-                  className="text-primary-500 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 flex items-center transition-colors duration-200"
-                >
-                  {showRecordModal ? (
-                    <>
-                      <span className="mr-1">Hide</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    </>
-                  ) : (
-                    <>
-                      <span className="mr-1">Show</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </>
                   )}
-                </button>
-              </div>
-              
-              {showRecordModal && (
-                <div className="animate-fadeIn">
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Record Data:</h3>
-                    <pre className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg overflow-auto max-h-60 text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
-                      {JSON.stringify(record, null, 2)}
-                    </pre>
+
+                  <div className="flex items-baseline cursor-pointer" onClick={openAmountModal}>
+                    <span className="text-[2.5rem] font-semibold text-gray-800 dark:text-gray-200 tracking-tight truncate overflow-hidden max-w-[10rem]">
+                      ${displayAmount}
+                    </span>
                   </div>
-                  <div className="mb-3">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Participants:</h3>
-                    <pre className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg overflow-auto max-h-60 text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
-                      {JSON.stringify(participants, null, 2)}
-                    </pre>
+                  
+                  {/* Amount Modal */}
+                  {showAmountModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg max-w-md w-full animate-scaleIn">
+                        <div className="flex flex-col justify-center items-center">
+                          <div className="bg-gray-100 dark:bg-gray-700 rounded-full p-4 mb-4">
+                            <div className="w-[4rem] h-[4rem] m-3 flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </div>
+                          </div>
+                          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Amount!</h2>
+                          <p className="text-sm font-base text-gray-400 dark:text-gray-500 mb-4">Review the amount below and confirm.</p>
+                          <div className="w-full px-5">
+                            <div className="relative mb-4">
+                              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                              <input
+                                type="text"
+                                className="w-full text-xl font-semibold text-gray-700 dark:text-gray-300 p-3 pl-8 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                value={displayAmount}
+                                disabled
+                              />
+                            </div>
+                            <button
+                              onClick={() => setShowAmountModal(false)}
+                              className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-[2rem] transition-colors duration-200"
+                            >
+                              Got It!
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-baseline">
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      Date: {new Date(record.created_at).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
-              )}
+                <div className="w-24 h-24 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 flex flex-col justify-center items-center">
+                  {record.file_name ? (
+                    <img
+                      src={`/images/${record.file_name}`}
+                      alt="Receipt Photo"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex flex-col justify-center items-center w-full h-full">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                      <p className="text-gray-400 dark:text-gray-500 text-[0.75rem] font-extralight">
+                        No Image
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {/* Participants section */}
+            <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800">
+              <p className="text-gray-600 dark:text-gray-300 text-md font-semibold text-center mb-2 pb-2">
+                Identify yourself
+              </p>
+              <div className="max-h-80 overflow-y-auto border rounded-2xl border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                {participants.length > 0 ? (
+                  <div className="divide-y divide-gray-200 dark:divide-gray-600">
+                    {participants.map((participant, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
+                        onClick={() => setParticipantAmount(participant.amount.toFixed(2))}
+                      >
+                        <span className="text-sm text-gray-800 dark:text-gray-200 font-semibold">{participant.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-6 text-center text-gray-500 dark:text-gray-400">
+                    No participants found
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <p className="text-gray-600 dark:text-gray-300 text-center my-6">
+              Not found? Enter your name below
+            </p>
+
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Enter your name"
+                className="w-full rounded-xl py-3 px-4 border-gray-200 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+            </div>
+
+            <button
+              className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg"
+              onClick={handleUpdateRecord}
+            >
+              Join Expense
+            </button>
+
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+              Make sure to verify your details before confirming
+            </p>
           </>
         )}
         
@@ -304,6 +340,118 @@ export default function RecordPage() {
           </div>
         )}
       </div>
+      
+      {/* Add custom loader styling */}
+      <style jsx>{`
+        .running-loader {
+          position: relative;
+          width: 100px;
+          height: 100px;
+          margin: 0 auto;
+          text-align: center;
+        }
+
+        .runner {
+          width: 20px;
+          height: 20px;
+          background-color: #4F46E5;
+          border-radius: 50%;
+          position: absolute;
+          top: 30px;
+          left: 0;
+          animation: run 0.5s linear infinite, bounce 0.5s ease-in-out infinite;
+        }
+
+        .ground {
+          position: absolute;
+          bottom: 20px;
+          left: 0;
+          width: 100%;
+          height: 4px;
+          background-color: #dcdcdc;
+          overflow: hidden;
+        }
+
+        .ground::before {
+          content: '';
+          position: absolute;
+          width: 200%;
+          height: 4px;
+          background: repeating-linear-gradient(
+            90deg,
+            #ccc,
+            #ccc 10px,
+            #eee 10px,
+            #eee 20px
+          );
+          animation: moveGround 1s linear infinite;
+        }
+
+        .loading-text {
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          font-size: 14px;
+          color: #4a4a4a;
+          font-weight: 600;
+          margin-top: 3rem;
+        }
+
+        @keyframes run {
+          0% {
+            left: 0;
+          }
+          100% {
+            left: calc(100% - 20px);
+          }
+        }
+
+        @keyframes bounce {
+          0%, 100% {
+            top: 30px;
+          }
+          50% {
+            top: 10px;
+          }
+        }
+
+        @keyframes moveGround {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-20px);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }

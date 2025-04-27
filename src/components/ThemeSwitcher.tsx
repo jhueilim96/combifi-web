@@ -9,7 +9,8 @@ export default function ThemeSwitcher() {
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       className="fixed bottom-4 right-4 p-3 rounded-full bg-gray-100 dark:bg-gray-800 shadow-lg z-50 
-                 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors
+                 border border-primary-200 dark:border-primary-800"
       aria-label="Toggle dark mode"
     >
       {theme === 'dark' ? (

@@ -36,46 +36,46 @@
   --color-gray-950: 3 7 18;        /* gray-950 */
 }
 
-/* Dark mode via media query - automatically detects browser preference */
-[data-theme='dark'] {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    
-    /* Adjusted primary colors for dark mode */
-    --color-primary-950: 238 242 255; /* reversed for dark mode */
-    --color-primary-900: 224 231 255;
-    --color-primary-800: 199 210 254;
-    --color-primary-700: 165 180 252;
-    --color-primary-600: 129 140 248;
-    --color-primary-500: 99 102 241;  /* keep this the same */
-    --color-primary-400: 79 70 229;
-    --color-primary-300: 67 56 202;
-    --color-primary-200: 55 48 163;
-    --color-primary-100: 49 46 129;
-    --color-primary-50: 30 27 75;
+/* Dark mode styles - updated to work with next-themes */
+/* Remove the media query and rely only on the .dark class */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  /* Adjusted primary colors for dark mode */
+  --color-primary-950: 238 242 255; /* reversed for dark mode */
+  --color-primary-900: 224 231 255;
+  --color-primary-800: 199 210 254;
+  --color-primary-700: 165 180 252;
+  --color-primary-600: 129 140 248;
+  --color-primary-500: 99 102 241; /* keep this the same */
+  --color-primary-400: 79 70 229;
+  --color-primary-300: 67 56 202;
+  --color-primary-200: 55 48 163;
+  --color-primary-100: 49 46 129;
+  --color-primary-50: 30 27 75;
 
-    /* Adjusted gray colors for dark mode */
-    --color-gray-950: 249 250 251;  /* reversed for dark mode */
-    --color-gray-900: 243 244 246;
-    --color-gray-800: 229 231 235;
-    --color-gray-700: 209 213 219;
-    --color-gray-600: 156 163 175;
-    --color-gray-500: 107 114 128; /* keep this the same */
-    --color-gray-400: 75 85 99;
-    --color-gray-300: 55 65 81;
-    --color-gray-200: 31 41 55;
-    --color-gray-100: 17 24 39;
-    --color-gray-50: 3 7 18;
-  }
+  /* Adjusted gray colors for dark mode */
+  --color-gray-950: 249 250 251; /* reversed for dark mode */
+  --color-gray-900: 243 244 246;
+  --color-gray-800: 229 231 235;
+  --color-gray-700: 209 213 219;
+  --color-gray-600: 156 163 175;
+  --color-gray-500: 107 114 128; /* keep this the same */
+  --color-gray-400: 75 85 99;
+  --color-gray-300: 55 65 81;
+  --color-gray-200: 31 41 55;
+  --color-gray-100: 17 24 39;
+  --color-gray-50: 3 7 18;
 }
+
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
 /* Loading animation */
@@ -99,7 +99,7 @@ body {
 .ground {
   width: 80px;
   height: 3px;
-  background-color: #e5e7eb;
+  background-color: rgb(var(--color-gray-200));
   position: absolute;
   bottom: 20px;
   border-radius: 2px;
@@ -110,51 +110,7 @@ body {
   bottom: -25px;
   left: 10px;
   font-size: 14px;
-  color: #6b7280;
-}
-
-@keyframes moveUpDown {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-/* Loading animation */
-.running-loader {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.runner {
-  width: 20px;
-  height: 20px;
-  background-color: #4f46e5;
-  border-radius: 50%;
-  position: absolute;
-  top: 40px;
-  left: 30px;
-  animation: moveUpDown 0.8s ease-in-out infinite;
-}
-
-.ground {
-  width: 80px;
-  height: 3px;
-  background-color: #e5e7eb;
-  position: absolute;
-  bottom: 20px;
-  border-radius: 2px;
-}
-
-.loading-text {
-  position: absolute;
-  bottom: -25px;
-  left: 10px;
-  font-size: 14px;
-  color: #6b7280;
+  color: rgb(var(--color-gray-500));
 }
 
 @keyframes moveUpDown {
