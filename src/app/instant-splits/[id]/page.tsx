@@ -83,7 +83,7 @@ export default function RecordPage() {
   }
 
   // Compute display values
-  const hostParticipant = participants.find(p => p.is_host);
+  const hostParticipant = record?.profiles;
   const displayTitle = record?.description || '';
   const displayAmount = record?.amount.toFixed(2) || '0.00';
 

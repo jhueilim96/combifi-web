@@ -71,6 +71,9 @@ export type Database = {
           status: string | null
           updated_at: string | null
           user_id: string
+          profiles: {
+            name: string | null
+          }
         }
         Insert: {
           amount: number
@@ -91,6 +94,9 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id: string
+          profiles: {
+            name: string | null
+          }
         }
         Update: {
           amount?: number
@@ -111,6 +117,9 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id?: string
+          profiles: {
+            name: string | null
+          }
         }
         Relationships: [
           {

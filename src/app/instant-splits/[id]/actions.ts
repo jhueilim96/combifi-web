@@ -2,8 +2,19 @@
 
 import { Tables } from '@/lib/database.types';
 import { createSupabaseClient } from '@/lib/supabase';
+import { QueryData } from '@supabase/supabase-js';
 
-export async function getRecord(id: string, password: string): Promise<Tables<'one_time_split_expenses'>> {
+const instantSplitsWithProfileQuery = (id: string, password: string) => createSupabaseClient(password)
+      .from('one_time_split_expenses')
+      .select('amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id,' + 
+        'profiles (name)')
+      .eq('id', id)
+      .eq('is_deleted', false)
+      .single();
+
+type InstantSplitsWithProfile = QueryData<typeof instantSplitsWithProfileQuery>
+
+export async function getRecord(id: string, password: string): Promise<InstantSplitsWithProfile>{
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
@@ -11,14 +22,8 @@ export async function getRecord(id: string, password: string): Promise<Tables<'o
   try {
     console.log('Fetching record with ID:', id);
     // Always exclude password
-    const {data, error} = await createSupabaseClient(password)
-      .from('one_time_split_expenses')
-      .select('amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id')
-      .eq('id', id)
-      .eq('is_deleted', false)
-      .single();
+    const {data, error} = await instantSplitsWithProfileQuery(id, password);
     
-
     if (error) {
       console.error('Error fetching record:', error);
       throw new Error('Access denied or record not found');
@@ -28,7 +33,7 @@ export async function getRecord(id: string, password: string): Promise<Tables<'o
       throw new Error('Record not found');
     }
 
-    return data;
+    return data as InstantSplitsWithProfile;
   } catch (error) {
     console.error('Error fetching record:', error);
     throw error;

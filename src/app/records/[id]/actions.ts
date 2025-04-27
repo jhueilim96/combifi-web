@@ -13,8 +13,9 @@ export async function getRecord(id: string, password: string): Promise<Tables<'o
     // Always exclude password
     const {data, error} = await createSupabaseClient(password)
       .from('one_time_split_expenses')
-      .select('amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id')
-      .eq('id', id)
+      .select('amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id,' + 
+        'profiles (name) as user_name'
+      ).eq('id', id)
       .eq('is_deleted', false)
       .single();
     
