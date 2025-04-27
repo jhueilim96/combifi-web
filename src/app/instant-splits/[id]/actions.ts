@@ -65,16 +65,22 @@ export async function getParticipantRecords(id: string, password: string): Promi
   }
 }
 
-export async function updateParticipantRecord(id: string, password: string, amount: string) {
+export async function insertParticipantRecord(id: string, password: string, data: {amount: string, name: string}) {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
 
   try {
+    // Update the participant record with the new amount
     const { error } = await createSupabaseClient(password)
-      .from('personal_transactions')
-      .update({ amount: parseFloat(amount) })
-      .eq('id', id);
+      .from('one_time_split_expenses_participants')
+      .insert({
+          amount: parseFloat(data.amount),
+          expense_id: id,
+          is_host: false,
+          is_paid: true,
+          name: data.name,
+        })
 
     if (error) {
       throw new Error('Update failed');
@@ -86,3 +92,33 @@ export async function updateParticipantRecord(id: string, password: string, amou
     throw error;
   }
 }
+
+export async function updateParticipantRecord(id: string, password: string, participantId: string, data: {amount: string, name: string, markAsPaid: boolean}) {
+  if (!id || !password || !participantId) {
+    throw new Error('Record ID, password, and participant ID are required');
+  }
+
+  try {
+    // Update the participant record with the new amount
+    const { error } = await createSupabaseClient(password)
+      .from('one_time_split_expenses_participants')
+      .update({
+          amount: parseFloat(data.amount),
+          is_paid: data.markAsPaid,
+          name: data.name,
+        })
+      .eq('id', participantId)
+      .eq('expense_id', id)
+      .eq('is_deleted', false)
+
+    if (error) {
+      throw new Error('Update failed');
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating record:', error);
+    throw error;
+  }
+}
+

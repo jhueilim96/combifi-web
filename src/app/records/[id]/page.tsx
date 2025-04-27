@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
-import { getRecord, getParticipantRecords, updateParticipantRecord } from './actions';
+import { getRecord, getParticipantRecords, insertParticipantRecord } from './actions';
 import { Tables } from '@/lib/database.types';
 
 export const runtime = 'edge';
@@ -41,7 +41,7 @@ export default function RecordPage() {
     setStatus('Updating...');
     
     try {
-      await updateParticipantRecord(id, password, participantAmount);
+      await insertParticipantRecord(id, password, participantAmount);
       setStatus('Updated successfully!');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Failed to update record.');

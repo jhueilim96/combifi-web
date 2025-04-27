@@ -61,7 +61,7 @@ export async function getParticipantRecords(id: string, password: string): Promi
   }
 }
 
-export async function updateParticipantRecord(id: string, password: string, amount: string) {
+export async function insertParticipantRecord(id: string, password: string, amount: string) {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }

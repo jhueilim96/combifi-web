@@ -2,8 +2,11 @@
 
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
-import { getRecord, getParticipantRecords, updateParticipantRecord } from './actions';
+import { getRecord, getParticipantRecords, insertParticipantRecord } from './actions';
 import { Tables } from '@/lib/database.types';
+import SplitFriend from '../../../components/settleComponents/SplitFriend';
+import SplitPerPax from '../../../components/settleComponents/SplitPerPax';
+import SplitHost from '../../../components/settleComponents/SplitHost';
 
 export const runtime = 'edge';
 
@@ -18,12 +21,12 @@ export default function RecordPage() {
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(true);
-  const [showRecordModal, setShowRecordModal] = useState(false);
   const [showTitleModal, setShowTitleModal] = useState(false);
   const [showAmountModal, setShowAmountModal] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<Tables<'one_time_split_expenses_participants'> | null>(null);
   const [newParticipantName, setNewParticipantName] = useState('');
   const [showNewNameInput, setShowNewNameInput] = useState(false);
+  const [showSettleComponent, setShowSettleComponent] = useState(false);
 
   const fetchRecord = async () => {
     if (!id || !password) return;
@@ -54,7 +57,7 @@ export default function RecordPage() {
     setStatus('Updating...');
     
     try {
-      await updateParticipantRecord(id, password, participantAmount);
+      await insertParticipantRecord(id, password, {amount: participantAmount, name: selectedParticipant?.name || newParticipantName});
       setStatus('Updated successfully!');
       setTimeout(() => setStatus(''), 3000); // Clear status after 3 seconds
     } catch (error) {
@@ -72,11 +75,13 @@ export default function RecordPage() {
     setSelectedParticipant(participant);
     setParticipantAmount(participant.amount.toFixed(2));
     setShowNewNameInput(false);
+    setShowSettleComponent(true);
   };
 
   const handleNewNameToggle = () => {
     setShowNewNameInput(true);
     setSelectedParticipant(null);
+    setShowSettleComponent(false);
   };
 
   if (!id) {
@@ -334,60 +339,111 @@ export default function RecordPage() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                    or add yourself
+                    {record.settle_mode !== 'HOST' ? 'or add yourself' : 'choose from the list above'}
                   </span>
                 </div>
               </div>
               
-              <div className={`mt-4 transition-all duration-300 ${showNewNameInput || participants.length === 0 ? 'opacity-100' : 'opacity-80'}`}>
-                <div 
-                  className={`border ${selectedParticipant ? 'border-gray-200 dark:border-gray-700' : 'border-indigo-300 dark:border-indigo-600'} rounded-xl p-4 bg-white dark:bg-gray-700 cursor-pointer`}
-                  onClick={handleNewNameToggle}
-                >
-                  {showNewNameInput || participants.length === 0 ? (
-                    <div className="space-y-3">
+              {record.settle_mode !== 'HOST' && (
+                <div className={`mt-4 transition-all duration-300 ${showNewNameInput || participants.length === 0 ? 'opacity-100' : 'opacity-80'}`}>
+                  <div 
+                    className={`border ${selectedParticipant ? 'border-gray-200 dark:border-gray-700' : 'border-indigo-300 dark:border-indigo-600'} rounded-xl p-4 bg-white dark:bg-gray-700 cursor-pointer`}
+                    onClick={handleNewNameToggle}
+                  >
+                    {showNewNameInput || participants.length === 0 ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600 dark:text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                          </div>
+                          <label className="block text-gray-700 dark:text-gray-300 font-medium">Add your name</label>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Enter your name"
+                          className="w-full rounded-lg py-2 px-3 border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                          value={newParticipantName}
+                          onChange={(e) => setNewParticipantName(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+                    ) : (
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600 dark:text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                           </svg>
                         </div>
-                        <label className="block text-gray-700 dark:text-gray-300 font-medium">Add your name</label>
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">I&apos;m not listed above</span>
                       </div>
-                      <input
-                        type="text"
-                        placeholder="Enter your name"
-                        className="w-full rounded-lg py-2 px-3 border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-                        value={newParticipantName}
-                        onChange={(e) => setNewParticipantName(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </div>
-                      <span className="text-gray-700 dark:text-gray-300 font-medium">I'm not listed above</span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <button
-              className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-6"
-              onClick={handleUpdateRecord}
-              disabled={!selectedParticipant && !newParticipantName.trim()}
-            >
-              {selectedParticipant ? `Join as ${selectedParticipant.name}` : newParticipantName.trim() ? `Join as ${newParticipantName}` : 'Join Expense'}
-            </button>
+            {showSettleComponent && record ? (
+              <>
+                {record.settle_mode === 'FRIEND' && (
+                  <SplitFriend
+                    record={record}
+                    selectedParticipant={selectedParticipant}
+                    participantName={selectedParticipant?.name || newParticipantName}
+                    onUpdateAmount={handleUpdateRecord}
+                    setParticipantAmount={setParticipantAmount}
+                    participantAmount={participantAmount}
+                    participants={participants}
+                  />
+                )}
+                {record.settle_mode === 'PERPAX' && (
+                  <SplitPerPax
+                    record={record}
+                    selectedParticipant={selectedParticipant}
+                    participantName={selectedParticipant?.name || newParticipantName}
+                    onUpdateAmount={handleUpdateRecord}
+                    setParticipantAmount={setParticipantAmount}
+                    participantAmount={participantAmount}
+                  />
+                )}
+                {record.settle_mode === 'HOST' && (
+                  <SplitHost
+                    record={record}
+                    selectedParticipant={selectedParticipant}
+                    participantName={selectedParticipant?.name || newParticipantName}
+                    onUpdateAmount={handleUpdateRecord}
+                    setParticipantAmount={setParticipantAmount}
+                    participantAmount={participantAmount}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                <button
+                  className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-6"
+                  onClick={() => {
+                    if (selectedParticipant || (newParticipantName.trim() && record?.settle_mode !== 'HOST')) {
+                      setShowSettleComponent(true);
+                    } else {
+                      handleUpdateRecord();
+                    }
+                  }}
+                  disabled={
+                    (!selectedParticipant && 
+                    (record?.settle_mode === 'HOST' || !newParticipantName.trim()))
+                  }
+                >
+                  {selectedParticipant ? `Join as ${selectedParticipant.name}` : newParticipantName.trim() ? `Join as ${newParticipantName}` : 'Join Expense'}
+                </button>
 
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-              Make sure to verify your details before confirming
-            </p>
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+                  {record?.settle_mode === 'HOST' 
+                    ? 'You must select yourself from the list above' 
+                    : 'Make sure to verify your details before confirming'}
+                </p>
+              </>
+            )}
           </>
         )}
         
