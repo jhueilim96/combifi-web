@@ -1,21 +1,74 @@
 @import "tailwindcss";
 
 :root {
+  /* Base colors */
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Primary color - Indigo */
+  --color-primary-50: 238 242 255;  /* indigo-50 */
+  --color-primary-100: 224 231 255; /* indigo-100 */
+  --color-primary-200: 199 210 254; /* indigo-200 */
+  --color-primary-300: 165 180 252; /* indigo-300 */
+  --color-primary-400: 129 140 248; /* indigo-400 */
+  --color-primary-500: 99 102 241;  /* indigo-500 */
+  --color-primary-600: 79 70 229;   /* indigo-600 */
+  --color-primary-700: 67 56 202;   /* indigo-700 */
+  --color-primary-800: 55 48 163;   /* indigo-800 */
+  --color-primary-900: 49 46 129;   /* indigo-900 */
+  --color-primary-950: 30 27 75;    /* indigo-950 */
+
+  /* Gray color */
+  --color-gray-50: 249 250 251;    /* gray-50 */
+  --color-gray-100: 243 244 246;   /* gray-100 */
+  --color-gray-200: 229 231 235;   /* gray-200 */
+  --color-gray-300: 209 213 219;   /* gray-300 */
+  --color-gray-400: 156 163 175;   /* gray-400 */
+  --color-gray-500: 107 114 128;   /* gray-500 */
+  --color-gray-600: 75 85 99;      /* gray-600 */
+  --color-gray-700: 55 65 81;      /* gray-700 */
+  --color-gray-800: 31 41 55;      /* gray-800 */
+  --color-gray-900: 17 24 39;      /* gray-900 */
+  --color-gray-950: 3 7 18;        /* gray-950 */
 }
 
+/* Dark mode via media query - automatically detects browser preference */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    
+    /* Adjusted primary colors for dark mode */
+    --color-primary-950: 238 242 255; /* reversed for dark mode */
+    --color-primary-900: 224 231 255;
+    --color-primary-800: 199 210 254;
+    --color-primary-700: 165 180 252;
+    --color-primary-600: 129 140 248;
+    --color-primary-500: 99 102 241;  /* keep this the same */
+    --color-primary-400: 79 70 229;
+    --color-primary-300: 67 56 202;
+    --color-primary-200: 55 48 163;
+    --color-primary-100: 49 46 129;
+    --color-primary-50: 30 27 75;
+
+    /* Adjusted gray colors for dark mode */
+    --color-gray-950: 249 250 251;  /* reversed for dark mode */
+    --color-gray-900: 243 244 246;
+    --color-gray-800: 229 231 235;
+    --color-gray-700: 209 213 219;
+    --color-gray-600: 156 163 175;
+    --color-gray-500: 107 114 128; /* keep this the same */
+    --color-gray-400: 75 85 99;
+    --color-gray-300: 55 65 81;
+    --color-gray-200: 31 41 55;
+    --color-gray-100: 17 24 39;
+    --color-gray-50: 3 7 18;
   }
 }
 
@@ -23,4 +76,92 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Loading animation */
+.running-loader {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.runner {
+  width: 20px;
+  height: 20px;
+  background-color: rgb(var(--color-primary-500));
+  border-radius: 50%;
+  position: absolute;
+  top: 40px;
+  left: 30px;
+  animation: moveUpDown 0.8s ease-in-out infinite;
+}
+
+.ground {
+  width: 80px;
+  height: 3px;
+  background-color: #e5e7eb;
+  position: absolute;
+  bottom: 20px;
+  border-radius: 2px;
+}
+
+.loading-text {
+  position: absolute;
+  bottom: -25px;
+  left: 10px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+@keyframes moveUpDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Loading animation */
+.running-loader {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.runner {
+  width: 20px;
+  height: 20px;
+  background-color: #4f46e5;
+  border-radius: 50%;
+  position: absolute;
+  top: 40px;
+  left: 30px;
+  animation: moveUpDown 0.8s ease-in-out infinite;
+}
+
+.ground {
+  width: 80px;
+  height: 3px;
+  background-color: #e5e7eb;
+  position: absolute;
+  bottom: 20px;
+  border-radius: 2px;
+}
+
+.loading-text {
+  position: absolute;
+  bottom: -25px;
+  left: 10px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+@keyframes moveUpDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
 }

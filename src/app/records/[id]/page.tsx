@@ -2,7 +2,8 @@
 
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
-import { getRecord, getRecordParticipants, Participant, updateRecord } from './actions';
+import { getRecord, getParticipantRecords, updateParticipantRecord } from './actions';
+import { Tables } from '@/lib/database.types';
 
 export const runtime = 'edge';
 
@@ -10,10 +11,10 @@ export default function RecordPage() {
   const params = useParams();
   const id = params?.id as string;
   
-  const [record, setRecord] = useState(null);
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [record, setRecord] = useState<Tables<'one_time_split_expenses'> | null>(null);
+  const [participants, setParticipants] = useState<Tables<'one_time_split_expenses_participants'>[]>([]);
   const [password, setpassword] = useState('');
-  const [content, setContent] = useState('');
+  const [participantAmount, setParticipantAmount] = useState('');
   const [status, setStatus] = useState('');
 
   const fetchRecord = async () => {
@@ -23,10 +24,11 @@ export default function RecordPage() {
     
     try {
       const data = await getRecord(id, password);
-      const participantsData = await getRecordParticipants(id, password);
+      const participantsData = await getParticipantRecords(id, password);
       setRecord(data);
-      setParticipants(participantsData);
-      setContent(data.content);
+      setParticipants(Array.isArray(participantsData) ? participantsData : [participantsData]);
+      // Get amount from the first participant or default to 0
+      setParticipantAmount(participantsData[0]?.amount.toFixed(2) || '0.00');
       setStatus('');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Failed to fetch record.');
@@ -39,7 +41,7 @@ export default function RecordPage() {
     setStatus('Updating...');
     
     try {
-      await updateRecord(id, password, content);
+      await updateParticipantRecord(id, password, participantAmount);
       setStatus('Updated successfully!');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Failed to update record.');
@@ -80,8 +82,8 @@ export default function RecordPage() {
           </div>
           <textarea
             className="border p-2 w-full h-40"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
+            value={participantAmount}
+            onChange={(e) => setParticipantAmount(e.target.value)}
           />
           <button
             onClick={handleUpdateRecord}

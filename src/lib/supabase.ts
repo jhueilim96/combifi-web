@@ -1,13 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
-
-// Server-side Supabase client
-// export const supabaseAdmin = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY!,
-// );
+import { Database } from './database.types';
 
 export function createSupabaseClient(password: string) {
-    return createClient(
+    return createClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
