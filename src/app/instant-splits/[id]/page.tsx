@@ -201,10 +201,10 @@ export default function RecordPage() {
         className="absolute top-0 left-0 w-full bg-gradient-to-r from-indigo-400 to-indigo-500 dark:from-indigo-600 dark:to-indigo-700"
         style={{ height: 'calc(180px + 5vh)' }}
       />
-      <div
+      {/* <div
         className="absolute top-[calc(180px+5vh)] left-0 w-full bg-gradient-to-br from-slate-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800"
         style={{ height: '100%' }}
-      />
+      /> */}
       
       {/* Content container with spacing matching Vue page */}
       <div className="max-w-xl mx-auto px-4 py-8 absolute top-0 w-full">
@@ -219,9 +219,9 @@ export default function RecordPage() {
 
         {/* Main content when record is available with improved card styling */}
         {record && !showPasswordModal && (
-          <>
+          <div className="bg-white rounded-2xl">
             {/* Record card with enhanced shadows and gradients */}
-            <div className="border bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-4 flex flex-col space-y-4 mb-6">
+            <div className="border dark:bg-gray-800 border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-4 flex flex-col space-y-4 mb-6">
               <div className="flex justify-between items-center space-x-6">
                 <div className="text-left overflow-hidden">
                   <h2
@@ -509,7 +509,7 @@ export default function RecordPage() {
                 </button>
               </>
             )}
-          </>
+          </div>
         )}
         
         {/* Status message with improved styling */}
