@@ -2,11 +2,8 @@
 
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
-import { getRecord, getParticipantRecords, insertParticipantRecord } from './actions';
+import { getRecord, getParticipantRecords, insertParticipantRecord, updateParticipantRecord } from './actions';
 import { Tables } from '@/lib/database.types';
-import SplitFriend from '../../../components/settleComponents/SplitFriend';
-import SplitPerPax from '../../../components/settleComponents/SplitPerPax';
-import SplitHost from '../../../components/settleComponents/SplitHost';
 
 export const runtime = 'edge';
 
@@ -27,6 +24,8 @@ export default function RecordPage() {
   const [newParticipantName, setNewParticipantName] = useState('');
   const [showNewNameInput, setShowNewNameInput] = useState(false);
   const [showSettleComponent, setShowSettleComponent] = useState(false);
+  const [isUpdatingParticipant, setIsUpdatingParticipant] = useState(false);
+  const [markAsPaid, setMarkAsPaid] = useState(false);
 
   const fetchRecord = async () => {
     if (!id || !password) return;
@@ -40,7 +39,7 @@ export default function RecordPage() {
       setRecord(data);
       setParticipants(Array.isArray(participantsData) ? participantsData : [participantsData]);
       // Get amount from the first participant or default to 0
-      setParticipantAmount(participantsData[0]?.amount.toFixed(2) || '0.00');
+      setParticipantAmount('0.00');
       setShowPasswordModal(false);
       setStatus('');
     } catch (error) {
@@ -57,7 +56,33 @@ export default function RecordPage() {
     setStatus('Updating...');
     
     try {
-      await insertParticipantRecord(id, password, {amount: participantAmount, name: selectedParticipant?.name || newParticipantName});
+      // If updating an existing participant
+      if (isUpdatingParticipant && selectedParticipant?.id) {
+        const updateData = {
+          amount: participantAmount,
+          name: newParticipantName,
+          markAsPaid: markAsPaid
+        };
+        
+        // For PERPAX mode, don't allow amount changes
+        const finalUpdateData = record?.settle_mode === 'PERPAX' 
+          ? {...updateData, amount: selectedParticipant.amount.toFixed(2)}
+          : updateData;
+        
+        await updateParticipantRecord(id, password, selectedParticipant.id, finalUpdateData);
+      } 
+      // If adding a new participant (not available in HOST mode)
+      else if (!isUpdatingParticipant && record?.settle_mode !== 'HOST') {
+        await insertParticipantRecord(id, password, {
+          amount: participantAmount, 
+          name: newParticipantName
+        });
+      }
+      
+      // Refresh participant data after update
+      const participantsData = await getParticipantRecords(id, password);
+      setParticipants(Array.isArray(participantsData) ? participantsData : [participantsData]);
+      
       setStatus('Updated successfully!');
       setTimeout(() => setStatus(''), 3000); // Clear status after 3 seconds
     } catch (error) {
@@ -74,13 +99,19 @@ export default function RecordPage() {
     console.log('Selected participant:', participant);
     setSelectedParticipant(participant);
     setParticipantAmount(participant.amount.toFixed(2));
+    setNewParticipantName(participant.name);
+    setMarkAsPaid(participant.is_paid);
     setShowNewNameInput(false);
+    setIsUpdatingParticipant(true);
     setShowSettleComponent(true);
   };
 
   const handleNewNameToggle = () => {
     setShowNewNameInput(true);
     setSelectedParticipant(null);
+    setNewParticipantName('');
+    setMarkAsPaid(false);
+    setIsUpdatingParticipant(false);
     setShowSettleComponent(false);
   };
 
@@ -288,6 +319,7 @@ export default function RecordPage() {
             </div>
 
             {/* Improved Participants section */}
+            {!showSettleComponent && (
             <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800">
               <div className="text-center space-y-2 mb-4">
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Identify yourself</h3>
@@ -316,7 +348,12 @@ export default function RecordPage() {
                         }`}>
                           <span className="text-sm font-medium">{participant.name.charAt(0).toUpperCase()}</span>
                         </div>
-                        <span className="text-gray-800 dark:text-gray-200 font-medium">{participant.name}</span>
+                        <div className="flex flex-col">
+                          <span className="text-gray-800 dark:text-gray-200 font-medium">{participant.name}</span>
+                          <span className={`text-xs ${participant.is_paid ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                            {participant.is_paid ? '✓ Paid' : '○ Not Paid'}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center">
                         <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
@@ -382,40 +419,203 @@ export default function RecordPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </div>)}
 
             {showSettleComponent && record ? (
               <>
                 {record.settle_mode === 'FRIEND' && (
-                  <SplitFriend
-                    record={record}
-                    selectedParticipant={selectedParticipant}
-                    participantName={selectedParticipant?.name || newParticipantName}
-                    onUpdateAmount={handleUpdateRecord}
-                    setParticipantAmount={setParticipantAmount}
-                    participantAmount={participantAmount}
-                    participants={participants}
-                  />
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
+                    <div className="text-center space-y-2 mb-4">
+                      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Friend Split</h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        You can adjust your amount and confirm payment
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* Name field for updating */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Your Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          value={newParticipantName}
+                          onChange={(e) => setNewParticipantName(e.target.value)}
+                          placeholder="Enter your name"
+                        />
+                      </div>
+                      
+                      {/* Amount field */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Your Share Amount
+                        </label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                          <input
+                            type="numeric"
+                            className="w-full pl-8 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            value={participantAmount}
+                            onChange={(e) => setParticipantAmount(e.target.value)}
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Mark as Paid toggle */}
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="markAsPaid"
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          checked={markAsPaid}
+                          onChange={(e) => setMarkAsPaid(e.target.checked)}
+                        />
+                        <label htmlFor="markAsPaid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                          Mark as paid
+                        </label>
+                      </div>
+                      
+                      <button
+                        className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
+                        onClick={handleUpdateRecord}
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  </div>
                 )}
+                
                 {record.settle_mode === 'PERPAX' && (
-                  <SplitPerPax
-                    record={record}
-                    selectedParticipant={selectedParticipant}
-                    participantName={selectedParticipant?.name || newParticipantName}
-                    onUpdateAmount={handleUpdateRecord}
-                    setParticipantAmount={setParticipantAmount}
-                    participantAmount={participantAmount}
-                  />
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
+                    <div className="text-center space-y-2 mb-4">
+                      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Per Person Split</h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        The amount is fixed per person
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* Name field for updating */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Your Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          value={newParticipantName}
+                          onChange={(e) => setNewParticipantName(e.target.value)}
+                          placeholder="Enter your name"
+                        />
+                      </div>
+                      
+                      {/* Display fixed amount - not editable */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Your Share Amount (Fixed)
+                        </label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                          <input
+                            type="text"
+                            className="w-full pl-8 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed"
+                            value={isUpdatingParticipant && selectedParticipant ? selectedParticipant.amount.toFixed(2) : participantAmount}
+                            disabled
+                          />
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          This amount is fixed per person and cannot be changed
+                        </p>
+                      </div>
+                      
+                      {/* Mark as Paid toggle */}
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="markAsPaid"
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          checked={markAsPaid}
+                          onChange={(e) => setMarkAsPaid(e.target.checked)}
+                        />
+                        <label htmlFor="markAsPaid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                          Mark as paid
+                        </label>
+                      </div>
+                      
+                      <button
+                        className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
+                        onClick={handleUpdateRecord}
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  </div>
                 )}
+                
                 {record.settle_mode === 'HOST' && (
-                  <SplitHost
-                    record={record}
-                    selectedParticipant={selectedParticipant}
-                    participantName={selectedParticipant?.name || newParticipantName}
-                    onUpdateAmount={handleUpdateRecord}
-                    setParticipantAmount={setParticipantAmount}
-                    participantAmount={participantAmount}
-                  />
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
+                    <div className="text-center space-y-2 mb-4">
+                      <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Host Split</h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        Confirm your payment to the host
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* Display name - not editable in HOST mode */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Your Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed"
+                          value={selectedParticipant?.name || ''}
+                          disabled
+                        />
+                      </div>
+                      
+                      {/* Display fixed amount - not editable */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Your Share Amount
+                        </label>
+                        <div className="relative">
+                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                          <input
+                            type="text"
+                            className="w-full pl-8 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed"
+                            value={selectedParticipant?.amount.toFixed(2) || '0.00'}
+                            disabled
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Mark as Paid toggle */}
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="markAsPaid"
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          checked={markAsPaid}
+                          onChange={(e) => setMarkAsPaid(e.target.checked)}
+                        />
+                        <label htmlFor="markAsPaid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                          Mark as paid
+                        </label>
+                      </div>
+                      
+                      <button
+                        className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
+                        onClick={handleUpdateRecord}
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  </div>
                 )}
               </>
             ) : (
@@ -434,13 +634,19 @@ export default function RecordPage() {
                     (record?.settle_mode === 'HOST' || !newParticipantName.trim()))
                   }
                 >
-                  {selectedParticipant ? `Join as ${selectedParticipant.name}` : newParticipantName.trim() ? `Join as ${newParticipantName}` : 'Join Expense'}
+                  {selectedParticipant 
+                    ? `Join as ${selectedParticipant.name}` 
+                    : newParticipantName.trim() 
+                      ? `Join as ${newParticipantName}` 
+                      : 'Join Expense'}
                 </button>
 
                 <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
                   {record?.settle_mode === 'HOST' 
                     ? 'You must select yourself from the list above' 
-                    : 'Make sure to verify your details before confirming'}
+                    : record?.settle_mode === 'PERPAX'
+                      ? 'You can join with your name and mark yourself as paid'
+                      : 'You can adjust your amount before confirming'}
                 </p>
               </>
             )}
