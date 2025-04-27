@@ -1,18 +1,9 @@
 'use client';
 
-import { useTheme } from './ThemeProvider';
-import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 
 export default function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // Ensure component is mounted before rendering to avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
 
   return (
     <button

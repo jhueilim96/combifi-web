@@ -1,8 +1,9 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'system';
 type ThemeContextProps = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -10,60 +11,44 @@ type ThemeContextProps = {
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Initialize with user preference from browser or system
-  const [theme, setTheme] = useState<Theme>('light');
+export function ThemeProvider({ 
+  children, 
+  attribute = 'class',
+  defaultTheme = 'system',
+  enableSystem = true,
+  disableTransitionOnChange = false
+}: { 
+  children: React.ReactNode;
+  attribute?: string;
+  defaultTheme?: string;
+  enableSystem?: boolean;
+  disableTransitionOnChange?: boolean;
+}) {
+  // Initialize with the default theme
+  const [theme, setTheme] = useState<Theme>(defaultTheme as Theme);
   
-  useEffect(() => {
-    // Check if we're in the browser
-    if (typeof window !== 'undefined') {
-      // Check for saved theme preference in localStorage
-      const savedTheme = localStorage.getItem('theme') as Theme | null;
-      
-      // If there's a saved preference, use it
-      if (savedTheme) {
-        setTheme(savedTheme);
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-      } 
-      // Otherwise, use the system preference
-      else {
-        const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        setTheme(systemPreference);
-        document.documentElement.classList.toggle('dark', systemPreference === 'dark');
-      }
-      
-      // Listen for system preference changes
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      
-      const handleChange = (e: MediaQueryListEvent) => {
-        // Only update if no user preference is saved
-        if (!localStorage.getItem('theme')) {
-          const newTheme = e.matches ? 'dark' : 'light';
-          setTheme(newTheme);
-          document.documentElement.classList.toggle('dark', newTheme === 'dark');
-        }
-      };
-      
-      mediaQuery.addEventListener('change', handleChange);
-      
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-  }, []);
-  
-  const setThemeAndStore = (newTheme: Theme) => {
-    localStorage.setItem('theme', newTheme);
+  // Create a wrapper for next-themes' setTheme that also updates our local state
+  const handleSetTheme = (newTheme: Theme) => {
     setTheme(newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    // The actual theme change will be handled by next-themes
   };
   
   const contextValue = {
     theme,
-    setTheme: setThemeAndStore,
+    setTheme: handleSetTheme,
   };
   
   return (
     <ThemeContext.Provider value={contextValue}>
-      {children}
+      <NextThemesProvider
+        attribute={attribute}
+        defaultTheme={defaultTheme}
+        enableSystem={enableSystem}
+        disableTransitionOnChange={disableTransitionOnChange}
+        onValueChange={(newTheme) => setTheme(newTheme as Theme)}
+      >
+        {children}
+      </NextThemesProvider>
     </ThemeContext.Provider>
   );
 }
