@@ -196,15 +196,16 @@ export default function RecordPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
-      {/* Gradient background with Vue-style colors */}
-      <div
-        className="absolute top-0 left-0 w-full bg-gradient-to-r from-indigo-400 to-indigo-500 dark:from-indigo-600 dark:to-indigo-700"
-        style={{ height: 'calc(180px + 5vh)' }}
-      />
-      {/* <div
-        className="absolute top-[calc(180px+5vh)] left-0 w-full bg-gradient-to-br from-slate-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800"
-        style={{ height: '100%' }}
-      /> */}
+      {/* Enhanced gradient background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div 
+          className="absolute top-0 left-0 right-0 bg-gradient-to-br from-indigo-500 via-indigo-400 to-purple-500 dark:from-indigo-700 dark:via-indigo-600 dark:to-purple-800"
+          style={{ 
+            height: 'calc(180px + 8vh)',
+            clipPath: 'ellipse(150% 100% at 50% 0%)'
+          }}
+        />
+      </div>
       
       {/* Content container with spacing matching Vue page */}
       <div className="max-w-xl mx-auto px-4 py-8 absolute top-0 w-full">
@@ -389,13 +390,13 @@ export default function RecordPage() {
               
               {record.settle_mode !== 'HOST' && (
                 <>
-                  <div className="relative">
+                  <div className="relative justify-items-center my-4">
                     <div className="absolute inset-0 flex items-center" aria-hidden="true">
                       <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                     </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                        {record.settle_mode !== 'HOST' ? 'or add yourself' : 'choose from the list above'}
+                    <div className="relative bg-white w-[25%] flex justify-items-center">
+                      <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm">
+                        or add yourself
                       </span>
                     </div>
                   </div>
