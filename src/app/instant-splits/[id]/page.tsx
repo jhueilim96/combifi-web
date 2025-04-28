@@ -203,7 +203,7 @@ export default function RecordPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
       {/* Enhanced gradient background */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 ">
         <div 
           className="absolute top-0 left-0 right-0 bg-gradient-to-br from-indigo-500 via-indigo-400 to-purple-500 dark:from-indigo-700 dark:via-indigo-600 dark:to-purple-800"
           style={{ 
@@ -226,9 +226,9 @@ export default function RecordPage() {
 
         {/* Main content when record is available with improved card styling */}
         {record && !showPasswordModal && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl">
+          <div className="bg-white rounded-2xl">
             {/* Record card with enhanced shadows and gradients */}
-            <div className="border dark:bg-gray-800 border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-4 flex flex-col space-y-4 mb-6">
+            <div className="border bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-4 flex flex-col space-y-4 mb-6">
               <div className="flex justify-between items-center space-x-6">
                 <div className="text-left overflow-hidden">
                   <h2

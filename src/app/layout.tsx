@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import ThemeSwitcher from "@/components/ThemeSwitcher";
+// import ThemeSwitcher from "@/components/ThemeSwitcher";
 // import dynamic from "next/dynamic";
 
 const geistSans = Geist({
@@ -32,12 +32,11 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class" 
-          defaultTheme="system"
-          enableSystem={true}
+          enableSystem={false}
           disableTransitionOnChange={false}
         >
           {children}
-          <ThemeSwitcher />
+          {/* <ThemeSwitcher /> */}
         </ThemeProvider>
       </body>
     </html>
