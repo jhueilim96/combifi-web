@@ -226,7 +226,7 @@ export default function RecordPage() {
 
         {/* Main content when record is available with improved card styling */}
         {record && !showPasswordModal && (
-          <div className="bg-white rounded-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl">
             {/* Record card with enhanced shadows and gradients */}
             <div className="border dark:bg-gray-800 border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-4 flex flex-col space-y-4 mb-6">
               <div className="flex justify-between items-center space-x-6">
@@ -415,7 +415,7 @@ export default function RecordPage() {
                     <div className="absolute inset-0 flex items-center" aria-hidden="true">
                       <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                     </div>
-                    <div className="relative bg-white w-[25%] flex justify-items-center">
+                    <div className="relative bg-white dark:bg-gray-800 w-[25%] flex justify-items-center">
                       <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm">
                         or add yourself
                       </span>
