@@ -100,7 +100,7 @@ export default function RecordPage() {
   const openAmountModal = () => setShowAmountModal(true);
 
   const handleParticipantSelect = (participant: Tables<'one_time_split_expenses_participants'>) => {
-    console.log('Selected participant:', participant);
+    // console.log('Selected participant:', participant);
     setSelectedParticipant(participant);
     setParticipantAmount(participant.amount.toFixed(2));
     setNewParticipantName(participant.name);

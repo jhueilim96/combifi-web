@@ -20,7 +20,7 @@ export async function getRecord(id: string, password: string): Promise<InstantSp
   }
 
   try {
-    console.log('Fetching record with ID:', id);
+    // console.log('Fetching record with ID:', id);
     // Always exclude password
     const { data, error } = await instantSplitsWithProfileQuery(id, password);
 
@@ -39,9 +39,9 @@ export async function getRecord(id: string, password: string): Promise<InstantSp
     }
 
     if (data?.profiles.qr_expired_at && new Date(data.profiles.qr_expired_at) < new Date()) {
-      console.log('QR code expired, fetching new QR file URL');
+      // console.log('QR code expired, fetching new QR file URL');
       const response = await getQrFileSignedUrl(data.profiles.qr_key, password)
-      console.log('Updated QR code URL and expiration date in data:', data.profiles.qr_url, data.profiles.qr_expired_at);
+      // console.log('Updated QR code URL and expiration date in data:', data.profiles.qr_url, data.profiles.qr_expired_at);
       data.profiles.qr_url = response.data.shareUrl;
       data.profiles.qr_expired_at = response.data.expiredAt;
     }
@@ -59,7 +59,7 @@ export async function getParticipantRecords(id: string, password: string): Promi
   }
 
   try {
-    console.log('Fetching record participants with ID:', id);
+    // console.log('Fetching record participants with ID:', id);
     const { data, error } = await createSupabaseClient(password)
       .from('one_time_split_expenses_participants')
       .select('*')
@@ -169,7 +169,7 @@ async function request(endpoint: string, password: string, options: RequestInit 
     data: { session },
   } = await createSupabaseClient(password).auth.signInAnonymously();
   const url = `${process.env.NEXT_PUBLIC_WORKER_BASE_URL}${endpoint}`;
-  console.log('session', session);
+  // console.log('session', session);
   const headers = {
     ...(session?.access_token && {
       Authorization: `Bearer ${session.access_token}`,

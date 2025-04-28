@@ -9,7 +9,7 @@ export async function getRecord(id: string, password: string): Promise<Tables<'o
   }
 
   try {
-    console.log('Fetching record with ID:', id);
+    // console.log('Fetching record with ID:', id);
     // Always exclude password
     const {data, error} = await createSupabaseClient(password)
       .from('one_time_split_expenses')
@@ -42,7 +42,7 @@ export async function getParticipantRecords(id: string, password: string): Promi
   }
 
   try {
-    console.log('Fetching record participants with ID:', id);
+    // console.log('Fetching record participants with ID:', id);
     const { data, error } = await createSupabaseClient(password)
       .from('one_time_split_expenses_participants')
       .select('*')
