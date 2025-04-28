@@ -29,7 +29,8 @@ export default function RecordPage() {
   const [showSettleComponent, setShowSettleComponent] = useState(false);
   const [isUpdatingParticipant, setIsUpdatingParticipant] = useState(false);
   const [markAsPaid, setMarkAsPaid] = useState(false);
-
+  const [showEnlargedImage, setShowEnlargedImage] = useState(false);
+  
   const fetchRecord = async () => {
     if (!id || !password) return;
     
@@ -129,6 +130,11 @@ export default function RecordPage() {
       setParticipantAmount('0.00');
       setShowNewNameInput(false);
   }
+
+  const toggleEnlargedImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowEnlargedImage(!showEnlargedImage);
+  };
 
   if (!id) {
     return <div className="p-4 text-gray-800 dark:text-gray-200">No record ID provided.</div>;
@@ -313,15 +319,30 @@ export default function RecordPage() {
                     </span>
                   </div>
                 </div>
-                <div className="w-24 h-24 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 flex flex-col justify-center items-center">
+                <div className={`${showEnlargedImage 
+                  ? 'w-full h-auto min-h-[300px] transition-all duration-300 absolute top-0 right-0 z-10 bg-white dark:bg-gray-800 p-4 shadow-xl rounded-xl'
+                  : 'w-24 h-24'} overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 flex flex-col justify-center items-center relative`}>
                   {record.file_url ? (
-                    <img
-                      src={record.file_url}
-                      alt="Receipt Photo"
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-cover"
-                    />
+                    <>
+                      <img
+                        src={record.file_url}
+                        alt="Receipt Photo"
+                        width={200}
+                        height={200}
+                        className={`${showEnlargedImage ? 'object-contain max-h-[400px]' : 'object-cover'} w-full h-full cursor-pointer transition-all duration-300`}
+                        onClick={toggleEnlargedImage}
+                      />
+                      {showEnlargedImage && (
+                        <button
+                          className="absolute top-2 right-2 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                          onClick={toggleEnlargedImage}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <div className="flex flex-col justify-center items-center w-full h-full">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -335,7 +356,7 @@ export default function RecordPage() {
                 </div>
               </div>
             </div>
-
+            
             {/* Improved Participants section */}
             {!showSettleComponent && (
             <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800">
