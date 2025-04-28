@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { redirect, RedirectType } from 'next/navigation';
+export const runtime = 'edge'
 
 export async function GET(
   request: NextRequest,

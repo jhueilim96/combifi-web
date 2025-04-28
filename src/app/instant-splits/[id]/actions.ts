@@ -33,20 +33,23 @@ export async function getRecord(id: string, password: string): Promise<InstantSp
       throw new Error('Record not found');
     }
 
-    if (data?.file_name !== null && data?.file_name !== '') {
-      const response = await getFileSignedURL(data.file_name, password);
-      data.file_url = response.data.shareUrl;
+    /* eslint-disable */
+    const record = data as any;
+    /* eslint-enable */
+    if (record.file_name !== null && record.file_name !== '') {
+      const response = await getFileSignedURL(record.file_name, password);
+      record.file_url = response.data.shareUrl;
     }
 
-    if (data?.profiles.qr_expired_at && new Date(data.profiles.qr_expired_at) < new Date()) {
+    if (record?.profiles.qr_expired_at && new Date(record.profiles.qr_expired_at) < new Date()) {
       // console.log('QR code expired, fetching new QR file URL');
-      const response = await getQrFileSignedUrl(data.profiles.qr_key, password)
+      const response = await getQrFileSignedUrl(record.profiles.qr_key, password)
       // console.log('Updated QR code URL and expiration date in data:', data.profiles.qr_url, data.profiles.qr_expired_at);
-      data.profiles.qr_url = response.data.shareUrl;
-      data.profiles.qr_expired_at = response.data.expiredAt;
+      record.profiles.qr_url = response.data.shareUrl;
+      record.profiles.qr_expired_at = response.data.expiredAt;
     }
 
-    return data as InstantSplitsWithProfile;
+    return record as InstantSplitsWithProfile;
   } catch (error) {
     console.error('Error fetching record:', error);
     throw error;
