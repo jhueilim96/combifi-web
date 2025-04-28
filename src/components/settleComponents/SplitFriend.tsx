@@ -17,13 +17,13 @@ interface SplitFriendProps {
   handleBack: () => void;
 }
 
-export default function SplitFriend({ 
-  record, 
-  selectedParticipant, 
-  newParticipantName, 
+export default function SplitFriend({
+  record,
+  selectedParticipant,
+  newParticipantName,
   setNewParticipantName,
-  handleUpdateRecord, 
-  setParticipantAmount, 
+  handleUpdateRecord,
+  setParticipantAmount,
   participantAmount,
   participants,
   markAsPaid,
@@ -40,7 +40,7 @@ export default function SplitFriend({
     const sum = participants
       .filter(p => !p.is_host) // Exclude host from calculation
       .reduce((acc, participant) => acc + participant.amount, 0);
-    
+
     setTotalContributed(sum);
   }, [participants]);
 
@@ -48,11 +48,11 @@ export default function SplitFriend({
     // Update balance when participantAmount changes
     const inputAmount = Number(participantAmount) || 0;
     const remaining = Math.max(record.amount - totalContributed, 0);
-    
+
     // If there's a selected participant, subtract their existing contribution
     const existingAmount = selectedParticipant ? selectedParticipant.amount : 0;
     const adjustedRemaining = remaining + existingAmount;
-    
+
     setBalance(adjustedRemaining - inputAmount);
   }, [participantAmount, record.amount, totalContributed, selectedParticipant]);
 
@@ -79,20 +79,20 @@ export default function SplitFriend({
   // Calculate the remaining amount to be paid (excluding current user's contribution)
   const remainingAmount = Math.max(record.amount - totalContributed, 0);
   // If there's a selected participant, add back their amount to show the true remaining
-  const displayRemainingAmount = selectedParticipant 
-    ? remainingAmount + selectedParticipant.amount 
+  const displayRemainingAmount = selectedParticipant
+    ? remainingAmount + selectedParticipant.amount
     : remainingAmount;
 
-return (
+  return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
-        <div className="text-center space-y-2 mb-4">
-            <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Friend Split</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-            You can adjust your amount and confirm payment
-            </p>
-        </div>
+      <div className="text-center space-y-2 mb-4">
+        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Friend Split</h3>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          You can adjust your amount and confirm payment
+        </p>
+      </div>
 
-        <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mb-6">
+      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mb-6">
         <div className="flex justify-between items-center mb-2">
           <span className="text-gray-700 dark:text-gray-300 font-medium">Total Amount:</span>
           <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">${record.amount.toFixed(2)}</span>
@@ -102,84 +102,112 @@ return (
           <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">${displayRemainingAmount.toFixed(2)}</span>
         </div>
       </div>
-        
-        <div className="space-y-4">
-            {/* Name field for updating */}
-            <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Your Name
-            </label>
+
+      <div className="space-y-4">
+        {/* Name field for updating */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Your Name
+          </label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            value={newParticipantName}
+            onChange={(e) => setNewParticipantName(e.target.value)}
+            placeholder="Enter your name"
+          />
+        </div>
+
+        {/* Amount field */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Your Share Amount
+          </label>
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
             <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                value={newParticipantName}
-                onChange={(e) => setNewParticipantName(e.target.value)}
-                placeholder="Enter your name"
+              id="amount"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              className="pl-8 w-full p-3 text-lg font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:ring-indigo-500"
+              value={participantAmount}
+              onChange={handleAmountChange}
             />
+          </div>
+          {balance < 0 && (
+            <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+              Your amount exceeds the remaining balance. Max contribution: ${displayRemainingAmount.toFixed(2)}
             </div>
-            
-            {/* Amount field */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Your Share Amount
-                </label>
-                <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
-                    <input
-                        id="amount"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        className="pl-8 w-full p-3 text-lg font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:ring-indigo-500"
-                        value={participantAmount}
-                        onChange={handleAmountChange}
-                    />
-                </div>
-                {balance < 0 && (
-                    <div className="mt-2 text-sm text-red-600 dark:text-red-400">
-                        Your amount exceeds the remaining balance. Max contribution: ${displayRemainingAmount.toFixed(2)}
-                    </div>
-                )}
-            </div>
-            
-            {/* Mark as Paid toggle */}
-            <div className="flex items-center">
-            <input
-                type="checkbox"
-                id="markAsPaid"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                checked={markAsPaid}
-                onChange={(e) => setMarkAsPaid(e.target.checked)}
-            />
-            <label htmlFor="markAsPaid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                Mark as paid
+          )}
+        </div>
+        {/* QR Code Section */}
+        {record.profiles?.qr_url && (
+          <div className="py-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Scan to Pay
             </label>
+            <div className="flex justify-center bg-white p-4 rounded-lg">
+              <img
+                src={record.profiles.qr_url}
+                alt="Payment QR Code"
+                width={200}
+                height={200}
+                className="rounded"
+                style={{ maxHeight: '200px', width: 'auto' }}
+              />
             </div>
-            
-            <div className="flex space-x-3">
-                <button
-                    type="button"
-                    className="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
-                    onClick={() => {
-                        handleBack();
-                    }}
-                >
-                    Back
-                </button>
-                
-                <button
-                    className={`w-full py-3 px-4 ${
-                        balance < 0 || isLoading
-                            ? 'bg-indigo-200 cursor-not-allowed'
-                            : 'bg-indigo-500 hover:bg-indigo-600'
-                    } text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2`}
-                    disabled={balance < 0 || isLoading}
-                    onClick={handleSubmit}
-                >
-                    {isLoading ? 'Processing...' : 'Confirm'}
-                </button>
+            <div className="mt-2">
+              <a
+                href={record.profiles.qr_url}
+                download="payment-qr-code.png"
+                className="flex items-center justify-center w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-sm font-medium"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download QR Code
+              </a>
             </div>
-            {/* <button
+          </div>
+        )}
+        {/* Mark as Paid toggle */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="markAsPaid"
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            checked={markAsPaid}
+            onChange={(e) => setMarkAsPaid(e.target.checked)}
+          />
+          <label htmlFor="markAsPaid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            Mark as paid
+          </label>
+        </div>
+
+        <div className="flex space-x-3">
+          <button
+            type="button"
+            className="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
+            onClick={() => {
+              handleBack();
+            }}
+          >
+            Back
+          </button>
+
+          <button
+            className={`w-full py-3 px-4 ${balance < 0 || isLoading
+              ? 'bg-indigo-200 cursor-not-allowed'
+              : 'bg-indigo-500 hover:bg-indigo-600'
+              } text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2`}
+            disabled={balance < 0 || isLoading}
+            onClick={handleSubmit}
+          >
+            {isLoading ? 'Processing...' : 'Confirm'}
+          </button>
+        </div>
+        {/* <button
             className={`w-full py-3 px-4 ${
               balance < 0 || isLoading
                 ? 'bg-indigo-200 cursor-not-allowed'
@@ -190,7 +218,7 @@ return (
             >
             {isLoading ? 'Processing...' : 'Confirm'}
             </button> */}
-        </div>
+      </div>
     </div>
-)
+  )
 }

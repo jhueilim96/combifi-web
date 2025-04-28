@@ -71,8 +71,12 @@ export type Database = {
           status: string | null
           updated_at: string | null
           user_id: string
+          file_url?: string | null
           profiles: {
             name: string | null
+            qr_expired_at?: number | null
+            qr_key?: string | null
+            qr_url?: string | null
           }
         }
         Insert: {
@@ -94,8 +98,12 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id: string
+          file_url?: string | null
           profiles: {
             name: string | null
+            qr_expired_at?: number | null
+            qr_key?: string | null
+            qr_url?: string | null
           }
         }
         Update: {
@@ -117,8 +125,12 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id?: string
+          file_url?: string | null
           profiles: {
             name: string | null
+            qr_expired_at?: number | null
+            qr_key?: string | null
+            qr_url?: string | null
           }
         }
         Relationships: [

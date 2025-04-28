@@ -9,6 +9,10 @@ export function createSupabaseClient(password: string) {
         global: {
           headers: { password },
         },
+        auth:{
+          persistSession: false,
+          autoRefreshToken: false,
+        }
       }
     );
   }

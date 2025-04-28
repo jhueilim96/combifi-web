@@ -314,10 +314,12 @@ export default function RecordPage() {
                   </div>
                 </div>
                 <div className="w-24 h-24 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 flex flex-col justify-center items-center">
-                  {record.file_name ? (
+                  {record.file_url ? (
                     <img
-                      src={`/images/${record.file_name}`}
+                      src={record.file_url}
                       alt="Receipt Photo"
+                      width={200}
+                      height={200}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -385,8 +387,6 @@ export default function RecordPage() {
                   ))}
                 </div>
               )}
-              
-              
               
               {record.settle_mode !== 'HOST' && (
                 <>
@@ -475,6 +475,7 @@ export default function RecordPage() {
                 
                 {record.settle_mode === 'HOST' && (
                   <SplitHost
+                    record={record}
                     selectedParticipant={selectedParticipant}
                     handleUpdateRecord={handleUpdateRecord}
                     setParticipantAmount={setParticipantAmount}
