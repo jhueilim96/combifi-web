@@ -31,12 +31,12 @@ export default function SplitPerPax({
 
   // Calculate fixed per person amount from metadata when the component mounts
   useEffect(() => {
-    let amount = 0;
+    let amount = '';
 
     if (record.settle_metadata) {
       try {
         const metadata = record.settle_metadata as Record<string, unknown>;
-        if (metadata.perPaxAmount && typeof metadata.perPaxAmount === 'number') {
+        if (metadata.perPaxAmount && typeof metadata.perPaxAmount === "string") {
           amount = metadata.perPaxAmount;
         }
       } catch (error) {
@@ -45,11 +45,11 @@ export default function SplitPerPax({
     }
 
     // If perPaxAmount isn't in metadata, fall back to dividing the total amount
-    if (amount === 0) {
+    if (amount === "") {
       // Assuming at least 2 people for the split
-      amount = record.amount / 2;
+      amount = (record.amount / 2).toFixed(2);
     }
-    setParticipantAmount(amount.toFixed(2));
+    setParticipantAmount(amount);
   }, [record, setParticipantAmount]);
 
   const handleSubmit = async () => {
