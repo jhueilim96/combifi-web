@@ -7,6 +7,7 @@ import { Tables } from '@/lib/database.types';
 import SplitFriend from '@/components/settleComponents/SplitFriend';
 import SplitPerPax from '@/components/settleComponents/SplitPerPax';
 import SplitHost from '@/components/settleComponents/SplitHost';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 export const runtime = 'edge';
 
@@ -21,8 +22,6 @@ export default function RecordPage() {
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(true);
-  const [showTitleModal, setShowTitleModal] = useState(false);
-  const [showAmountModal, setShowAmountModal] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<Tables<'one_time_split_expenses_participants'> | null>(null);
   const [newParticipantName, setNewParticipantName] = useState('');
   const [showNewNameInput, setShowNewNameInput] = useState(false);
@@ -98,9 +97,6 @@ export default function RecordPage() {
     }
   };
 
-  const openTitleModal = () => setShowTitleModal(true);
-  const openAmountModal = () => setShowAmountModal(true);
-
   const handleParticipantSelect = (participant: Tables<'one_time_split_expenses_participants'>) => {
     // console.log('Selected participant:', participant);
     setSelectedParticipant(participant);
@@ -158,8 +154,6 @@ export default function RecordPage() {
 
   // Compute display values
   const hostParticipant = record?.profiles;
-  const displayTitle = record?.description || '';
-  const displayAmount = record?.amount.toFixed(2) || '0.00';
 
   if (showPasswordModal) {
     return (
@@ -173,13 +167,13 @@ export default function RecordPage() {
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">Enter Password</h2>
-            <p className="text-center text-gray-600 dark:text-gray-300 mb-7">Please enter the password to access this instant split.</p>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">Enter Code</h2>
+            <p className="text-center text-gray-600 dark:text-gray-300 mb-7">Please enter the code to access this instant split.</p>
 
             <input
-              type="password"
+              type="input"
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-5 shadow-sm transition-all duration-200"
-              placeholder="Enter password"
+              placeholder="Enter code"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -234,86 +228,16 @@ export default function RecordPage() {
               <div className="flex justify-between items-center space-x-6">
                 <div className="text-left overflow-hidden">
                   <h2
-                    className="text-sm text-gray-700 dark:text-gray-300 font-normal truncate cursor-pointer max-w-[10rem]"
-                    onClick={openTitleModal}
+                    className="text-sm text-gray-700 dark:text-gray-300 font-normal cursor-pointer"
                   >
                     {record.description || 'Untitled Split'}
                   </h2>
 
-                  {/* Title Modal */}
-                  {showTitleModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg max-w-md w-full animate-scaleIn">
-                        <div className="flex flex-col justify-center items-center">
-                          <div className="bg-gray-100 dark:bg-gray-700 rounded-full p-4 mb-4">
-                            <div className="w-[4rem] h-[4rem] m-3 flex items-center justify-center">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </div>
-                          </div>
-                          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Title</h2>
-                          <p className="text-sm font-base text-gray-400 dark:text-gray-500 mb-4">Review the title below and confirm.</p>
-                          <div className="w-full px-5">
-                            <input
-                              type="text"
-                              className="w-full text-xl font-semibold text-gray-700 dark:text-gray-300 p-3 mb-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
-                              value={displayTitle}
-                              disabled
-                            />
-                            <button
-                              onClick={() => setShowTitleModal(false)}
-                              className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-[2rem] transition-colors duration-200"
-                            >
-                              Got It!
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-baseline cursor-pointer" onClick={openAmountModal}>
-                    <span className="text-[2.5rem] font-semibold text-gray-800 dark:text-gray-200 tracking-tight truncate overflow-hidden max-w-[10rem]">
-                      ${displayAmount}
+                  <div className="flex items-baseline cursor-pointer">
+                    <span className="text-[2.5rem] font-semibold text-gray-800 dark:text-gray-200 tracking-tight truncate overflow-hidden">
+                      {formatCurrencyAmount(record.amount, record.currency)}
                     </span>
                   </div>
-
-                  {/* Amount Modal */}
-                  {showAmountModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg max-w-md w-full animate-scaleIn">
-                        <div className="flex flex-col justify-center items-center">
-                          <div className="bg-gray-100 dark:bg-gray-700 rounded-full p-4 mb-4">
-                            <div className="w-[4rem] h-[4rem] m-3 flex items-center justify-center">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                          </div>
-                          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Amount!</h2>
-                          <p className="text-sm font-base text-gray-400 dark:text-gray-500 mb-4">Review the amount below and confirm.</p>
-                          <div className="w-full px-5">
-                            <div className="relative mb-4">
-                              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
-                              <input
-                                type="text"
-                                className="w-full text-xl font-semibold text-gray-700 dark:text-gray-300 p-3 pl-8 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
-                                value={displayAmount}
-                                disabled
-                              />
-                            </div>
-                            <button
-                              onClick={() => setShowAmountModal(false)}
-                              className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-[2rem] transition-colors duration-200"
-                            >
-                              Got It!
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   <div className="flex items-baseline">
                     <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
@@ -396,7 +320,7 @@ export default function RecordPage() {
                         </div>
                         <div className="flex items-center">
                           <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                            ${participant.amount.toFixed(2)}
+                            {formatCurrencyAmount(participant.amount, record.currency)}
                           </span>
                           {selectedParticipant?.id === participant.id && (
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
