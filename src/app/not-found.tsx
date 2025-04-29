@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-export default function Home() {
+export default function NotFound() {
   redirect('https://combifi.app');
   
   // The following code will never run due to the redirect
