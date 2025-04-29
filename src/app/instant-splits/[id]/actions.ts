@@ -81,7 +81,7 @@ export async function getParticipantRecords(id: string, password: string): Promi
   }
 }
 
-export async function insertParticipantRecord(id: string, password: string, data: { amount: string, name: string }) {
+export async function insertParticipantRecord(id: string, password: string, data: { amount: string, name: string, currency: string }) {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
@@ -93,6 +93,8 @@ export async function insertParticipantRecord(id: string, password: string, data
       .insert({
         amount: parseFloat(data.amount),
         expense_id: id,
+        converted_amount: parseFloat(data.amount),
+        converted_currency: data.currency,
         is_host: false,
         is_paid: true,
         name: data.name,
@@ -109,7 +111,7 @@ export async function insertParticipantRecord(id: string, password: string, data
   }
 }
 
-export async function updateParticipantRecord(id: string, password: string, participantId: string, data: { amount: string, name: string, markAsPaid: boolean }) {
+export async function updateParticipantRecord(id: string, password: string, participantId: string, data: { amount: string, name: string, currency: string, markAsPaid: boolean }) {
   if (!id || !password || !participantId) {
     throw new Error('Record ID, password, and participant ID are required');
   }
@@ -122,6 +124,8 @@ export async function updateParticipantRecord(id: string, password: string, part
         amount: parseFloat(data.amount),
         is_paid: data.markAsPaid,
         name: data.name,
+        converted_amount: parseFloat(data.amount),
+        converted_currency: data.currency,
       })
       .eq('id', participantId)
       .eq('expense_id', id)
@@ -152,19 +156,19 @@ async function getQrFileSignedUrl(qrKey: string, password: string) {
   }
 }
 
-  async function getFileSignedURL(key: string, password: string) {
-    try {
-      // Get signed URL from backend
-      const response = await request(`/files/${key}/share`, password);
-      if (!response.success) {
-        throw new Error('Failed to get shared URL');
-      }
-      return response;
-    } catch (error) {
-      console.error('Error getting file signed URL:', error);
-      return null;
+async function getFileSignedURL(key: string, password: string) {
+  try {
+    // Get signed URL from backend
+    const response = await request(`/files/${key}/share`, password);
+    if (!response.success) {
+      throw new Error('Failed to get shared URL');
     }
+    return response;
+  } catch (error) {
+    console.error('Error getting file signed URL:', error);
+    return null;
   }
+}
 
 
 async function request(endpoint: string, password: string, options: RequestInit = {},) {

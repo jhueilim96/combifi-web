@@ -13,7 +13,7 @@ export const runtime = 'edge';
 export default function RecordPage() {
   const params = useParams();
   const id = params?.id as string;
-  
+
   const [record, setRecord] = useState<Tables<'one_time_split_expenses'> | null>(null);
   const [participants, setParticipants] = useState<Tables<'one_time_split_expenses_participants'>[]>([]);
   const [password, setPassword] = useState('');
@@ -30,13 +30,13 @@ export default function RecordPage() {
   const [isUpdatingParticipant, setIsUpdatingParticipant] = useState(false);
   const [markAsPaid, setMarkAsPaid] = useState(false);
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
-  
+
   const fetchRecord = async () => {
     if (!id || !password) return;
-    
+
     setIsLoading(true);
     setStatus('Fetching...');
-    
+
     try {
       const data = await getRecord(id, password);
       const participantsData = await getParticipantRecords(id, password);
@@ -55,38 +55,40 @@ export default function RecordPage() {
 
   const handleUpdateRecord = async () => {
     if (!id || !password) return;
-    
+
     setIsLoading(true);
     setStatus('Updating...');
-    
+
     try {
       // If updating an existing participant
       if (isUpdatingParticipant && selectedParticipant?.id) {
         const updateData = {
           amount: participantAmount,
           name: newParticipantName,
-          markAsPaid: markAsPaid
+          markAsPaid: markAsPaid,
+          currency: record!.currency,
         };
-        
+
         // For PERPAX mode, don't allow amount changes
-        const finalUpdateData = record?.settle_mode === 'PERPAX' 
-          ? {...updateData, amount: selectedParticipant.amount.toFixed(2)}
+        const finalUpdateData = record?.settle_mode === 'PERPAX'
+          ? { ...updateData, amount: selectedParticipant.amount.toFixed(2) }
           : updateData;
-        
+
         await updateParticipantRecord(id, password, selectedParticipant.id, finalUpdateData);
-      } 
+      }
       // If adding a new participant (not available in HOST mode)
       else if (!isUpdatingParticipant && record?.settle_mode !== 'HOST') {
         await insertParticipantRecord(id, password, {
-          amount: participantAmount, 
-          name: newParticipantName
+          amount: participantAmount,
+          name: newParticipantName,
+          currency: record!.currency,
         });
       }
-      
+
       // Refresh participant data after update
       const participantsData = await getParticipantRecords(id, password);
       setParticipants(Array.isArray(participantsData) ? participantsData : [participantsData]);
-      
+
       setStatus('Updated successfully!');
       setTimeout(() => setStatus(''), 3000); // Clear status after 3 seconds
     } catch (error) {
@@ -119,16 +121,16 @@ export default function RecordPage() {
     setShowSettleComponent(false);
   };
 
-  const resetUIState = () => {  
+  const resetUIState = () => {
     setIsLoading(false);
-      // Reset UI state after record update
-      setSelectedParticipant(null);
-      setNewParticipantName('');
-      setMarkAsPaid(false);
-      setIsUpdatingParticipant(false);
-      setShowSettleComponent(false);
-      setParticipantAmount('0.00');
-      setShowNewNameInput(false);
+    // Reset UI state after record update
+    setSelectedParticipant(null);
+    setNewParticipantName('');
+    setMarkAsPaid(false);
+    setIsUpdatingParticipant(false);
+    setShowSettleComponent(false);
+    setParticipantAmount('0.00');
+    setShowNewNameInput(false);
   }
 
   const toggleEnlargedImage = (e: React.MouseEvent) => {
@@ -159,7 +161,7 @@ export default function RecordPage() {
   const displayTitle = record?.description || '';
   const displayAmount = record?.amount.toFixed(2) || '0.00';
 
-  if (showPasswordModal) { 
+  if (showPasswordModal) {
     return (
       <div className="fixed inset-0 bg-white dark:bg-gray-900 bg-opacity-100 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn">
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-scaleIn">
@@ -173,7 +175,7 @@ export default function RecordPage() {
             </div>
             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">Enter Password</h2>
             <p className="text-center text-gray-600 dark:text-gray-300 mb-7">Please enter the password to access this instant split.</p>
-            
+
             <input
               type="password"
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-5 shadow-sm transition-all duration-200"
@@ -188,7 +190,7 @@ export default function RecordPage() {
             >
               Access Record
             </button>
-            
+
             {status && (
               <div className="mt-4 w-full">
                 <p className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-center">{status}</p>
@@ -204,15 +206,15 @@ export default function RecordPage() {
     <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
       {/* Enhanced gradient background */}
       <div className="absolute inset-0 ">
-        <div 
+        <div
           className="absolute top-0 left-0 right-0 bg-gradient-to-br from-indigo-500 via-indigo-400 to-purple-500 dark:from-indigo-700 dark:via-indigo-600 dark:to-purple-800"
-          style={{ 
+          style={{
             height: 'calc(180px + 8vh)',
             clipPath: 'ellipse(150% 100% at 50% 0%)'
           }}
         />
       </div>
-      
+
       {/* Content container with spacing matching Vue page */}
       <div className="max-w-xl mx-auto px-4 py-8 absolute top-0 w-full">
         <div className="text-center mb-4">
@@ -220,7 +222,7 @@ export default function RecordPage() {
             Split and Pay
           </h1>
           <p className="text-white text-base mb-2">
-            <b>{hostParticipant?.name || 'Someone'}</b> has invited you to settle a <br/> shared expense
+            <b>{hostParticipant?.name || 'Someone'}</b> has invited you to settle a <br /> shared expense
           </p>
         </div>
 
@@ -237,7 +239,7 @@ export default function RecordPage() {
                   >
                     {record.description || 'Untitled Split'}
                   </h2>
-                  
+
                   {/* Title Modal */}
                   {showTitleModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -276,7 +278,7 @@ export default function RecordPage() {
                       ${displayAmount}
                     </span>
                   </div>
-                  
+
                   {/* Amount Modal */}
                   {showAmountModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -319,7 +321,7 @@ export default function RecordPage() {
                     </span>
                   </div>
                 </div>
-                <div className={`${showEnlargedImage 
+                <div className={`${showEnlargedImage
                   ? 'w-full h-auto min-h-[300px] transition-all duration-300 absolute top-0 right-0 z-10 bg-white dark:bg-gray-800 p-4 shadow-xl rounded-xl'
                   : 'w-24 h-24'} overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 flex flex-col justify-center items-center relative`}>
                   {record.file_url ? (
@@ -356,115 +358,113 @@ export default function RecordPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Improved Participants section */}
             {!showSettleComponent && (
-            <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800">
-              <div className="text-center space-y-2 mb-4">
-                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Identify yourself</h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  Select your name from the list below.
-                </p>
-              </div>
-              
-              {participants.length > 0 && (
-                <div className="grid grid-cols-1 gap-2 mb-4">
-                  {participants.filter((p) => p.is_host === false ).map((participant, index) => (
-                    <div
-                      key={index}
-                      className={`flex justify-between items-center px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                        selectedParticipant?.id === participant.id
+              <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800">
+                <div className="text-center space-y-2 mb-4">
+                  <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Identify yourself</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    Select your name from the list below.
+                  </p>
+                </div>
+
+                {participants.length > 0 && (
+                  <div className="grid grid-cols-1 gap-2 mb-4">
+                    {participants.filter((p) => p.is_host === false).map((participant, index) => (
+                      <div
+                        key={index}
+                        className={`flex justify-between items-center px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 ${selectedParticipant?.id === participant.id
                           ? 'bg-indigo-100 dark:bg-indigo-900 border-2 border-indigo-500 dark:border-indigo-400'
                           : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-indigo-200 dark:hover:border-indigo-700'
-                      }`}
-                      onClick={() => handleParticipantSelect(participant)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          selectedParticipant?.id === participant.id
+                          }`}
+                        onClick={() => handleParticipantSelect(participant)}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedParticipant?.id === participant.id
                             ? 'bg-indigo-500 text-white'
                             : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                        }`}>
-                          <span className="text-sm font-medium">{participant.name.charAt(0).toUpperCase()}</span>
+                            }`}>
+                            <span className="text-sm font-medium">{participant.name.charAt(0).toUpperCase()}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-gray-800 dark:text-gray-200 font-medium">{participant.name}</span>
+                            <span className={`text-xs ${participant.is_paid ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                              {participant.is_paid ? '✓ Paid' : '○ Not Paid'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-gray-800 dark:text-gray-200 font-medium">{participant.name}</span>
-                          <span className={`text-xs ${participant.is_paid ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
-                            {participant.is_paid ? '✓ Paid' : '○ Not Paid'}
+                        <div className="flex items-center">
+                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                            ${participant.amount.toFixed(2)}
                           </span>
+                          {selectedParticipant?.id === participant.id && (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center">
-                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                          ${participant.amount.toFixed(2)}
+                    ))}
+                  </div>
+                )}
+
+                {record.settle_mode !== 'HOST' && (
+                  <>
+                    <div className="relative justify-items-center my-4">
+                      <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                      </div>
+                      <div className="relative bg-white dark:bg-gray-800 w-[25%] flex justify-items-center">
+                        <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm">
+                          or add yourself
                         </span>
-                        {selectedParticipant?.id === participant.id && (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-              
-              {record.settle_mode !== 'HOST' && (
-                <>
-                  <div className="relative justify-items-center my-4">
-                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                      <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-                    </div>
-                    <div className="relative bg-white dark:bg-gray-800 w-[25%] flex justify-items-center">
-                      <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm">
-                        or add yourself
-                      </span>
-                    </div>
-                  </div>
-                  <div className={`mt-4 transition-all duration-300 ${showNewNameInput || participants.length === 0 ? 'opacity-100' : 'opacity-80'}`}>
-                    <div 
-                      className={`border ${selectedParticipant ? 'border-gray-200 dark:border-gray-700' : 'border-indigo-300 dark:border-indigo-600'} rounded-xl p-4 bg-white dark:bg-gray-700 cursor-pointer`}
-                      onClick={handleNewNameToggle}
-                    >
-                      {showNewNameInput || participants.length === 0 ? (
-                        <div className="space-y-3">
+                    <div className={`mt-4 transition-all duration-300 ${showNewNameInput || participants.length === 0 ? 'opacity-100' : 'opacity-80'}`}>
+                      <div
+                        className={`border ${selectedParticipant ? 'border-gray-200 dark:border-gray-700' : 'border-indigo-300 dark:border-indigo-600'} rounded-xl p-4 bg-white dark:bg-gray-700 cursor-pointer`}
+                        onClick={handleNewNameToggle}
+                      >
+                        {showNewNameInput || participants.length === 0 ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600 dark:text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                              </div>
+                              <label className="block text-gray-700 dark:text-gray-300 font-medium">Add your name</label>
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="Enter your name"
+                              className="w-full rounded-lg py-2 px-3 border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                              value={newParticipantName}
+                              onChange={(e) => setNewParticipantName(e.target.value)}
+                              autoFocus
+                            />
+                          </div>
+                        ) : (
                           <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600 dark:text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                               </svg>
                             </div>
-                            <label className="block text-gray-700 dark:text-gray-300 font-medium">Add your name</label>
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">I&apos;m not listed above</span>
                           </div>
-                          <input
-                            type="text"
-                            placeholder="Enter your name"
-                            className="w-full rounded-lg py-2 px-3 border-gray-300 dark:border-gray-600 focus:border-indigo-500 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-                            value={newParticipantName}
-                            onChange={(e) => setNewParticipantName(e.target.value)}
-                            autoFocus
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                          </div>
-                          <span className="text-gray-700 dark:text-gray-300 font-medium">I&apos;m not listed above</span>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>)}
+                  </>
+                )}
+              </div>)}
 
             {showSettleComponent && record ? (
               <>
                 {record.settle_mode === 'FRIEND' && (
-                  <SplitFriend 
+                  <SplitFriend
                     record={record}
                     selectedParticipant={selectedParticipant}
                     newParticipantName={newParticipantName}
@@ -476,9 +476,9 @@ export default function RecordPage() {
                     markAsPaid={markAsPaid}
                     setMarkAsPaid={setMarkAsPaid}
                     handleBack={resetUIState}
-                    />
+                  />
                 )}
-                
+
                 {record.settle_mode === 'PERPAX' && (
                   <SplitPerPax
                     record={record}
@@ -493,7 +493,7 @@ export default function RecordPage() {
                     handleBack={resetUIState}
                   />
                 )}
-                
+
                 {record.settle_mode === 'HOST' && (
                   <SplitHost
                     record={record}
@@ -520,26 +520,26 @@ export default function RecordPage() {
                     }
                   }}
                   disabled={
-                    (!selectedParticipant && 
-                    (record?.settle_mode === 'HOST' || !newParticipantName.trim()))
+                    (!selectedParticipant &&
+                      (record?.settle_mode === 'HOST' || !newParticipantName.trim()))
                   }
                 >
-                  {selectedParticipant 
-                    ? `Join as ${selectedParticipant.name}` 
-                    : newParticipantName.trim() 
-                      ? `Join as ${newParticipantName}` 
+                  {selectedParticipant
+                    ? `Join as ${selectedParticipant.name}`
+                    : newParticipantName.trim()
+                      ? `Join as ${newParticipantName}`
                       : 'Join Expense'}
                 </button>
               </>
             )}
           </div>
         )}
-        
+
         {/* Status message with improved styling */}
         {status && !showPasswordModal && (
           <div className="mt-4 text-center animate-fadeIn">
-            <p className={`px-4 py-3 rounded-lg flex items-center justify-center ${status.includes('success') 
-              ? 'bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300' 
+            <p className={`px-4 py-3 rounded-lg flex items-center justify-center ${status.includes('success')
+              ? 'bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
               : 'bg-red-100 dark:bg-red-900/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'}`}>
               {status.includes('success') ? (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -555,7 +555,7 @@ export default function RecordPage() {
           </div>
         )}
       </div>
-      
+
       {/* Add custom loader styling */}
       <style jsx>{`
         .running-loader {
