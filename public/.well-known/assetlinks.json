@@ -5,9 +5,9 @@
         ],
         "target": {
             "namespace": "android_app",
-            "package_name": "com.anonymous.combifi",
+            "package_name": "app.combifi.app",
             "sha256_cert_fingerprints": [
-                "90:44:8B:CE:10:C0:C8:B3:84:3B:E8:6B:5E:6C:12:E0:03:1C:7F:75:20:D2:14:3B:2E:73:08:B1:5A:FA:8B:07"
+                "E8:07:38:1F:B1:BD:FC:DB:16:2F:B5:9D:42:CE:00:85:9E:A0:1F:98:27:F9:96:8E:85:67:F3:FA:00:C9:DE:2E"
             ]
         }
     }
