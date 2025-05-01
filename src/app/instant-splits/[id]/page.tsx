@@ -61,6 +61,9 @@ export default function RecordPage() {
     try {
       // If updating an existing participant
       if (isUpdatingParticipant && selectedParticipant?.id) {
+        // Import the validation schemas
+        const { updateParticipantSchema } = await import('@/lib/validations');
+        
         const updateData = {
           amount: participantAmount,
           name: newParticipantName,
@@ -69,19 +72,40 @@ export default function RecordPage() {
         };
 
         // For PERPAX mode, don't allow amount changes
-        const finalUpdateData = record?.settle_mode === 'PERPAX'
+        const dataToValidate = record?.settle_mode === 'PERPAX'
           ? { ...updateData, amount: selectedParticipant.amount.toFixed(2) }
           : updateData;
 
-        await updateParticipantRecord(id, password, selectedParticipant.id, finalUpdateData);
+        // Validate data before sending to server
+        const validationResult = updateParticipantSchema.safeParse(dataToValidate);
+        
+        if (!validationResult.success) {
+          const errorMessage = validationResult.error.errors.map(err => err.message).join(', ');
+          throw new Error(errorMessage);
+        }
+        
+        await updateParticipantRecord(id, password, selectedParticipant.id, validationResult.data);
       }
       // If adding a new participant (not available in HOST mode)
       else if (!isUpdatingParticipant && record?.settle_mode !== 'HOST') {
-        await insertParticipantRecord(id, password, {
+        // Import the validation schemas
+        const { insertParticipantSchema } = await import('@/lib/validations');
+        
+        const insertData = {
           amount: participantAmount,
           name: newParticipantName,
           currency: record!.currency,
-        });
+        };
+
+        // Validate data before sending to server
+        const validationResult = insertParticipantSchema.safeParse(insertData);
+        
+        if (!validationResult.success) {
+          const errorMessage = validationResult.error.errors.map(err => err.message).join(', ');
+          throw new Error(errorMessage);
+        }
+        
+        await insertParticipantRecord(id, password, validationResult.data);
       }
 
       // Refresh participant data after update

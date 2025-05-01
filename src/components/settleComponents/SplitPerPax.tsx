@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
+import { getValidationErrorMessage, participantInputSchema } from '@/lib/validations';
+import { Button } from '../ui/Button';
+import { formatCurrency } from '@/lib/currencyUtils';
 
 interface SplitPerPaxProps {
   record: Tables<'one_time_split_expenses'>;
@@ -28,6 +31,7 @@ export default function SplitPerPax({
   setMarkAsPaid
 }: SplitPerPaxProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Calculate fixed per person amount from metadata when the component mounts
   useEffect(() => {
@@ -37,7 +41,7 @@ export default function SplitPerPax({
       try {
         const metadata = record.settle_metadata as Record<string, unknown>;
         if (metadata.perPaxAmount && typeof metadata.perPaxAmount === "string") {
-          amount = metadata.perPaxAmount;
+          amount = parseFloat(metadata.perPaxAmount).toFixed(2);
         }
       } catch (error) {
         console.error('Error parsing metadata:', error);
@@ -53,19 +57,41 @@ export default function SplitPerPax({
   }, [record, setParticipantAmount]);
 
   const handleSubmit = async () => {
-    if (!participantAmount || Number.isNaN(Number(participantAmount)) || Number(participantAmount) <= 0) {
-      return;
-    }
-
+    // Reset any existing validation errors
+    setValidationError(null);
     setIsLoading(true);
     try {
       await handleUpdateRecord();
     } catch (error) {
-      console.error('Error updating amount:', error);
+      console.error('Error updating record:', error);
+      if (error instanceof Error) {
+        setValidationError(error.message);
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleValidation = (field: string, value: string) => {
+    const input = {
+      name: newParticipantName,
+      amount: participantAmount,
+    }
+    if (validationError) setValidationError(null);
+
+    // Optional: real-time validation
+    try {
+      participantInputSchema.parse({
+        ...input,
+        [field]: value,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        setValidationError(getValidationErrorMessage(error, field));
+        // setValidationError(error.message);
+      }
+    }
+  }
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
@@ -84,11 +110,18 @@ export default function SplitPerPax({
           </label>
           <input
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className={`w-full px-3 py-2 border ${validationError ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
+              } rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
             value={newParticipantName}
-            onChange={(e) => setNewParticipantName(e.target.value)}
-            placeholder="Enter your name"
+            onChange={(e) => {
+              setNewParticipantName(e.target.value);
+              // Clear validation error when user starts typing again
+              handleValidation('name', e.target.value);
+            }}
           />
+          {validationError && (
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationError}</p>
+          )}
         </div>
 
         {/* Display fixed amount - not editable */}
@@ -98,11 +131,11 @@ export default function SplitPerPax({
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 text-lg">{record.currency}</span>
+              <span className="text-gray-500 text-lg">{formatCurrency(record.currency)}</span>
             </div>
             <input
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed pl-13"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed pl-10"
               value={participantAmount}
               disabled
             />
@@ -174,12 +207,11 @@ export default function SplitPerPax({
             Back
           </button>
 
-          <button
-            className={`w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2`}
+          <Button
+            disabled={validationError !== null}
+            isLoading={isLoading}
             onClick={handleSubmit}
-          >
-            {isLoading ? 'Processing...' : 'Confirm'}
-          </button>
+          />
         </div>
       </div>
     </div>

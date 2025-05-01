@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
+import { Button } from '../ui/Button';
+import { formatCurrency } from '@/lib/currencyUtils';
 
 interface SplitHostProps {
   record: Tables<'one_time_split_expenses'>;
@@ -84,14 +86,13 @@ export default function SplitHost({
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="text-gray-500 text-lg">{record.currency}</span>
+            <span className="text-gray-500 text-lg">{formatCurrency(record.currency)}</span>
           </div>
           <input
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed pl-13"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed pl-10"
             value={selectedParticipant?.amount.toFixed(2) || '0.00'}
             disabled
-            style={{ paddingLeft: `${record.currency.length > 1 ? 35 : 25}px` }}
           />
         </div>
       </div>
@@ -158,12 +159,10 @@ export default function SplitHost({
           Back
         </button>
 
-        <button
-          className={`w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2`}
+        <Button
+          isLoading={isLoading}
           onClick={handleSubmit}
-        >
-          {isLoading ? 'Processing...' : 'Confirm'}
-        </button>
+        />
       </div>
     </div>
   </div>)

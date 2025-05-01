@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { requestAccountDeletion } from './actions';
+import { Button } from '@/components/ui/Button';
 
 export default function AskDeletion() {
   const [email, setEmail] = useState('');
@@ -79,16 +80,12 @@ export default function AskDeletion() {
             </div>
 
             <div className="pt-2">
-              <button
+              <Button
                 type="submit"
-                className={`w-full py-3 px-4 ${isLoading
-                  ? 'bg-indigo-300 dark:bg-indigo-800 cursor-not-allowed'
-                  : 'bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700'
-                  } text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg`}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Submitting...' : 'Request Account Deletion'}
-              </button>
+                isLoading={isLoading}
+                text="Request Account Deletion"
+                loadingText="Submitting..."
+              />
             </div>
           </form>
         </div>

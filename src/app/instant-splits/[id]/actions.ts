@@ -3,6 +3,7 @@
 import { Tables } from '@/lib/database.types';
 import { createSupabaseClient } from '@/lib/supabase';
 import { QueryData } from '@supabase/supabase-js';
+import { InsertParticipantInput, UpdateParticipantInput } from '@/lib/validations';
 
 const instantSplitsWithProfileQuery = (id: string, password: string) => createSupabaseClient(password)
   .from('one_time_split_expenses')
@@ -81,7 +82,7 @@ export async function getParticipantRecords(id: string, password: string): Promi
   }
 }
 
-export async function insertParticipantRecord(id: string, password: string, data: { amount: string, name: string, currency: string }) {
+export async function insertParticipantRecord(id: string, password: string, data: InsertParticipantInput) {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
@@ -111,7 +112,7 @@ export async function insertParticipantRecord(id: string, password: string, data
   }
 }
 
-export async function updateParticipantRecord(id: string, password: string, participantId: string, data: { amount: string, name: string, currency: string, markAsPaid: boolean }) {
+export async function updateParticipantRecord(id: string, password: string, participantId: string, data: UpdateParticipantInput) {
   if (!id || !password || !participantId) {
     throw new Error('Record ID, password, and participant ID are required');
   }
