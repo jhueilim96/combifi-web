@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
+import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
 interface SplitFriendProps {
   record: Tables<'one_time_split_expenses'>;
@@ -124,20 +125,23 @@ export default function SplitFriend({
             Your Share Amount
           </label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">{record.currency}</span>
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-gray-500 text-lg">{record.currency}</span>
+            </div>
             <input
               id="amount"
               type="number"
               step="0.01"
               placeholder="0.00"
-              className="pl-8 w-full p-3 text-lg font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full p-3 pl-8 text-lg font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 pl-13"
               value={participantAmount}
               onChange={handleAmountChange}
+              style={{ paddingLeft: `${record.currency.length > 1 ? 35 : 25}px` }}
             />
           </div>
           {balance < 0 && (
             <div className="mt-2 text-sm text-red-600 dark:text-red-400">
-              Your amount exceeds the remaining balance. Max contribution: ${displayRemainingAmount.toFixed(2)}
+              Your amount exceeds the remaining balance. Max contribution: {formatCurrencyAmount(displayRemainingAmount, record.currency)}
             </div>
           )}
         </div>
