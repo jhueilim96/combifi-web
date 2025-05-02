@@ -1,0 +1,23 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "82R58PQWL8.app.combifi.app",
+                "paths": [
+                    "/a/*"
+                ]
+            }
+        ]
+    },
+    "activitycontinuation": {
+        "apps": [
+            "82R58PQWL8.app.combifi.app"
+        ]
+    },
+    "webcredentials": {
+        "apps": [
+            "82R58PQWL8.app.combifi.app"
+        ]
+    }
+}
