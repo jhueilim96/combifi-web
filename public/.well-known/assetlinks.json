@@ -7,6 +7,7 @@
             "namespace": "android_app",
             "package_name": "app.combifi.app",
             "sha256_cert_fingerprints": [
+                "C9:DB:1D:38:8E:15:ED:F3:A3:C5:39:D6:90:50:17:5E:2F:48:BB:D4:A1:25:E0:61:06:91:5C:6F:E5:2B:4B:C7",
                 "E8:07:38:1F:B1:BD:FC:DB:16:2F:B5:9D:42:CE:00:85:9E:A0:1F:98:27:F9:96:8E:85:67:F3:FA:00:C9:DE:2E"
             ]
         }
