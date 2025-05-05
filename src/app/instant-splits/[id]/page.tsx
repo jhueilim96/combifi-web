@@ -40,7 +40,11 @@ export default function RecordPage() {
       const publicInfo = await getPublicRecord(id);
       setPublicInfo(publicInfo);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Failed to fetch record.');
+      if (process.env.NODE_ENV === 'development') {
+        setStatus(error instanceof Error ? error.message : 'Failed to update record.');
+      } else {
+        setStatus('Oops. Something went wrong.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +66,11 @@ export default function RecordPage() {
       setShowPasswordModal(false);
       setStatus('');
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Failed to fetch record.');
+      if (process.env.NODE_ENV === 'development') {
+        setStatus(error instanceof Error ? error.message : 'Failed to update record.');
+      } else {
+        setStatus('Oops. Something went wrong.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +139,11 @@ export default function RecordPage() {
       setStatus('Updated successfully!');
       setTimeout(() => setStatus(''), 3000); // Clear status after 3 seconds
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Failed to update record.');
+      if (process.env.NODE_ENV === 'development') {
+        setStatus(error instanceof Error ? error.message : 'Failed to update record.');
+      } else {
+        setStatus('Oops. Something went wrong.');
+      }
     } finally {
       resetUIState();
     }
