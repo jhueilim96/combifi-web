@@ -5,7 +5,7 @@ import { createSupabaseClient } from '@/lib/supabase';
 import { QueryData } from '@supabase/supabase-js';
 import { InsertParticipantInput, UpdateParticipantInput } from '@/lib/validations';
 
-const instantSplitsWithProfileQuery = (id: string, password: string) => createSupabaseClient(password)
+const getInstantSplitDetailedQuery = (id: string, password: string) => createSupabaseClient(password)
   .from('one_time_split_expenses')
   .select('amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id,' +
     'profiles (name, qr_key, qr_url, qr_expired_at)')
@@ -13,9 +13,9 @@ const instantSplitsWithProfileQuery = (id: string, password: string) => createSu
   .eq('is_deleted', false)
   .single();
 
-type InstantSplitsWithProfile = QueryData<typeof instantSplitsWithProfileQuery>
+type InstantSplitWithDetailedProfile = QueryData<typeof getInstantSplitDetailedQuery>
 
-export async function getRecord(id: string, password: string): Promise<InstantSplitsWithProfile> {
+export async function getRecord(id: string, password: string): Promise<InstantSplitWithDetailedProfile> {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
@@ -23,7 +23,7 @@ export async function getRecord(id: string, password: string): Promise<InstantSp
   try {
     // console.log('Fetching record with ID:', id);
     // Always exclude password
-    const { data, error } = await instantSplitsWithProfileQuery(id, password);
+    const { data, error } = await getInstantSplitDetailedQuery(id, password);
 
     if (error) {
       console.error('Error fetching record:', error);
@@ -50,7 +50,42 @@ export async function getRecord(id: string, password: string): Promise<InstantSp
       record.profiles.qr_expired_at = response.data.expiredAt;
     }
 
-    return record as InstantSplitsWithProfile;
+    return record as InstantSplitWithDetailedProfile;
+  } catch (error) {
+    console.error('Error fetching record:', error);
+    throw error;
+  }
+}
+
+const getInstantSplitPublicDataQuery = (id: string) => createSupabaseClient("", true)
+  .from('one_time_split_expenses')
+  .select('date,description,' +
+    'profiles (name)')
+  .eq('id', id)
+  .eq('is_deleted', false)
+  .single();
+
+type InstantSplitPublicData = QueryData<typeof getInstantSplitPublicDataQuery>
+
+export async function getPublicRecord(id: string): Promise<InstantSplitPublicData>{
+  if (!id) {
+    throw new Error('Record ID is required');
+  }
+
+  try {
+    // console.log('Fetching record with ID:', id);
+    const { data, error } = await getInstantSplitPublicDataQuery(id);
+
+    if (error) {
+      console.error('Error fetching record:', error);
+      throw new Error('Access denied or record not found');
+    }
+
+    if (!data) {
+      throw new Error('Record not found');
+    }
+
+    return data as InstantSplitPublicData;
   } catch (error) {
     console.error('Error fetching record:', error);
     throw error;

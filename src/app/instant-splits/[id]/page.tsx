@@ -1,13 +1,14 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
-import { getRecord, getParticipantRecords, insertParticipantRecord, updateParticipantRecord } from './actions';
+import { useEffect, useState } from 'react';
+import { getRecord, getParticipantRecords, insertParticipantRecord, updateParticipantRecord, getPublicRecord } from './actions';
 import { Tables } from '@/lib/database.types';
 import SplitFriend from '@/components/settleComponents/SplitFriend';
 import SplitPerPax from '@/components/settleComponents/SplitPerPax';
 import SplitHost from '@/components/settleComponents/SplitHost';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { Button } from '@/components/ui/Button';
 
 export const runtime = 'edge';
 
@@ -20,7 +21,7 @@ export default function RecordPage() {
   const [password, setPassword] = useState('');
   const [participantAmount, setParticipantAmount] = useState('');
   const [status, setStatus] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [selectedParticipant, setSelectedParticipant] = useState<Tables<'one_time_split_expenses_participants'> | null>(null);
   const [newParticipantName, setNewParticipantName] = useState('');
@@ -29,12 +30,26 @@ export default function RecordPage() {
   const [isUpdatingParticipant, setIsUpdatingParticipant] = useState(false);
   const [markAsPaid, setMarkAsPaid] = useState(false);
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
+  const [publicInfo, setPublicInfo] = useState<Partial<Tables<'one_time_split_expenses'>> | null>(null);
+
+  const fetchPublicRecord = async () => {
+    if (!id) return;
+
+    try {
+      const publicInfo = await getPublicRecord(id);
+      setPublicInfo(publicInfo);
+    }catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Failed to fetch record.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchRecord = async () => {
     if (!id || !password) return;
 
     setIsLoading(true);
-    setStatus('Fetching...');
+    setStatus('Fetching ...');
 
     try {
       const data = await getRecord(id, password);
@@ -157,10 +172,15 @@ export default function RecordPage() {
     e.stopPropagation();
     setShowEnlargedImage(!showEnlargedImage);
   };
+  
 
-  if (!id) {
-    return <div className="p-4 text-gray-800 dark:text-gray-200">No record ID provided.</div>;
-  }
+  useEffect(() => {
+    if (id) {
+      fetchPublicRecord();
+    }
+  }, [id]);
+
+  
 
   if (isLoading) {
     return (
@@ -179,42 +199,58 @@ export default function RecordPage() {
   // Compute display values
   const hostParticipant = record?.profiles;
 
-  if (showPasswordModal) {
+  if (showPasswordModal && publicInfo) {
     return (
       <div className="fixed inset-0 bg-white dark:bg-gray-900 bg-opacity-100 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-scaleIn">
-          <div className="flex flex-col justify-center items-center">
-            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900 dark:to-indigo-800 rounded-full p-5 mb-6 shadow-md">
-              <div className="w-[4rem] h-[4rem] flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-9 h-9 text-indigo-600 dark:text-indigo-300">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                </svg>
-              </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-scaleIn">
+          <div className="flex items-center mb-5">
+            {/* Circular avatar */}
+            <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xl font-semibold mr-4 flex-shrink-0">
+              {publicInfo.profiles?.name ? publicInfo.profiles.name.charAt(0).toUpperCase() : '?'}
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">Enter Code</h2>
-            <p className="text-center text-gray-600 dark:text-gray-300 mb-7">Please enter the code to access this instant split.</p>
-
-            <input
-              type="input"
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-5 shadow-sm transition-all duration-200"
-              placeholder="Enter code"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <button
-              onClick={fetchRecord}
-              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 dark:from-indigo-600 dark:to-indigo-500 dark:hover:from-indigo-500 dark:hover:to-indigo-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md"
-            >
-              Access Record
-            </button>
-
-            {status && (
-              <div className="mt-4 w-full">
-                <p className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-center">{status}</p>
-              </div>
-            )}
+            
+            {/* Invitation text */}
+            <div>
+              <p className="text-gray-800 dark:text-gray-200 font-medium">
+                <span className="text-indigo-600 dark:text-indigo-400">{publicInfo.profiles?.name}</span> has invited you to split
+                <span className="ml-1 text-indigo-600 dark:text-indigo-400">{publicInfo.description}</span>
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {publicInfo.date ? new Date(publicInfo.date as string).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+              </p>
+            </div>
           </div>
+
+          <div className="mb-5">
+            <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">Enter code to join</p>
+            <div className="flex flex-col space-y-3">
+              <input
+                type="text"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all duration-200"
+                placeholder="Enter access code"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <Button
+                onClick={fetchRecord}
+                isLoading={isLoading}
+                loadingText="Loading..."
+                text="Join"
+                className="w-1/2 mx-auto"
+              />
+            </div>
+          </div>
+
+          {status && (
+            <div className="w-full">
+              <p className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-center flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                {status}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     )
