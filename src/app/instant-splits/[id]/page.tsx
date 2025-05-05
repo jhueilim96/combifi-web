@@ -489,7 +489,6 @@ export default function RecordPage() {
                     record={record}
                     selectedParticipant={selectedParticipant}
                     newParticipantName={newParticipantName}
-                    setNewParticipantName={setNewParticipantName}
                     handleUpdateRecord={handleUpdateRecord}
                     setParticipantAmount={setParticipantAmount}
                     participantAmount={participantAmount}

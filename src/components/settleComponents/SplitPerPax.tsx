@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
-import { getValidationErrorMessage, participantInputSchema } from '@/lib/validations';
 import { Button } from '../ui/Button';
 import { formatCurrency } from '@/lib/currencyUtils';
 
@@ -10,7 +9,6 @@ interface SplitPerPaxProps {
   record: Tables<'one_time_split_expenses'>;
   selectedParticipant: Tables<'one_time_split_expenses_participants'> | null;
   newParticipantName: string;
-  setNewParticipantName: (name: string) => void;
   handleUpdateRecord: () => Promise<void>;
   setParticipantAmount: (amount: string) => void;
   participantAmount: string;
@@ -22,7 +20,6 @@ interface SplitPerPaxProps {
 export default function SplitPerPax({
   record,
   newParticipantName,
-  setNewParticipantName,
   handleUpdateRecord,
   setParticipantAmount,
   participantAmount,
@@ -35,25 +32,17 @@ export default function SplitPerPax({
 
   // Calculate fixed per person amount from metadata when the component mounts
   useEffect(() => {
-    let amount = '';
-
     if (record.settle_metadata) {
       try {
         const metadata = record.settle_metadata as Record<string, unknown>;
         if (metadata.perPaxAmount && typeof metadata.perPaxAmount === "string") {
-          amount = parseFloat(metadata.perPaxAmount).toFixed(2);
+          const amount = parseFloat(metadata.perPaxAmount).toFixed(2);
+          setParticipantAmount(amount);
         }
       } catch (error) {
         console.error('Error parsing metadata:', error);
       }
     }
-
-    // If perPaxAmount isn't in metadata, fall back to dividing the total amount
-    if (amount === "") {
-      // Assuming at least 2 people for the split
-      amount = (record.amount / 2).toFixed(2);
-    }
-    setParticipantAmount(amount);
   }, [record, setParticipantAmount]);
 
   const handleSubmit = async () => {
@@ -72,85 +61,34 @@ export default function SplitPerPax({
     }
   };
 
-  const handleValidation = (field: string, value: string) => {
-    const input = {
-      name: newParticipantName,
-      amount: participantAmount,
-    }
-    if (validationError) setValidationError(null);
-
-    // Optional: real-time validation
-    try {
-      participantInputSchema.parse({
-        ...input,
-        [field]: value,
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        setValidationError(getValidationErrorMessage(error, field));
-        // setValidationError(error.message);
-      }
-    }
-  }
-
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
+    <div className="border border-gray-50 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
       <div className="text-center space-y-2 mb-4">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Per Person Split</h3>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          The amount is fixed per person
-        </p>
+        <div className="text-2xl font-medium text-gray-800 dark:text-gray-200">
+          <span className="mr-2">⚖️</span>
+          Split Evenly
+        </div>
       </div>
 
       <div className="space-y-4">
-        {/* Name field for updating */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Your Name
-          </label>
-          <input
-            type="text"
-            className={`w-full px-3 py-2 border ${validationError ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
-              } rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
-            value={newParticipantName}
-            onChange={(e) => {
-              setNewParticipantName(e.target.value);
-              // Clear validation error when user starts typing again
-              handleValidation('name', e.target.value);
-            }}
-          />
-          {validationError && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationError}</p>
-          )}
-        </div>
-
-        {/* Display fixed amount - not editable */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Your Share Amount (Fixed)
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 text-lg">{formatCurrency(record.currency)}</span>
-            </div>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed pl-10"
-              value={participantAmount}
-              disabled
-            />
+        {/* Updated UI - Card showing who should pay what */}
+        <div className="border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl p-6 bg-white dark:bg-gray-800">
+          <div className="text-center">
+            <p className="text-lg text-gray-700 dark:text-gray-300">
+              {newParticipantName || 'You'}, you should pay
+            </p>
+            <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mt-2">
+              {formatCurrency(record.currency)}{participantAmount}
+            </p>
           </div>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            This amount is fixed per person and cannot be changed
-          </p>
         </div>
 
         {/* QR Code Section */}
         {record.profiles?.qr_url && (
           <div className="py-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Scan to Pay
-            </label>
+            <div className="text-center space-y-2 mb-2">
+              <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Pay {record.profiles.name} with DuitNow QR</h3>
+            </div>
             <div className="flex justify-center bg-white p-4 rounded-lg">
               <img
                 src={record.profiles.qr_url}
@@ -170,13 +108,14 @@ export default function SplitPerPax({
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                Download QR Code
+                Download
               </a>
             </div>
           </div>
         )}
-        {/* Mark as Paid toggle */}
-        <div className="mt-4 border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800"
+
+                {/* Mark as Paid toggle */}
+        <div className="mt-4 shadow-lg border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800"
           onClick={() => setMarkAsPaid(!markAsPaid)}>
           <div className="flex justify-between items-center">
             <div className="flex items-center">
