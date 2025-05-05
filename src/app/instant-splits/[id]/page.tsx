@@ -301,7 +301,7 @@ export default function RecordPage() {
 
                   <div className="flex items-baseline">
                     <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                      Date: {new Date(record.created_at).toLocaleDateString()}
+                      {record.date ? new Date(record.date as string).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                     </span>
                   </div>
                 </div>
@@ -341,7 +341,7 @@ export default function RecordPage() {
                   )}
                 </div>
               </div>
-              
+
               {/* Notes section - integrated into main content */}
               {record.notes && (
                 <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -364,15 +364,15 @@ export default function RecordPage() {
 
             {/* Improved Participants section */}
             {!showSettleComponent && (
-              <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6">
                 <div className="text-center space-y-2 mb-4">
-                  <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Identify yourself</h3>
+                  <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Who are you?</h3>
                   <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    Select your name from the list below.
+                    Select your name below to continue.
                   </p>
                 </div>
 
-                {participants.length > 0 && (
+                {participants.length > 1 ? (
                   <div className="grid grid-cols-1 gap-2 mb-4">
                     {participants.filter((p) => p.is_host === false).map((participant, index) => (
                       <div
@@ -410,21 +410,23 @@ export default function RecordPage() {
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <div className="bg-red-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-4 py-3 text-center opacity-80">
+                    <div className="text-sm text-gray-400 dark:text-gray-300">👻 You are early, no one has joined yet</div>
+                  </div>
                 )}
 
                 {record.settle_mode !== 'HOST' && (
                   <>
-                    <div className="relative justify-items-center my-4">
+                    <div className="relative justify-items-center my-4 mb-10">
                       <div className="absolute inset-0 flex items-center" aria-hidden="true">
                         <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                       </div>
-                      <div className="relative bg-white dark:bg-gray-800 w-[25%] flex justify-items-center">
-                        <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-sm">
-                          or add yourself
-                        </span>
-                      </div>
                     </div>
                     <div className={`mt-4 transition-all duration-300 ${showNewNameInput || participants.length === 0 ? 'opacity-100' : 'opacity-80'}`}>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm text-center mb-3">
+                        Not on the list?
+                      </p>
                       <div
                         className={`border ${selectedParticipant ? 'border-gray-200 dark:border-gray-700' : 'border-indigo-300 dark:border-indigo-600'} rounded-xl p-4 bg-white dark:bg-gray-700 cursor-pointer`}
                         onClick={handleNewNameToggle}
@@ -455,7 +457,7 @@ export default function RecordPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                               </svg>
                             </div>
-                            <span className="text-gray-700 dark:text-gray-300 font-medium">I&apos;m not listed above</span>
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Add your name</span>
                           </div>
                         )}
                       </div>
