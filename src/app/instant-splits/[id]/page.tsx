@@ -39,7 +39,7 @@ export default function RecordPage() {
     try {
       const publicInfo = await getPublicRecord(id);
       setPublicInfo(publicInfo);
-    }catch (error) {
+    } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Failed to fetch record.');
     } finally {
       setIsLoading(false);
@@ -79,7 +79,7 @@ export default function RecordPage() {
       if (isUpdatingParticipant && selectedParticipant?.id) {
         // Import the validation schemas
         const { updateParticipantSchema } = await import('@/lib/validations');
-        
+
         const updateData = {
           amount: participantAmount,
           name: newParticipantName,
@@ -94,19 +94,19 @@ export default function RecordPage() {
 
         // Validate data before sending to server
         const validationResult = updateParticipantSchema.safeParse(dataToValidate);
-        
+
         if (!validationResult.success) {
           const errorMessage = validationResult.error.errors.map(err => err.message).join(', ');
           throw new Error(errorMessage);
         }
-        
+
         await updateParticipantRecord(id, password, selectedParticipant.id, validationResult.data);
       }
       // If adding a new participant (not available in HOST mode)
       else if (!isUpdatingParticipant && record?.settle_mode !== 'HOST') {
         // Import the validation schemas
         const { insertParticipantSchema } = await import('@/lib/validations');
-        
+
         const insertData = {
           amount: participantAmount,
           name: newParticipantName,
@@ -115,12 +115,12 @@ export default function RecordPage() {
 
         // Validate data before sending to server
         const validationResult = insertParticipantSchema.safeParse(insertData);
-        
+
         if (!validationResult.success) {
           const errorMessage = validationResult.error.errors.map(err => err.message).join(', ');
           throw new Error(errorMessage);
         }
-        
+
         await insertParticipantRecord(id, password, validationResult.data);
       }
 
@@ -173,7 +173,7 @@ export default function RecordPage() {
     e.stopPropagation();
     setShowEnlargedImage(!showEnlargedImage);
   };
-  
+
 
   useEffect(() => {
     if (id) {
@@ -181,7 +181,7 @@ export default function RecordPage() {
     }
   }, [id]);
 
-  
+
 
   if (isLoading) {
     return (
@@ -209,7 +209,7 @@ export default function RecordPage() {
             <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xl font-semibold mr-4 flex-shrink-0">
               {publicInfo.profiles?.name ? publicInfo.profiles.name.charAt(0).toUpperCase() : '?'}
             </div>
-            
+
             {/* Invitation text */}
             <div>
               <p className="text-gray-800 dark:text-gray-200 text-lg font-medium">
@@ -341,6 +341,25 @@ export default function RecordPage() {
                   )}
                 </div>
               </div>
+              
+              {/* Notes section - integrated into main content */}
+              {record.notes && (
+                <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 mt-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</h3>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">
+                        {record.notes}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Improved Participants section */}
