@@ -9,6 +9,7 @@ import SplitPerPax from '@/components/settleComponents/SplitPerPax';
 import SplitHost from '@/components/settleComponents/SplitHost';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Button } from '@/components/ui/Button';
+import { OTPInput } from '@/components/ui/OTPInput';
 
 export const runtime = 'edge';
 
@@ -202,8 +203,8 @@ export default function RecordPage() {
   if (showPasswordModal && publicInfo) {
     return (
       <div className="fixed inset-0 bg-white dark:bg-gray-900 bg-opacity-100 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 animate-scaleIn">
-          <div className="flex items-center mb-5">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-xl w-full transform transition-all duration-300 animate-scaleIn">
+          <div className="flex items-center mb-10">
             {/* Circular avatar */}
             <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xl font-semibold mr-4 flex-shrink-0">
               {publicInfo.profiles?.name ? publicInfo.profiles.name.charAt(0).toUpperCase() : '?'}
@@ -211,9 +212,9 @@ export default function RecordPage() {
             
             {/* Invitation text */}
             <div>
-              <p className="text-gray-800 dark:text-gray-200 font-medium">
+              <p className="text-gray-800 dark:text-gray-200 text-lg font-medium">
                 <span className="text-indigo-600 dark:text-indigo-400">{publicInfo.profiles?.name}</span> has invited you to split
-                <span className="ml-1 text-indigo-600 dark:text-indigo-400">{publicInfo.description}</span>
+                <span className="ml-1 font-bold text-indigo-600 dark:text-indigo-400">{publicInfo.description}</span>
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {publicInfo.date ? new Date(publicInfo.date as string).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : ''}
@@ -222,14 +223,13 @@ export default function RecordPage() {
           </div>
 
           <div className="mb-5">
-            <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">Enter code to join</p>
-            <div className="flex flex-col space-y-3">
-              <input
-                type="text"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all duration-200"
-                placeholder="Enter access code"
+            <p className="text-gray-700 dark:text-gray-300 font-normal mb-5">Enter code to join:</p>
+            <div className="flex flex-col space-y-5">
+              <OTPInput
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(value) => setPassword(value)}
+                length={4}
+                className="mb-5"
               />
               <Button
                 onClick={fetchRecord}
