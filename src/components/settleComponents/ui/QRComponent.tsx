@@ -3,6 +3,29 @@ interface QRComponentProps {
   qrUrl: string;
 }
 export default function QRComponent({ name, qrUrl }: QRComponentProps) {
+  const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    try {
+      // Fetch the image
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+
+      // Create a temporary link and trigger download
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = 'payment-qr-code.png';
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
+    }
+  };
+
   return (
     <div className="py-4">
       <div className="text-center space-y-2 mb-2">
@@ -21,9 +44,8 @@ export default function QRComponent({ name, qrUrl }: QRComponentProps) {
         />
       </div>
       <div className="mt-2">
-        <a
-          href={qrUrl}
-          download="payment-qr-code.png"
+        <button
+          onClick={handleDownload}
           className="flex items-center justify-center w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-sm font-medium"
         >
           <svg
@@ -41,7 +63,7 @@ export default function QRComponent({ name, qrUrl }: QRComponentProps) {
             />
           </svg>
           Download
-        </a>
+        </button>
       </div>
     </div>
   );
