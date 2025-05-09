@@ -1,3 +1,5 @@
+import { Tables } from './database.types';
+
 export function formatLocalDateTime(date: string | null | undefined) {
   return date
     ? new Date(date).toLocaleDateString('en-US', {
@@ -15,18 +17,50 @@ export enum SplitParticipantType {
   EXTERNAL = 'EXTERNAL',
 }
 
-export enum SplitType {
-  BY_AMOUNT = 'by_amount',
-  BY_PERCENTAGE = 'by_percentage',
-  EQUAL = 'equal',
+export enum SettleMode {
+  HOST = 'HOST',
+  PERPAX = 'PERPAX',
+  FRIEND = 'FRIEND',
 }
 
-export function mapSplitTypeToDisplayName(splitType: SplitType) {
-  if (splitType === SplitType.EQUAL) {
-    return 'equally';
-  } else if (splitType === SplitType.BY_AMOUNT) {
-    return 'by amount';
-  } else if (splitType === SplitType.BY_PERCENTAGE) {
-    return 'by percentage';
+export type HostMetadata = {
+  members: string[];
+  hostPortion: string;
+  memberAmounts: Record<string, string>;
+};
+
+export type PerPaxMetadata = {
+  members: string[];
+  hostPortion: string;
+  perPaxAmount: string;
+};
+
+export type FriendMetadata = {
+  members: string[];
+  hostPortion: string;
+  paymentInstruction: string;
+};
+
+export type SettleMetadata = HostMetadata | PerPaxMetadata | FriendMetadata;
+
+export function retrieveSettleMetadata<
+  T extends SettleMetadata = SettleMetadata,
+>(record: Tables<'one_time_split_expenses'>): T {
+  let metadata: SettleMetadata;
+
+  switch (record.settle_mode) {
+    case SettleMode.HOST:
+      metadata = record.settle_metadata as HostMetadata;
+      break;
+    case SettleMode.PERPAX:
+      metadata = record.settle_metadata as PerPaxMetadata;
+      break;
+    case SettleMode.FRIEND:
+      metadata = record.settle_metadata as FriendMetadata;
+      break;
+    default:
+      throw new Error(`Unknown settle mode: ${record.settle_mode}`);
   }
+
+  return metadata as T;
 }

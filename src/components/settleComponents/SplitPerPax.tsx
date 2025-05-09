@@ -7,6 +7,7 @@ import MarkAsPaidComponent from './ui/MarkAsPaidComponent';
 import QRComponent from './ui/QRComponent';
 import useValidationError from '@/hooks/useValidationError';
 import FixedAmountComponent from './ui/FixedAmountComponent';
+import { PerPaxMetadata, retrieveSettleMetadata } from '@/lib/utils';
 
 interface SplitPerPaxProps {
   record: Tables<'one_time_split_expenses'>;
@@ -36,19 +37,13 @@ export default function SplitPerPax({
 
   // Calculate fixed per person amount from metadata when the component mounts
   useEffect(() => {
-    if (record.settle_metadata) {
-      try {
-        const metadata = record.settle_metadata as Record<string, unknown>;
-        if (
-          metadata.perPaxAmount &&
-          typeof metadata.perPaxAmount === 'string'
-        ) {
-          const amount = parseFloat(metadata.perPaxAmount).toFixed(2);
-          setParticipantAmount(amount);
-        }
-      } catch (error) {
-        console.error('Error parsing metadata:', error);
-      }
+    try {
+      const perPaxAmount =
+        retrieveSettleMetadata<PerPaxMetadata>(record).perPaxAmount;
+      const amount = parseFloat(perPaxAmount).toFixed(2);
+      setParticipantAmount(amount);
+    } catch (error) {
+      console.error('Error accessing metadata:', error);
     }
   }, [record, setParticipantAmount]);
 
