@@ -1,21 +1,32 @@
-'use server'
+'use server';
 
 import { Tables } from '@/lib/database.types';
 import { createSupabaseClient } from '@/lib/supabase';
 import { QueryData } from '@supabase/supabase-js';
-import { InsertParticipantInput, UpdateParticipantInput } from '@/lib/validations';
+import {
+  InsertParticipantInput,
+  UpdateParticipantInput,
+} from '@/lib/validations';
 
-const getInstantSplitDetailedQuery = (id: string, password: string) => createSupabaseClient(password)
-  .from('one_time_split_expenses')
-  .select('amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id,' +
-    'profiles (name, qr_key, qr_url, qr_expired_at)')
-  .eq('id', id)
-  .eq('is_deleted', false)
-  .single();
+const getInstantSplitDetailedQuery = (id: string, password: string) =>
+  createSupabaseClient(password)
+    .from('one_time_split_expenses')
+    .select(
+      'amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id,' +
+        'profiles (name, qr_key, qr_url, qr_expired_at)'
+    )
+    .eq('id', id)
+    .eq('is_deleted', false)
+    .single();
 
-type InstantSplitWithDetailedProfile = QueryData<typeof getInstantSplitDetailedQuery>
+type InstantSplitWithDetailedProfile = QueryData<
+  typeof getInstantSplitDetailedQuery
+>;
 
-export async function getRecord(id: string, password: string): Promise<InstantSplitWithDetailedProfile> {
+export async function getRecord(
+  id: string,
+  password: string
+): Promise<InstantSplitWithDetailedProfile> {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
@@ -42,9 +53,15 @@ export async function getRecord(id: string, password: string): Promise<InstantSp
       record.file_url = response.data.shareUrl;
     }
 
-    if (record?.profiles.qr_expired_at && new Date(record.profiles.qr_expired_at) < new Date()) {
+    if (
+      record?.profiles.qr_expired_at &&
+      new Date(record.profiles.qr_expired_at) < new Date()
+    ) {
       // console.log('QR code expired, fetching new QR file URL');
-      const response = await getQrFileSignedUrl(record.profiles.qr_key, password)
+      const response = await getQrFileSignedUrl(
+        record.profiles.qr_key,
+        password
+      );
       // console.log('Updated QR code URL and expiration date in data:', data.profiles.qr_url, data.profiles.qr_expired_at);
       record.profiles.qr_url = response.data.shareUrl;
       record.profiles.qr_expired_at = response.data.expiredAt;
@@ -57,17 +74,19 @@ export async function getRecord(id: string, password: string): Promise<InstantSp
   }
 }
 
-const getInstantSplitPublicDataQuery = (id: string) => createSupabaseClient("", true)
-  .from('one_time_split_expenses')
-  .select('date,description,' +
-    'profiles (name)')
-  .eq('id', id)
-  .eq('is_deleted', false)
-  .single();
+const getInstantSplitPublicDataQuery = (id: string) =>
+  createSupabaseClient('', true)
+    .from('one_time_split_expenses')
+    .select('date,description,' + 'profiles (name)')
+    .eq('id', id)
+    .eq('is_deleted', false)
+    .single();
 
-type InstantSplitPublicData = QueryData<typeof getInstantSplitPublicDataQuery>
+type InstantSplitPublicData = QueryData<typeof getInstantSplitPublicDataQuery>;
 
-export async function getPublicRecord(id: string): Promise<InstantSplitPublicData>{
+export async function getPublicRecord(
+  id: string
+): Promise<InstantSplitPublicData> {
   if (!id) {
     throw new Error('Record ID is required');
   }
@@ -92,7 +111,10 @@ export async function getPublicRecord(id: string): Promise<InstantSplitPublicDat
   }
 }
 
-export async function getParticipantRecords(id: string, password: string): Promise<Tables<'one_time_split_expenses_participants'>[]> {
+export async function getParticipantRecords(
+  id: string,
+  password: string
+): Promise<Tables<'one_time_split_expenses_participants'>[]> {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
@@ -103,7 +125,7 @@ export async function getParticipantRecords(id: string, password: string): Promi
       .from('one_time_split_expenses_participants')
       .select('*')
       .eq('expense_id', id)
-      .eq('is_deleted', false)
+      .eq('is_deleted', false);
 
     if (error) {
       console.error('Error fetching record participants:', error);
@@ -117,7 +139,11 @@ export async function getParticipantRecords(id: string, password: string): Promi
   }
 }
 
-export async function insertParticipantRecord(id: string, password: string, data: InsertParticipantInput) {
+export async function insertParticipantRecord(
+  id: string,
+  password: string,
+  data: InsertParticipantInput
+) {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
@@ -134,7 +160,7 @@ export async function insertParticipantRecord(id: string, password: string, data
         is_host: false,
         is_paid: true,
         name: data.name,
-      })
+      });
 
     if (error) {
       throw new Error('Update failed');
@@ -147,7 +173,12 @@ export async function insertParticipantRecord(id: string, password: string, data
   }
 }
 
-export async function updateParticipantRecord(id: string, password: string, participantId: string, data: UpdateParticipantInput) {
+export async function updateParticipantRecord(
+  id: string,
+  password: string,
+  participantId: string,
+  data: UpdateParticipantInput
+) {
   if (!id || !password || !participantId) {
     throw new Error('Record ID, password, and participant ID are required');
   }
@@ -165,7 +196,7 @@ export async function updateParticipantRecord(id: string, password: string, part
       })
       .eq('id', participantId)
       .eq('expense_id', id)
-      .eq('is_deleted', false)
+      .eq('is_deleted', false);
 
     if (error) {
       throw new Error('Update failed');
@@ -206,8 +237,11 @@ async function getFileSignedURL(key: string, password: string) {
   }
 }
 
-
-async function request(endpoint: string, password: string, options: RequestInit = {},) {
+async function request(
+  endpoint: string,
+  password: string,
+  options: RequestInit = {}
+) {
   const {
     data: { session },
   } = await createSupabaseClient(password).auth.signInAnonymously();

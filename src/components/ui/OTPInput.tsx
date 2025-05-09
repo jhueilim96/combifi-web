@@ -16,7 +16,12 @@ export function OTPInput({
   length = 4,
   className = '',
 }: OTPInputProps) {
-  const [otp, setOtp] = useState<string[]>(value.split('').slice(0, length).concat(Array(length - value.length).fill('')));
+  const [otp, setOtp] = useState<string[]>(
+    value
+      .split('')
+      .slice(0, length)
+      .concat(Array(length - value.length).fill(''))
+  );
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Initialize refs array
@@ -27,7 +32,12 @@ export function OTPInput({
   // Update OTP state when external value changes
   useEffect(() => {
     if (value) {
-      setOtp(value.split('').slice(0, length).concat(Array(length - value.length).fill('')));
+      setOtp(
+        value
+          .split('')
+          .slice(0, length)
+          .concat(Array(length - value.length).fill(''))
+      );
     } else {
       setOtp(Array(length).fill(''));
     }
@@ -50,22 +60,22 @@ export function OTPInput({
   // Handle input changes
   const handleChange = (e: ChangeEvent<HTMLInputElement>, index: number) => {
     const { value } = e.target;
-    
+
     // Allow both upper and lowercase letters and numbers, then convert to uppercase
     const sanitizedValue = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-    
+
     if (sanitizedValue) {
       // Only take the last character if multiple were pasted
       const lastChar = sanitizedValue.slice(-1);
-      
+
       const newOtp = [...otp];
       newOtp[index] = lastChar;
       setOtp(newOtp);
-      
+
       // Combine OTP values and call onChange
       const otpValue = newOtp.join('');
       onChange(otpValue);
-      
+
       focusNextInput(index);
     }
   };
@@ -78,7 +88,7 @@ export function OTPInput({
         const newOtp = [...otp];
         newOtp[index] = '';
         setOtp(newOtp);
-        
+
         // Combine OTP values and call onChange
         onChange(newOtp.join(''));
       } else if (index > 0) {
@@ -86,10 +96,10 @@ export function OTPInput({
         const newOtp = [...otp];
         newOtp[index - 1] = '';
         setOtp(newOtp);
-        
+
         // Combine OTP values and call onChange
         onChange(newOtp.join(''));
-        
+
         // Focus the previous input
         focusPrevInput(index);
       }
@@ -104,21 +114,21 @@ export function OTPInput({
   const handlePaste = (e: React.ClipboardEvent, index: number) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text');
-    
+
     // Filter out non-alphanumeric characters and convert to uppercase
     const sanitizedData = pastedData.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-    
+
     if (sanitizedData) {
       // Fill OTP inputs from paste position
       const newOtp = [...otp];
-      
+
       for (let i = 0; i < length - index && i < sanitizedData.length; i++) {
         newOtp[index + i] = sanitizedData[i];
       }
-      
+
       setOtp(newOtp);
       onChange(newOtp.join(''));
-      
+
       // Focus the next empty input or the last input
       const nextEmptyIndex = newOtp.findIndex((value) => !value);
       if (nextEmptyIndex !== -1 && nextEmptyIndex < length) {

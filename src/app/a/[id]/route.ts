@@ -1,10 +1,8 @@
 import { NextRequest } from 'next/server';
 import { redirect, RedirectType } from 'next/navigation';
-export const runtime = 'edge'
+export const runtime = 'edge';
 
-export async function GET(
-  request: NextRequest,
-) {
+export async function GET(request: NextRequest) {
   // console.log('Redirecting from old URL structure to new URL structure');
   const id = request.url.split('/a/').pop();
 

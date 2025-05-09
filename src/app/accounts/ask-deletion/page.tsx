@@ -22,10 +22,12 @@ export default function AskDeletion() {
 
     try {
       // Simulating API call with timeout
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       await requestAccountDeletion(email);
 
-      setStatus('Request submitted successfully. We will send you an email with further instructions.');
+      setStatus(
+        'Request submitted successfully. We will send you an email with further instructions.'
+      );
       setTimeout(() => setStatus(''), 3000);
     } catch (error) {
       console.error('Error submitting deletion request:', error);
@@ -43,7 +45,7 @@ export default function AskDeletion() {
           className="absolute top-0 left-0 right-0 bg-gradient-to-br from-indigo-500 via-indigo-400 to-purple-500 dark:from-indigo-700 dark:via-indigo-600 dark:to-purple-800"
           style={{
             height: 'calc(180px + 8vh)',
-            clipPath: 'ellipse(150% 100% at 50% 0%)'
+            clipPath: 'ellipse(150% 100% at 50% 0%)',
           }}
         />
       </div>
@@ -54,17 +56,23 @@ export default function AskDeletion() {
         <div className="bg-white border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 mt-6 mb-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="text-center space-y-2 mb-4">
-              <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Account Deletion Request</h3>
+              <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+                Account Deletion Request
+              </h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
                 We&apos;re sorry to see you go.
                 <br />
                 Please enter the email address associated with your account.
-                We&apos;ll send you an email with instructions to confirm and complete the deletion process.
+                We&apos;ll send you an email with instructions to confirm and
+                complete the deletion process.
               </p>
             </div>
 
             <div className="space-y-3 pt-4">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Email Address
               </label>
               <input
@@ -93,16 +101,42 @@ export default function AskDeletion() {
         {/* Status message */}
         {status && !isLoading && (
           <div className="mt-4 text-center animate-fadeIn">
-            <p className={`px-4 py-3 rounded-lg flex items-center justify-center ${status.includes('success')
-              ? 'bg-green-100 border border-green-200 text-green-700'
-              : 'bg-red-100 border border-red-200 text-red-700'}`}>
+            <p
+              className={`px-4 py-3 rounded-lg flex items-center justify-center ${
+                status.includes('success')
+                  ? 'bg-green-100 border border-green-200 text-green-700'
+                  : 'bg-red-100 border border-red-200 text-red-700'
+              }`}
+            >
               {status.includes('success') ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               )}
               {status}
@@ -124,12 +158,14 @@ export default function AskDeletion() {
         .runner {
           width: 20px;
           height: 20px;
-          background-color: #4F46E5;
+          background-color: #4f46e5;
           border-radius: 50%;
           position: absolute;
           top: 30px;
           left: 0;
-          animation: run 0.5s linear infinite, bounce 0.5s ease-in-out infinite;
+          animation:
+            run 0.5s linear infinite,
+            bounce 0.5s ease-in-out infinite;
         }
 
         .ground {
@@ -177,7 +213,8 @@ export default function AskDeletion() {
         }
 
         @keyframes bounce {
-          0%, 100% {
+          0%,
+          100% {
             top: 30px;
           }
           50% {
