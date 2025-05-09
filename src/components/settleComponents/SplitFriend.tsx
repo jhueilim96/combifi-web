@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
 import { formatCurrency, formatCurrencyAmount } from '@/lib/currencyUtils';
-import { getValidationErrorMessage, participantInputSchema } from '@/lib/validations';
-import { Button } from '../ui/Button';
+import { participantInputSchema } from '@/lib/validations';
+import QRComponent from './ui/QRComponent';
+import MarkAsPaidComponent from './ui/MarkAsPaidComponent';
+import SubmitGroupButton from './ui/SubmitGroupButton';
+import useValidationError from '@/hooks/useValidationError';
 
 interface SplitFriendProps {
   record: Tables<'one_time_split_expenses'>;
@@ -34,29 +37,28 @@ export default function SplitFriend({
   handleBack,
 }: SplitFriendProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const initialBalance = selectedParticipant ? selectedParticipant.amount : record.amount;
+  const initialBalance = selectedParticipant
+    ? selectedParticipant.amount
+    : record.amount;
   const [balance, setBalance] = useState(initialBalance);
   const [totalContributed, setTotalContributed] = useState(0);
-  const [validationError, setValidationError] = useState<{
-    name: string | null;
-    amount: string | null;
-    generic: string | null;
-  }>({
-    name: null,
-    amount: null,
-    generic: null,
-  });
+  const {
+    validationError,
+    updateValidationError,
+    resetValidationError,
+    handleValidation,
+  } = useValidationError();
 
-  const hasValidationErrors = () => {
-    return validationError.name !== null || 
-           validationError.amount !== null || 
-           validationError.generic !== null;
+  const input = {
+    name: newParticipantName,
+    amount: participantAmount,
   };
+  const validateionSchema = participantInputSchema;
 
   useEffect(() => {
     // Calculate total amount that's already been contributed
     const sum = participants
-      .filter(p => !p.is_host) // Exclude host from calculation
+      .filter((p) => !p.is_host) // Exclude host from calculation
       .reduce((acc, participant) => acc + participant.amount, 0);
 
     setTotalContributed(sum);
@@ -74,14 +76,17 @@ export default function SplitFriend({
     setBalance(adjustedRemaining - inputAmount);
   }, [participantAmount, record.amount, totalContributed, selectedParticipant]);
 
-
   const handleSubmit = async () => {
     // Reset any existing validation errors
-    setValidationError({
-      name: null,
-      amount: null,
-      generic: null,
-    });
+    resetValidationError();
+
+    if (
+      Number.isNaN(Number(participantAmount)) ||
+      Number(participantAmount) <= 0
+    ) {
+      updateValidationError('amount', 'Amount must be greater than zero');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -89,36 +94,12 @@ export default function SplitFriend({
     } catch (error) {
       console.error('Error updating amount:', error);
       if (error instanceof Error) {
-        setValidationError((prev) => ({ ...prev, generic: error.message }));
+        updateValidationError('generic', error.message);
       }
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleValidation = (field: 'name' | 'amount' | 'generic', value: string) => {
-    const input = {
-      name: newParticipantName,
-      amount: participantAmount,
-    }
-    if (validationError[field]) setValidationError((prev) => ({ ...prev, [field]: null }));
-
-    // Optional: real-time validation
-    try {
-      participantInputSchema.parse({
-        ...input,
-        [field]: value,
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        const validationErrorMessage = getValidationErrorMessage(error, field);
-        setValidationError((prev) => ({
-          ...prev,
-          ...(validationErrorMessage && {[field]: getValidationErrorMessage(error, field)}),
-        }))
-      }
-    }
-  }
 
   // Calculate the remaining amount to be paid (excluding current user's contribution)
   const remainingAmount = Math.max(record.amount - totalContributed, 0);
@@ -130,7 +111,9 @@ export default function SplitFriend({
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
       <div className="text-center space-y-2 mb-4">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Friend Split</h3>
+        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+          Friend Split
+        </h3>
         <p className="text-gray-500 dark:text-gray-400 text-sm">
           You can adjust your amount and confirm payment
         </p>
@@ -138,12 +121,20 @@ export default function SplitFriend({
 
       <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg mb-6">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-gray-700 dark:text-gray-300 font-medium">Total Amount:</span>
-          <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">{formatCurrencyAmount(record.amount, record.currency)}</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">
+            Total Amount:
+          </span>
+          <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            {formatCurrencyAmount(record.amount, record.currency)}
+          </span>
         </div>
         <div className="flex justify-between items-center mb-2">
-          <span className="text-gray-700 dark:text-gray-300 font-medium">Remaining to Pay:</span>
-          <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">{formatCurrencyAmount(displayRemainingAmount, record.currency)}</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">
+            Remaining to Pay:
+          </span>
+          <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            {formatCurrencyAmount(displayRemainingAmount, record.currency)}
+          </span>
         </div>
       </div>
 
@@ -160,12 +151,19 @@ export default function SplitFriend({
             onChange={(e) => {
               setNewParticipantName(e.target.value);
               // Clear validation error when user starts typing again
-              handleValidation('name', e.target.value);
+              handleValidation(
+                input,
+                'name',
+                e.target.value,
+                validateionSchema
+              );
             }}
             placeholder="Enter your name"
           />
           {validationError['name'] && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationError['name']}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+              {validationError['name']}
+            </p>
           )}
         </div>
 
@@ -175,8 +173,12 @@ export default function SplitFriend({
             Your Share Amount
           </label>
           <div className="relative">
-            <div className={`absolute inset-y-0 left-0 pl-3 ${(validationError['amount'] || balance < 0) ? "pb-6" : ""} flex items-center pointer-events-none`}>
-              <span className="text-gray-500 text-lg">{formatCurrency(record.currency)}</span>
+            <div
+              className={`absolute inset-y-0 left-0 pl-3 ${validationError['amount'] || balance < 0 ? 'pb-6' : ''} flex items-center pointer-events-none`}
+            >
+              <span className="text-gray-500 text-lg">
+                {formatCurrency(record.currency)}
+              </span>
             </div>
             <input
               id="amount"
@@ -184,74 +186,47 @@ export default function SplitFriend({
               step="0.01"
               placeholder="0.00"
               min={0}
-              className={`w-full px-3 py-1 pl-10 border ${(validationError['amount'] || balance < 0) ? 'border-red-500 dark:border-red-400' : 'border-gray-300 dark:border-gray-600'
-                } rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
+              className={`w-full px-3 py-1 pl-10 border ${
+                validationError['amount'] || balance < 0
+                  ? 'border-red-500 dark:border-red-400'
+                  : 'border-gray-300 dark:border-gray-600'
+              } rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
               value={participantAmount}
               onChange={(e) => {
                 setParticipantAmount(e.target.value);
-                handleValidation('amount', e.target.value);
+                handleValidation(
+                  input,
+                  'amount',
+                  e.target.value,
+                  validateionSchema
+                );
               }}
             />
             {validationError['amount'] && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationError['amount']}</p>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {validationError['amount']}
+              </p>
             )}
             {balance < 0 && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-4000">
-                Your amount exceeds the remaining balance: {formatCurrencyAmount(displayRemainingAmount, record.currency)}
+                Your amount exceeds the remaining balance:{' '}
+                {formatCurrencyAmount(displayRemainingAmount, record.currency)}
               </p>
             )}
           </div>
         </div>
         {/* QR Code Section */}
-        {record.profiles?.qr_url && (
-          <div className="py-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Scan to Pay
-            </label>
-            <div className="flex justify-center bg-white p-4 rounded-lg">
-              <img
-                src={record.profiles.qr_url}
-                alt="Payment QR Code"
-                width={200}
-                height={200}
-                className="rounded"
-                style={{ maxHeight: '200px', width: 'auto' }}
-              />
-            </div>
-            <div className="mt-2">
-              <a
-                href={record.profiles.qr_url}
-                download="payment-qr-code.png"
-                className="flex items-center justify-center w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-sm font-medium"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download QR Code
-              </a>
-            </div>
-          </div>
+        {record.profiles?.qr_url && record.profiles?.name && (
+          <QRComponent
+            name={record.profiles.name}
+            qrUrl={record.profiles.qr_url}
+          />
         )}
         {/* Mark as Paid toggle */}
-        <div className="mt-4 border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800"
-          onClick={() => setMarkAsPaid(!markAsPaid)}>
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className={`w-10 h-10 rounded-full ${markAsPaid ? 'bg-green-100 dark:bg-green-800' : 'bg-gray-100 dark:bg-gray-700'} flex items-center justify-center mr-3`}>
-                {markAsPaid ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 dark:text-green-300" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </div>
-              <span className="text-gray-800 dark:text-gray-200 font-medium">Mark as paid</span>
-            </div>
-          </div>
-        </div>
+        <MarkAsPaidComponent
+          markAsPaid={markAsPaid}
+          setMarkAsPaid={setMarkAsPaid}
+        />
 
         {/* Validation error message */}
         {validationError['generic'] && (
@@ -260,25 +235,13 @@ export default function SplitFriend({
           </div>
         )}
 
-        <div className="flex space-x-3">
-          <button
-            type="button"
-            className="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
-            onClick={() => {
-              handleBack();
-            }}
-          >
-            Back
-          </button>
-          <Button
-            disabled={balance < 0 || isLoading || hasValidationErrors()}
-            isLoading={isLoading}
-            loadingText='Processing...'
-            onClick={handleSubmit}
-            text='Confirm'
-          />
-        </div>
+        <SubmitGroupButton
+          handleBack={handleBack}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+          validationError={validationError}
+        />
       </div>
     </div>
-  )
+  );
 }

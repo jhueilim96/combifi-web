@@ -1,6 +1,9 @@
 import CommonCurrencyList from './commonCurrencyList';
 
-export const formatCurrencyAmount = (amount: number, currency: string) => {
+export const formatCurrencyAmount = (
+  amount: number | string,
+  currency: string
+) => {
   if (typeof amount === 'string') {
     amount = parseFloat(amount);
   }

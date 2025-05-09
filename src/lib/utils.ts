@@ -1,9 +1,12 @@
-export function formatLocalDateTime(date: Date | string) {
-  return new Date(date).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).replace(/\//g, '-');
+export function formatLocalDateTime(date: string | null | undefined) {
+  return date
+    ? new Date(date).toLocaleDateString('en-US', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '';
 }
 
 export enum SplitParticipantType {
@@ -21,11 +24,9 @@ export enum SplitType {
 export function mapSplitTypeToDisplayName(splitType: SplitType) {
   if (splitType === SplitType.EQUAL) {
     return 'equally';
-  }
-  else if (splitType === SplitType.BY_AMOUNT) {
+  } else if (splitType === SplitType.BY_AMOUNT) {
     return 'by amount';
-  }
-  else if (splitType === SplitType.BY_PERCENTAGE) {
+  } else if (splitType === SplitType.BY_PERCENTAGE) {
     return 'by percentage';
   }
 }
