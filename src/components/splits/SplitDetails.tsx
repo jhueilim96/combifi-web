@@ -2,6 +2,7 @@ import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Tables } from '@/lib/database.types';
 import { formatLocalDateTime } from '@/lib/utils';
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface SplitDetailsProps {
   record: Tables<'one_time_split_expenses'>;
@@ -41,13 +42,14 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
         >
           {record.file_url ? (
             <>
-              <img
+              <Image
                 src={record.file_url}
                 alt="Receipt Photo"
                 width={200}
                 height={200}
                 className={`${showEnlargedImage ? 'object-contain max-h-[400px]' : 'object-cover'} w-full h-full cursor-pointer transition-all duration-300`}
                 onClick={toggleEnlargedImage}
+                unoptimized={true} // For S3 signed URLs
               />
               {showEnlargedImage && (
                 <button
@@ -73,10 +75,12 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
             </>
           ) : (
             <div className="flex flex-col justify-center items-center w-full h-full">
-              <img
+              <Image
                 src="/logo.svg"
                 alt="No Image"
-                className="h-10 w-10 text-gray-400 dark:text-gray-500"
+                width={40}
+                height={40}
+                className="text-gray-400 dark:text-gray-500"
               />
             </div>
           )}

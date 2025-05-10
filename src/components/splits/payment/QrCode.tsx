@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface QrCodeProps {
   name: string;
@@ -56,14 +57,16 @@ export default function QrCode({ name, qrUrl }: QrCodeProps) {
         </h3>
       </div>
       <div className="flex justify-center bg-white p-4 rounded-lg">
-        <img
-          src={qrUrl}
-          alt="Payment QR Code"
-          width={200}
-          height={200}
-          className="rounded"
-          style={{ maxHeight: '200px', width: 'auto' }}
-        />
+        <div className="relative h-[200px] w-[200px]">
+          <Image
+            src={qrUrl}
+            alt="Payment QR Code"
+            fill
+            sizes="200px"
+            className="rounded object-contain"
+            unoptimized={true} // Use unoptimized for S3 signed URLs as they can't be optimized by Next.js
+          />
+        </div>
       </div>
       <div className="mt-2">
         <button
