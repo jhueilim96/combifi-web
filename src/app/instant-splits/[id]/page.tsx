@@ -17,6 +17,7 @@ import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Button } from '@/components/ui/Button';
 import { OTPInput } from '@/components/ui/OTPInput';
 import InstantSplitDetail from '@/components/InstantSplitDetail';
+import CombifiMarketingModal from '@/components/CombifiMarketingModal';
 
 export const runtime = 'edge';
 
@@ -45,6 +46,7 @@ export default function RecordPage() {
   const [publicInfo, setPublicInfo] = useState<Partial<
     Tables<'one_time_split_expenses'>
   > | null>(null);
+  const [showPromo, setShowPromo] = useState(false);
 
   const fetchPublicRecord = async () => {
     if (!id) return;
@@ -169,6 +171,7 @@ export default function RecordPage() {
       );
 
       setStatus('Updated successfully!');
+      setShowPromo(true); // Show promotional message after successful update
       setTimeout(() => setStatus(''), 3000); // Clear status after 3 seconds
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -179,10 +182,14 @@ export default function RecordPage() {
         setStatus('Oops. Something went wrong.');
       }
     } finally {
-      resetUIState();
+      setIsLoading(false);
     }
   };
 
+  const handlePromoModalClose = () => {
+    setShowPromo(false);
+    resetUIState();
+  };
   const handleParticipantSelect = (
     participant: Tables<'one_time_split_expenses_participants'>
   ) => {
@@ -215,6 +222,7 @@ export default function RecordPage() {
     setShowSettleComponent(false);
     setParticipantAmount('0.00');
     setShowNewNameInput(false);
+    // Don't reset showPromo here - we want it to stay visible
   };
 
   useEffect(() => {
@@ -595,6 +603,11 @@ export default function RecordPage() {
           </div>
         )}
 
+        {/* Promotional Message */}
+        {showPromo && (
+          <CombifiMarketingModal handleModalClose={handlePromoModalClose} />
+        )}
+
         {/* Status message with improved styling */}
         {status && !showPasswordModal && (
           <div className="mt-4 text-center animate-fadeIn">
@@ -748,12 +761,27 @@ export default function RecordPage() {
           }
         }
 
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out forwards;
         }
 
         .animate-scaleIn {
           animation: scaleIn 0.3s ease-out forwards;
+        }
+
+        .animate-fadeInUp {
+          animation: fadeInUp 0.4s ease-out forwards;
         }
       `}</style>
     </div>
