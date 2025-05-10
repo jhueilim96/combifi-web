@@ -19,6 +19,7 @@ import { OTPInput } from '@/components/ui/OTPInput';
 import SplitDetails from '@/components/splits/SplitDetails';
 import AppPromoModal from '@/components/common/AppPromoModal';
 import { formatLocalDateTime } from '@/lib/utils';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 
 export const runtime = 'edge';
 
@@ -233,15 +234,7 @@ export default function RecordPage() {
   }, [id]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="running-loader">
-          <div className="runner" />
-          <div className="ground" />
-          <p className="loading-text">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Compute display values
@@ -335,7 +328,6 @@ export default function RecordPage() {
           }}
         />
       </div>
-
       {/* Content container with spacing matching Vue page */}
       <div className="max-w-xl mx-auto px-4 py-8 absolute top-0 w-full">
         <div className="text-center mb-4">
@@ -645,7 +637,6 @@ export default function RecordPage() {
           </div>
         )}
       </div>
-
       {/* Add custom loader styling */}
       <style jsx>{`
         .running-loader {
@@ -711,70 +702,74 @@ export default function RecordPage() {
           100% {
             left: calc(100% - 20px);
           }
-        }
-
+        @keyframes run {
+          0% {
+            left: 0;ounce {
+          }%,
+          100% {
+            left: calc(100% - 20px);
+          }
+        } 50% {
+            top: 10px;
         @keyframes bounce {
           0%,
           100% {
-            top: 30px;
-          }
-          50% {
+            top: 30px;eGround {
+          }% {
+          50% {nsform: translateX(0);
             top: 10px;
+          }00% {
+        }   transform: translateX(-20px);
           }
-        }
-
         @keyframes moveGround {
           0% {
             transform: translateX(0);
-          }
-          100% {
+          }rom {
+          100% {ity: 0;
             transform: translateX(-20px);
+          }o {
+        }   opacity: 1;
           }
-        }
-
         @keyframes fadeIn {
           from {
-            opacity: 0;
-          }
-          to {
+            opacity: 0;eIn {
+          }rom {
+          to {ansform: scale(0.95);
             opacity: 1;
           }
-        }
-
+        } to {
+            transform: scale(1);
         @keyframes scaleIn {
           from {
             transform: scale(0.95);
             opacity: 0;
-          }
-          to {
+          }yframes fadeInUp {
+          to { {
             transform: scale(1);
-            opacity: 1;
+            opacity: 1;translateY(10px);
           }
-        }
-
-        @keyframes fadeInUp {
+        } to {
+            opacity: 1;
+        @keyframes fadeInUp {ateY(0);
           from {
             opacity: 0;
             transform: translateY(10px);
-          }
-          to {
+          }imate-fadeIn {
+          to {ation: fadeIn 0.3s ease-out forwards;
             opacity: 1;
             transform: translateY(0);
-          }
+          }imate-scaleIn {
+        } animation: scaleIn 0.3s ease-out forwards;
         }
-
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out forwards;
+        } animation: fadeInUp 0.4s ease-out forwards;
         }
-
         .animate-scaleIn {
           animation: scaleIn 0.3s ease-out forwards;
         }
-
-        .animate-fadeInUp {
-          animation: fadeInUp 0.4s ease-out forwards;
-        }
-      `}</style>
+}
+        .animate-fadeInUp {          animation: fadeInUp 0.4s ease-out forwards;        }      `}</style>{' '}
     </div>
   );
 }
