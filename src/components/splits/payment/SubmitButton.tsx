@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 
-interface SubmitGroupButtonProps {
+interface SubmitButtonProps {
   handleBack: () => void;
   handleSubmit: () => Promise<void>;
   isLoading: boolean;
@@ -10,12 +10,12 @@ interface SubmitGroupButtonProps {
     generic: string | null;
   };
 }
-export default function SubmitGroupButton({
+export default function SubmitButton({
   handleBack,
   handleSubmit,
   isLoading,
   validationError,
-}: SubmitGroupButtonProps) {
+}: SubmitButtonProps) {
   const hasValidationErrors = () => {
     return (
       validationError.name !== null ||

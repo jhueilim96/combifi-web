@@ -1,11 +1,11 @@
-interface MarkAsPaidComponentProps {
+interface PaymentStatusProps {
   markAsPaid: boolean;
   setMarkAsPaid: (isPaid: boolean) => void;
 }
-export default function MarkAsPaidComponent({
+export default function PaymentStatus({
   markAsPaid,
   setMarkAsPaid,
-}: MarkAsPaidComponentProps) {
+}: PaymentStatusProps) {
   return (
     <div
       className="mt-4 shadow-lg border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800"

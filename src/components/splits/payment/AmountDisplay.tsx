@@ -1,16 +1,16 @@
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 
-interface FixedAmountComponentProps {
+interface AmountDisplayProps {
   name: string;
   currency: string;
   amount: string | number;
 }
 
-export default function FixedAmountComponent({
+export default function AmountDisplay({
   name,
   currency,
   amount,
-}: FixedAmountComponentProps) {
+}: AmountDisplayProps) {
   return (
     <div className="border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl p-6 bg-white dark:bg-gray-800">
       <div className="text-center">

@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
 import { participantInputSchema } from '@/lib/validations';
-import QRComponent from './ui/QRComponent';
-import MarkAsPaidComponent from './ui/MarkAsPaidComponent';
-import SubmitGroupButton from './ui/SubmitGroupButton';
+import QrCode from '../payment/QrCode';
+import PaymentStatus from '../payment/PaymentStatus';
+import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
-import InputPortionWithPaymentInstructions from './ui/InputPortionWithPaymentInstructions';
+import PaymentInput from '../payment/PaymentInput';
 import { FriendMetadata, retrieveSettleMetadata } from '@/lib/utils';
 
 interface SplitFriendProps {
@@ -129,7 +129,7 @@ export default function SplitFriend({
       </div>
 
       <div className="space-y-4">
-        <InputPortionWithPaymentInstructions
+        <PaymentInput
           date={record.created_at}
           name={newParticipantName}
           remainingAmount={displayRemainingAmount}
@@ -144,16 +144,10 @@ export default function SplitFriend({
 
         {/* QR Code Section */}
         {record.profiles?.qr_url && record.profiles?.name && (
-          <QRComponent
-            name={record.profiles.name}
-            qrUrl={record.profiles.qr_url}
-          />
+          <QrCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
         )}
         {/* Mark as Paid toggle */}
-        <MarkAsPaidComponent
-          markAsPaid={markAsPaid}
-          setMarkAsPaid={setMarkAsPaid}
-        />
+        <PaymentStatus markAsPaid={markAsPaid} setMarkAsPaid={setMarkAsPaid} />
 
         {/* Validation error message */}
         {validationError['generic'] && (
@@ -162,7 +156,7 @@ export default function SplitFriend({
           </div>
         )}
 
-        <SubmitGroupButton
+        <SubmitButton
           handleBack={handleBack}
           handleSubmit={handleSubmit}
           isLoading={isLoading}

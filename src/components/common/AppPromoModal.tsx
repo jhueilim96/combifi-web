@@ -1,9 +1,9 @@
-interface CombifiMarketingModalProps {
+interface AppPromoModalProps {
   handleModalClose: () => void;
 }
-export default function CombifiMarketingModal({
+export default function AppPromoModal({
   handleModalClose,
-}: CombifiMarketingModalProps) {
+}: AppPromoModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fadeIn">
       <div className="w-full max-w-md animate-scaleIn">

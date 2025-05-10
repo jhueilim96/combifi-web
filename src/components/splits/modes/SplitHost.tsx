@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
-import SubmitGroupButton from './ui/SubmitGroupButton';
+import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
-import MarkAsPaidComponent from './ui/MarkAsPaidComponent';
-import QRComponent from './ui/QRComponent';
-import FixedAmountComponent from './ui/FixedAmountComponent';
+import PaymentStatus from '../payment/PaymentStatus';
+import QrCode from '../payment/QrCode';
+import AmountDisplay from '../payment/AmountDisplay';
 
 interface SplitHostProps {
   record: Tables<'one_time_split_expenses'>;
@@ -79,7 +79,7 @@ export default function SplitHost({
 
       <div className="space-y-4">
         {/* Updated UI - Card showing who should pay what */}
-        <FixedAmountComponent
+        <AmountDisplay
           name={selectedParticipant?.name || ''}
           currency={record.currency}
           amount={selectedParticipant?.amount.toFixed(2) || '0.00'}
@@ -87,18 +87,12 @@ export default function SplitHost({
 
         {/* QR Code Section */}
         {record.profiles?.qr_url && record.profiles?.name && (
-          <QRComponent
-            name={record.profiles.name}
-            qrUrl={record.profiles.qr_url}
-          />
+          <QrCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
         )}
         {/* Mark as Paid toggle */}
-        <MarkAsPaidComponent
-          markAsPaid={markAsPaid}
-          setMarkAsPaid={setMarkAsPaid}
-        />
+        <PaymentStatus markAsPaid={markAsPaid} setMarkAsPaid={setMarkAsPaid} />
 
-        <SubmitGroupButton
+        <SubmitButton
           handleBack={handleBack}
           handleSubmit={handleSubmit}
           isLoading={isLoading}

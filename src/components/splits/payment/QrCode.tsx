@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-interface QRComponentProps {
+interface QrCodeProps {
   name: string;
   qrUrl: string;
 }
-export default function QRComponent({ name, qrUrl }: QRComponentProps) {
+export default function QrCode({ name, qrUrl }: QrCodeProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>) => {

@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
-import SubmitGroupButton from './ui/SubmitGroupButton';
-import MarkAsPaidComponent from './ui/MarkAsPaidComponent';
-import QRComponent from './ui/QRComponent';
+import SubmitButton from '../payment/SubmitButton';
+import PaymentStatus from '../payment/PaymentStatus';
+import QrCode from '../payment/QrCode';
 import useValidationError from '@/hooks/useValidationError';
-import FixedAmountComponent from './ui/FixedAmountComponent';
+import AmountDisplay from '../payment/AmountDisplay';
 import { PerPaxMetadata, retrieveSettleMetadata } from '@/lib/utils';
 
 interface SplitPerPaxProps {
@@ -74,7 +74,7 @@ export default function SplitPerPax({
 
       <div className="space-y-4">
         {/* Updated UI - Card showing who should pay what */}
-        <FixedAmountComponent
+        <AmountDisplay
           name={newParticipantName}
           currency={record.currency}
           amount={participantAmount}
@@ -82,18 +82,12 @@ export default function SplitPerPax({
 
         {/* QR Code Section */}
         {record.profiles?.qr_url && record.profiles?.name && (
-          <QRComponent
-            name={record.profiles.name}
-            qrUrl={record.profiles.qr_url}
-          />
+          <QrCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
         )}
 
         {/* Mark as Paid toggle */}
-        <MarkAsPaidComponent
-          markAsPaid={markAsPaid}
-          setMarkAsPaid={setMarkAsPaid}
-        />
-        <SubmitGroupButton
+        <PaymentStatus markAsPaid={markAsPaid} setMarkAsPaid={setMarkAsPaid} />
+        <SubmitButton
           handleBack={handleBack}
           handleSubmit={handleSubmit}
           isLoading={isLoading}

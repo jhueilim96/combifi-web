@@ -1,13 +1,12 @@
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Tables } from '@/lib/database.types';
+import { formatLocalDateTime } from '@/lib/utils';
 import { useState } from 'react';
 
-interface InstantSplitDetailProps {
+interface SplitDetailsProps {
   record: Tables<'one_time_split_expenses'>;
 }
-export default function InstantSplitDetail({
-  record,
-}: InstantSplitDetailProps) {
+export default function SplitDetails({ record }: SplitDetailsProps) {
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
   const toggleEnlargedImage = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -29,14 +28,7 @@ export default function InstantSplitDetail({
 
           <div className="flex items-baseline">
             <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-              {record.date
-                ? new Date(record.date as string).toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })
-                : ''}
+              {formatLocalDateTime(record.date)}
             </span>
           </div>
         </div>

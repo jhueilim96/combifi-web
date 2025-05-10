@@ -10,14 +10,15 @@ import {
   getPublicRecord,
 } from './actions';
 import { Tables } from '@/lib/database.types';
-import SplitFriend from '@/components/settleComponents/SplitFriend';
-import SplitPerPax from '@/components/settleComponents/SplitPerPax';
-import SplitHost from '@/components/settleComponents/SplitHost';
+import SplitFriend from '@/components/splits/modes/SplitFriend';
+import SplitPerPax from '@/components/splits/modes/SplitPerPax';
+import SplitHost from '@/components/splits/modes/SplitHost';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Button } from '@/components/ui/Button';
 import { OTPInput } from '@/components/ui/OTPInput';
-import InstantSplitDetail from '@/components/InstantSplitDetail';
-import CombifiMarketingModal from '@/components/CombifiMarketingModal';
+import SplitDetails from '@/components/splits/SplitDetails';
+import AppPromoModal from '@/components/common/AppPromoModal';
+import { formatLocalDateTime } from '@/lib/utils';
 
 export const runtime = 'edge';
 
@@ -270,17 +271,7 @@ export default function RecordPage() {
                 </span>
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {publicInfo.date
-                  ? new Date(publicInfo.date as string).toLocaleDateString(
-                      'en-US',
-                      {
-                        weekday: 'short',
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      }
-                    )
-                  : ''}
+                {formatLocalDateTime(publicInfo.date)}
               </p>
             </div>
           </div>
@@ -358,7 +349,7 @@ export default function RecordPage() {
         {/* Main content when record is available with improved card styling */}
         {record && !showPasswordModal && (
           <div className="bg-white rounded-2xl">
-            <InstantSplitDetail record={record} />
+            <SplitDetails record={record} />
             {/* Improved Participants section */}
             {!showSettleComponent && (
               <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6">
@@ -605,7 +596,7 @@ export default function RecordPage() {
 
         {/* Promotional Message */}
         {showPromo && (
-          <CombifiMarketingModal handleModalClose={handlePromoModalClose} />
+          <AppPromoModal handleModalClose={handlePromoModalClose} />
         )}
 
         {/* Status message with improved styling */}

@@ -18,7 +18,7 @@ interface PaymentInstructionsProps {
   displayRemainingAmount: number; // Amount to display for remaining balance
 }
 
-export default function InputPortionWithPaymentInstructions({
+export default function PaymentInput({
   date,
   name,
   remainingAmount,
