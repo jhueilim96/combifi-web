@@ -64,9 +64,10 @@ export default function SplitFriend({
 
   useEffect(() => {
     // Calculate total amount that's already been contributed
-    const sum = participants
-      .filter((p) => !p.is_host) // Exclude host from calculation
-      .reduce((acc, participant) => acc + participant.amount, 0);
+    const sum = participants.reduce(
+      (acc, participant) => acc + participant.amount,
+      0
+    );
 
     setTotalContributed(sum);
   }, [participants]);
