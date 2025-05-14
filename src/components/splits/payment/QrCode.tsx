@@ -7,6 +7,7 @@ interface QrCodeProps {
 }
 export default function QrCode({ name, qrUrl }: QrCodeProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEnlarged, setIsEnlarged] = useState(false);
 
   const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -57,7 +58,10 @@ export default function QrCode({ name, qrUrl }: QrCodeProps) {
         </h3>
       </div>
       <div className="flex justify-center bg-white p-4 rounded-lg">
-        <div className="relative h-[200px] w-[200px]">
+        <div
+          className="relative h-[200px] w-[200px]"
+          onClick={() => setIsEnlarged(true)}
+        >
           <Image
             src={qrUrl}
             alt="Payment QR Code"
@@ -67,6 +71,22 @@ export default function QrCode({ name, qrUrl }: QrCodeProps) {
             unoptimized={true} // Use unoptimized for S3 signed URLs as they can't be optimized by Next.js
           />
         </div>
+        {isEnlarged && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 cursor-zoom-out"
+            onClick={() => setIsEnlarged(false)}
+          >
+            <div className="relative w-[90vw] h-[90vh] max-w-[400px] max-h-[400px]">
+              <Image
+                src={qrUrl}
+                alt="Enlarged QR Code"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          </div>
+        )}
       </div>
       <div className="mt-2">
         <button

@@ -145,6 +145,7 @@ export function OTPInput({
         <input
           key={index}
           type="text"
+          inputMode="text"
           ref={(ref) => {
             inputRefs.current[index] = ref;
           }}
@@ -155,7 +156,7 @@ export function OTPInput({
           className="w-14 h-14 text-center text-xl font-bold border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all duration-200"
           maxLength={1}
           autoComplete="off"
-          inputMode="text"
+          pattern="[A-Z0-9]*"
           style={{ textTransform: 'uppercase' }}
         />
       ))}
