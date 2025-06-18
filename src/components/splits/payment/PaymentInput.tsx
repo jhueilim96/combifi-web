@@ -12,10 +12,8 @@ interface PaymentInstructionsProps {
     amount: string | null;
     generic: string | null;
   };
-  balance: number; // Remaining balance
   participantAmount: string; // Amount entered by the participant
   handleAmountChange: (amount: string) => void; // Function to handle amount change
-  displayRemainingAmount: number; // Amount to display for remaining balance
 }
 
 export default function PaymentInput({
@@ -25,10 +23,8 @@ export default function PaymentInput({
   currency,
   instructions,
   validationError,
-  balance,
   participantAmount,
   handleAmountChange,
-  displayRemainingAmount,
 }: PaymentInstructionsProps) {
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-4 shadow-sm">
@@ -75,7 +71,7 @@ export default function PaymentInput({
       {/* Amount input field */}
       <div className="relative mb-4">
         <div
-          className={`absolute inset-y-0 left-0 pl-3 ${validationError['amount'] || balance < 0 ? 'pb-6' : ''} flex items-center pointer-events-none`}
+          className={`absolute inset-y-0 left-0 pl-3 ${validationError['amount'] ? 'pb-6' : ''} flex items-center pointer-events-none`}
         >
           <span className="text-gray-500 text-lg">
             {formatCurrency(currency)}
@@ -88,7 +84,7 @@ export default function PaymentInput({
           placeholder="0.00"
           min={0}
           className={`w-full px-4 py-5 pl-10 border ${
-            validationError['amount'] || balance < 0
+            validationError['amount']
               ? 'border-red-500 dark:border-red-400'
               : 'border-gray-300 dark:border-gray-600'
           } rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white text-4xl dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
@@ -98,12 +94,6 @@ export default function PaymentInput({
         {validationError['amount'] && (
           <p className="mt-1 text-sm text-red-600 dark:text-red-400">
             {validationError['amount']}
-          </p>
-        )}
-        {balance < 0 && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-4000">
-            Your amount exceeds the remaining balance:{' '}
-            {formatCurrencyAmount(displayRemainingAmount, currency)}
           </p>
         )}
       </div>

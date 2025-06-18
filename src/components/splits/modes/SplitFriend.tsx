@@ -37,10 +37,6 @@ export default function SplitFriend({
   handleBack,
 }: SplitFriendProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const initialBalance = selectedParticipant
-    ? selectedParticipant.amount
-    : record.amount;
-  const [balance, setBalance] = useState(initialBalance);
   const [totalContributed, setTotalContributed] = useState(0);
   const {
     validationError,
@@ -72,17 +68,12 @@ export default function SplitFriend({
     setTotalContributed(sum);
   }, [participants]);
 
-  useEffect(() => {
-    // Update balance when participantAmount changes
-    const inputAmount = Number(participantAmount) || 0;
-    const remaining = Math.max(record.amount - totalContributed, 0);
-
-    // If there's a selected participant, subtract their existing contribution
-    const existingAmount = selectedParticipant ? selectedParticipant.amount : 0;
-    const adjustedRemaining = remaining + existingAmount;
-
-    setBalance(adjustedRemaining - inputAmount);
-  }, [participantAmount, record.amount, totalContributed, selectedParticipant]);
+  useEffect(() => {}, [
+    participantAmount,
+    record.amount,
+    totalContributed,
+    selectedParticipant,
+  ]);
 
   const handleSubmit = async () => {
     // Reset any existing validation errors
@@ -110,7 +101,10 @@ export default function SplitFriend({
   };
 
   // Calculate the remaining amount to be paid (excluding current user's contribution)
-  const remainingAmount = Math.max(record.amount - totalContributed, 0);
+  const remainingAmount = Math.max(
+    record.amount - totalContributed - (parseFloat(participantAmount) || 0),
+    0
+  );
   // If there's a selected participant, add back their amount to show the true remaining
   const displayRemainingAmount = selectedParticipant
     ? remainingAmount + selectedParticipant.amount
@@ -137,10 +131,8 @@ export default function SplitFriend({
           currency={record.currency}
           instructions={paymentInstruction}
           validationError={validationError}
-          balance={balance}
           participantAmount={participantAmount}
           handleAmountChange={handleAmountChange}
-          displayRemainingAmount={displayRemainingAmount}
         />
 
         {/* QR Code Section */}
