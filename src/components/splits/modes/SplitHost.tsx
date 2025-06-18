@@ -5,7 +5,7 @@ import { Tables } from '@/lib/database.types';
 import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
 import PaymentStatus from '../payment/PaymentStatus';
-import QrCode from '../payment/QrCode';
+import QRCode from '../payment/QRCode';
 import AmountDisplay from '../payment/AmountDisplay';
 import { Crown } from 'lucide-react';
 
@@ -91,7 +91,7 @@ export default function SplitHost({
 
         {/* QR Code Section */}
         {record.profiles?.qr_url && record.profiles?.name && (
-          <QrCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
+          <QRCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
         )}
         {/* Mark as Paid toggle */}
         <PaymentStatus markAsPaid={markAsPaid} setMarkAsPaid={setMarkAsPaid} />

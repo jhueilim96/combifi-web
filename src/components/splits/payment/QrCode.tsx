@@ -2,11 +2,11 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Loader2, Download } from 'lucide-react';
 
-interface QrCodeProps {
+interface QRCodeProps {
   name: string;
   qrUrl: string;
 }
-export default function QrCode({ name, qrUrl }: QrCodeProps) {
+export default function QRCode({ name, qrUrl }: QRCodeProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEnlarged, setIsEnlarged] = useState(false);
 

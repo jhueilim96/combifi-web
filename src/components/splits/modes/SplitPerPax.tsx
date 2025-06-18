@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
 import SubmitButton from '../payment/SubmitButton';
 import PaymentStatus from '../payment/PaymentStatus';
-import QrCode from '../payment/QrCode';
+import QRCode from '../payment/QRCode';
 import useValidationError from '@/hooks/useValidationError';
 import AmountDisplay from '../payment/AmountDisplay';
 import { PerPaxMetadata, retrieveSettleMetadata } from '@/lib/utils';
@@ -86,7 +86,7 @@ export default function SplitPerPax({
 
         {/* QR Code Section */}
         {record.profiles?.qr_url && record.profiles?.name && (
-          <QrCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
+          <QRCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
         )}
 
         {/* Mark as Paid toggle */}
