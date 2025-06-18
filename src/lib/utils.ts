@@ -32,6 +32,7 @@ export type HostMetadata = {
 export type PerPaxMetadata = {
   members: string[];
   hostPortion: string;
+  numberOfPax: number;
   perPaxAmount: string;
 };
 

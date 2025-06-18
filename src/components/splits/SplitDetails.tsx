@@ -1,9 +1,13 @@
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Tables } from '@/lib/database.types';
-import { formatLocalDateTime } from '@/lib/utils';
+import {
+  formatLocalDateTime,
+  PerPaxMetadata,
+  retrieveSettleMetadata,
+} from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
-import { X, FileText } from 'lucide-react';
+import { X, FileText, Users } from 'lucide-react';
 
 interface SplitDetailsProps {
   record: Tables<'one_time_split_expenses'>;
@@ -14,6 +18,11 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
     e.stopPropagation();
     setShowEnlargedImage(!showEnlargedImage);
   };
+  const numberOfPax =
+    record.settle_mode === 'PERPAX'
+      ? retrieveSettleMetadata<PerPaxMetadata>(record).numberOfPax
+      : 0;
+  const hasExtraInfo = record.settle_mode === 'PERPAX' || record.notes;
   return (
     <div className="border bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-4 flex flex-col space-y-4 mb-6">
       <div className="flex justify-between items-center space-x-6">
@@ -75,22 +84,42 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
         </div>
       </div>
 
-      {/* Notes section - integrated into main content */}
-      {record.notes && (
-        <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0 mt-1">
-              <FileText size={20} color="grey" />
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Notes
-              </h3>
-              <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">
-                {record.notes}
+      {/* Additional content section with single top border */}
+      {hasExtraInfo && (
+        <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+          {/* Number of participants if split evenly */}
+          {record.settle_mode === 'PERPAX' && (
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <Users size={20} color="grey" />
+              </div>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Number of People:
+                </h3>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {numberOfPax}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Notes section */}
+          {record.notes && (
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0 mt-1">
+                <FileText size={20} color="grey" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Notes
+                </h3>
+                <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">
+                  {record.notes}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
