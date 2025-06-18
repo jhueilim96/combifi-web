@@ -7,16 +7,22 @@ import {
 } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
-import { X, FileText, Users } from 'lucide-react';
+import { FileText, Users, Loader2 } from 'lucide-react';
 
 interface SplitDetailsProps {
   record: Tables<'one_time_split_expenses'>;
 }
 export default function SplitDetails({ record }: SplitDetailsProps) {
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [isEnlargedImageLoading, setIsEnlargedImageLoading] = useState(false);
+
   const toggleEnlargedImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowEnlargedImage(!showEnlargedImage);
+    if (!showEnlargedImage) {
+      setIsEnlargedImageLoading(true);
+    }
   };
   const numberOfPax =
     record.settle_mode === 'PERPAX'
@@ -43,31 +49,55 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
             </span>
           </div>
         </div>
-        <div
-          className={`${
-            showEnlargedImage
-              ? 'w-full h-auto min-h-[300px] transition-all duration-300 absolute top-0 right-0 z-10 bg-white dark:bg-gray-800 p-4 shadow-xl rounded-xl'
-              : 'w-24 h-24'
-          } overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600 flex flex-col justify-center items-center relative`}
-        >
+        <div className="w-24 h-24 overflow-hidden rounded-lg border border-indigo-50 flex flex-col justify-center items-center relative">
           {record.file_url ? (
             <>
+              {/* Loading indicator for main image */}
+              {isImageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                  <Loader2 size={24} className="animate-spin text-indigo-400" />
+                </div>
+              )}
+
               <Image
                 src={record.file_url}
                 alt="Receipt Photo"
                 width={200}
                 height={200}
-                className={`${showEnlargedImage ? 'object-contain max-h-[400px]' : 'object-cover'} w-full h-full cursor-pointer transition-all duration-300`}
+                className={`object-cover w-full h-full cursor-pointer transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
                 onClick={toggleEnlargedImage}
                 unoptimized={true} // For S3 signed URLs
+                onLoad={() => setIsImageLoading(false)}
+                onError={() => setIsImageLoading(false)}
               />
+
               {showEnlargedImage && (
-                <button
-                  className="absolute top-2 right-2 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={toggleEnlargedImage}
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 cursor-zoom-out"
+                  onClick={() => setShowEnlargedImage(false)}
                 >
-                  <X size={20} className="text-gray-700 dark:text-gray-300" />
-                </button>
+                  <div className="relative w-[90vw] h-[90vh] max-w-[600px] max-h-[600px]">
+                    {/* Loading indicator for enlarged image */}
+                    {isEnlargedImageLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader2
+                          size={32}
+                          className="animate-spin text-white"
+                        />
+                      </div>
+                    )}
+
+                    <Image
+                      src={record.file_url}
+                      alt="Enlarged Receipt Photo"
+                      fill
+                      className={`object-contain transition-opacity duration-300 ${isEnlargedImageLoading ? 'opacity-0' : 'opacity-100'}`}
+                      unoptimized={true}
+                      onLoad={() => setIsEnlargedImageLoading(false)}
+                      onError={() => setIsEnlargedImageLoading(false)}
+                    />
+                  </div>
+                </div>
               )}
             </>
           ) : (

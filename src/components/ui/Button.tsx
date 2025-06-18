@@ -9,7 +9,7 @@ export function Button({
   disabled = false,
   isLoading = false,
   loadingText = 'Processing...',
-  text = 'Confirm',
+  text = 'Save',
   type = 'button',
   onClick,
   className,

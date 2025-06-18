@@ -9,6 +9,8 @@ interface QRCodeProps {
 export default function QRCode({ name, qrUrl }: QRCodeProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEnlarged, setIsEnlarged] = useState(false);
+  const [isQRLoading, setIsQRLoading] = useState(true);
+  const [isEnlargedQRLoading, setIsEnlargedQRLoading] = useState(false);
 
   const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -61,15 +63,27 @@ export default function QRCode({ name, qrUrl }: QRCodeProps) {
       <div className="flex justify-center bg-white p-4 rounded-lg">
         <div
           className="relative h-[200px] w-[200px]"
-          onClick={() => setIsEnlarged(true)}
+          onClick={() => {
+            setIsEnlarged(true);
+            setIsEnlargedQRLoading(true);
+          }}
         >
+          {/* Loading indicator for main QR code */}
+          {isQRLoading && (
+            <div className="absolute inset-0 flex items-center justify-center border border-indigo-50 rounded">
+              <Loader2 size={24} className="animate-spin text-indigo-400" />
+            </div>
+          )}
+
           <Image
             src={qrUrl}
             alt="Payment QR Code"
             fill
             sizes="200px"
-            className="rounded object-contain"
+            className={`rounded object-contain transition-opacity duration-300 ${isQRLoading ? 'opacity-0' : 'opacity-100'}`}
             unoptimized={true} // Use unoptimized for S3 signed URLs as they can't be optimized by Next.js
+            onLoad={() => setIsQRLoading(false)}
+            onError={() => setIsQRLoading(false)}
           />
         </div>
         {isEnlarged && (
@@ -78,12 +92,21 @@ export default function QRCode({ name, qrUrl }: QRCodeProps) {
             onClick={() => setIsEnlarged(false)}
           >
             <div className="relative w-[90vw] h-[90vh] max-w-[400px] max-h-[400px]">
+              {/* Loading indicator for enlarged QR code */}
+              {isEnlargedQRLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Loader2 size={32} className="animate-spin text-white" />
+                </div>
+              )}
+
               <Image
                 src={qrUrl}
                 alt="Enlarged QR Code"
                 fill
-                className="object-contain"
+                className={`object-contain transition-opacity duration-300 ${isEnlargedQRLoading ? 'opacity-0' : 'opacity-100'}`}
                 unoptimized
+                onLoad={() => setIsEnlargedQRLoading(false)}
+                onError={() => setIsEnlargedQRLoading(false)}
               />
             </div>
           </div>
