@@ -8,6 +8,7 @@ import QrCode from '../payment/QrCode';
 import useValidationError from '@/hooks/useValidationError';
 import AmountDisplay from '../payment/AmountDisplay';
 import { PerPaxMetadata, retrieveSettleMetadata } from '@/lib/utils';
+import { Scale } from 'lucide-react';
 
 interface SplitPerPaxProps {
   record: Tables<'one_time_split_expenses'>;
@@ -65,14 +66,17 @@ export default function SplitPerPax({
 
   return (
     <div className="border border-gray-50 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
-      <div className="text-center space-y-2 mb-4">
-        <div className="text-2xl font-medium text-gray-800 dark:text-gray-200">
-          <span className="mr-2">⚖️</span>
+      <div className="text-center space-y-2 mb-6">
+        <div className="text-2xl font-medium text-gray-800 dark:text-gray-200 flex items-center justify-center">
+          <Scale
+            size={24}
+            className="mr-2 text-indigo-600 dark:text-indigo-400"
+          />
           Split Evenly
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Updated UI - Card showing who should pay what */}
         <AmountDisplay
           name={newParticipantName}

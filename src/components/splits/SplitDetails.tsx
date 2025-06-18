@@ -3,6 +3,7 @@ import { Tables } from '@/lib/database.types';
 import { formatLocalDateTime } from '@/lib/utils';
 import { useState } from 'react';
 import Image from 'next/image';
+import { X, FileText } from 'lucide-react';
 
 interface SplitDetailsProps {
   record: Tables<'one_time_split_expenses'>;
@@ -56,20 +57,7 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
                   className="absolute top-2 right-2 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={toggleEnlargedImage}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-gray-700 dark:text-gray-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <X size={20} className="text-gray-700 dark:text-gray-300" />
                 </button>
               )}
             </>
@@ -92,20 +80,7 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
         <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 mt-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-indigo-500 dark:text-indigo-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
+              <FileText size={20} color="grey" />
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

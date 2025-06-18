@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { requestAccountDeletion } from './actions';
 import { Button } from '@/components/ui/Button';
+import { Check, AlertCircle } from 'lucide-react';
 
 export default function AskDeletion() {
   const [email, setEmail] = useState('');
@@ -109,35 +110,9 @@ export default function AskDeletion() {
               }`}
             >
               {status.includes('success') ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+                <Check size={20} className="mr-2" />
               ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <AlertCircle size={20} className="mr-2" />
               )}
               {status}
             </p>

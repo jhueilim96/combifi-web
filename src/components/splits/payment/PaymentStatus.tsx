@@ -1,3 +1,5 @@
+import { Check, Clock } from 'lucide-react';
+
 interface PaymentStatusProps {
   markAsPaid: boolean;
   setMarkAsPaid: (isPaid: boolean) => void;
@@ -21,31 +23,9 @@ export default function PaymentStatus({
             className={`w-10 h-10 rounded-full ${markAsPaid ? 'bg-green-100' : 'bg-gray-100'} flex items-center justify-center mr-3`}
           >
             {markAsPaid ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-green-600"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Check size={20} className="text-green-500" />
             ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-500"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Clock size={20} className="text-gray-500" />
             )}
           </div>
           <div className="flex flex-col">

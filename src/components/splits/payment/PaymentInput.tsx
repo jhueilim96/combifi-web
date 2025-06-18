@@ -1,5 +1,6 @@
 import { formatCurrency, formatCurrencyAmount } from '@/lib/currencyUtils';
 import { formatLocalDateTime } from '@/lib/utils';
+import { CircleUser, Coins, Wallet } from 'lucide-react';
 
 interface PaymentInstructionsProps {
   date: string; // Optional date when payment was requested
@@ -31,7 +32,7 @@ export default function PaymentInput({
       {/* Header section */}
       <div className="flex items-center mb-4">
         <div className="h-12 w-12 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3">
-          <span className="text-gray-600 dark:text-gray-300">👥</span>
+          <CircleUser size={20} className="text-gray-500 dark:text-gray-400" />
         </div>
         <div>
           <div className="text-gray-600 dark:text-gray-400 text-sm">
@@ -47,8 +48,11 @@ export default function PaymentInput({
       {/* Payment instructions if provided */}
       {instructions && (
         <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-          <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
-            <span className="i-payment-icon mr-2">💳</span>
+          <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 mb-2">
+            <Wallet
+              size={20}
+              className="text-indigo-500 dark:text-indigo-400"
+            />
             <span>Payment Instructions</span>
           </div>
           <div className="bg-blue-50 p-4 rounded-lg text-gray-800 dark:text-gray-200 whitespace-pre-line">
@@ -59,8 +63,8 @@ export default function PaymentInput({
 
       {/* Amount info section */}
       <div className="mt-5">
-        <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
-          <span className="i-payment-icon mr-2">💸</span>
+        <div className="flex space-x-3 items-center text-gray-600 dark:text-gray-400 mb-2">
+          <Coins size={20} className="text-indigo-500 dark:text-indigo-400" />
           <span>
             How much is your portion? [Remaining:{' '}
             {formatCurrencyAmount(remainingAmount, currency)}]

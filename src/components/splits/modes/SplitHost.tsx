@@ -7,6 +7,7 @@ import useValidationError from '@/hooks/useValidationError';
 import PaymentStatus from '../payment/PaymentStatus';
 import QrCode from '../payment/QrCode';
 import AmountDisplay from '../payment/AmountDisplay';
+import { Crown } from 'lucide-react';
 
 interface SplitHostProps {
   record: Tables<'one_time_split_expenses'>;
@@ -67,9 +68,12 @@ export default function SplitHost({
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
-      <div className="text-center space-y-2 mb-4">
-        <div className="text-2xl font-medium text-gray-800 dark:text-gray-200">
-          <span className="mr-2">👑</span>
+      <div className="text-center space-y-2 mb-6">
+        <div className="text-2xl font-medium text-gray-800 dark:text-gray-200 flex items-center justify-center">
+          <Crown
+            size={24}
+            className="mr-2 text-amber-600 dark:text-amber-400"
+          />
           Host Assigned Split
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -77,7 +81,7 @@ export default function SplitHost({
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Updated UI - Card showing who should pay what */}
         <AmountDisplay
           name={selectedParticipant?.name || ''}
