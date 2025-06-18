@@ -77,36 +77,47 @@ export function OTPInput({
       onChange(otpValue);
 
       focusNextInput(index);
+    } else if (value === '') {
+      // Handle case where input is cleared (important for iOS)
+      const newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
+      onChange(newOtp.join(''));
     }
   };
 
   // Handle backspace and left/right arrow keys
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === 'Backspace') {
+      e.preventDefault(); // Prevent default backspace behavior on iOS
+
       if (otp[index]) {
         // If current input has a value, clear it
         const newOtp = [...otp];
         newOtp[index] = '';
         setOtp(newOtp);
-
-        // Combine OTP values and call onChange
         onChange(newOtp.join(''));
       } else if (index > 0) {
         // If current input is empty, focus previous input and clear its value
         const newOtp = [...otp];
         newOtp[index - 1] = '';
         setOtp(newOtp);
-
-        // Combine OTP values and call onChange
         onChange(newOtp.join(''));
-
-        // Focus the previous input
         focusPrevInput(index);
       }
     } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
       focusPrevInput(index);
     } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
       focusNextInput(index);
+    } else if (e.key === 'Delete') {
+      e.preventDefault();
+      // Handle Delete key (forward delete)
+      const newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
+      onChange(newOtp.join(''));
     }
   };
 
@@ -139,23 +150,43 @@ export function OTPInput({
     }
   };
 
+  // Handle input event (for better iOS compatibility)
+  const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    const value = target.value;
+
+    // Ensure we don't exceed maxLength on iOS
+    if (value.length > 1) {
+      target.value = value.slice(-1);
+    }
+  };
+
+  // Handle focus to select all text (helpful for iOS)
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Select all text when focusing (helps with iOS input replacement)
+    e.target.select();
+  };
+
   return (
     <div className={`flex justify-center gap-2 ${className}`}>
       {Array.from({ length }, (_, index) => (
         <input
           key={index}
           type="text"
-          inputMode="text"
           ref={(ref) => {
             inputRefs.current[index] = ref;
           }}
           value={otp[index] || ''}
           onChange={(e) => handleChange(e, index)}
+          onInput={handleInput}
           onKeyDown={(e) => handleKeyDown(e, index)}
           onPaste={(e) => handlePaste(e, index)}
+          onFocus={handleFocus}
           className="w-14 h-14 text-center text-xl font-bold border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all duration-200"
           maxLength={1}
-          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="characters"
+          spellCheck="false"
           pattern="[A-Z0-9]*"
           style={{ textTransform: 'uppercase' }}
         />
