@@ -31,6 +31,7 @@ export const updateParticipantSchema = z.object({
 export const insertParticipantSchema = z.object({
   amount: participantAmountSchema,
   name: participantNameSchema,
+  markAsPaid: z.boolean(),
   currency: z.string().min(1),
 });
 

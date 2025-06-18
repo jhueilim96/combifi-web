@@ -158,7 +158,7 @@ export async function insertParticipantRecord(
         converted_amount: parseFloat(data.amount),
         converted_currency: data.currency,
         is_host: false,
-        is_paid: true,
+        is_paid: data.markAsPaid,
         name: data.name,
       });
 

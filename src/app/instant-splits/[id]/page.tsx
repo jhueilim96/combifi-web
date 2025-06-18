@@ -151,6 +151,7 @@ export default function RecordPage() {
           amount: participantAmount,
           name: newParticipantName,
           currency: record!.currency,
+          markAsPaid: markAsPaid,
         };
 
         // Validate data before sending to server
