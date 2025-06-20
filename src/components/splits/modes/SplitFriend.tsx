@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { HandCoins, Coins, Wallet } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
 import { participantInputSchema } from '@/lib/validations';
-import PaymentStatus from '../payment/PaymentStatus';
 import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
 import { FriendMetadata, retrieveSettleMetadata } from '@/lib/utils';
 import { formatCurrency, formatCurrencyAmount } from '@/lib/currencyUtils';
 import QRCode from '../payment/QRCode';
+import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
 
 interface SplitFriendProps {
   record: Tables<'one_time_split_expenses'>;
@@ -188,8 +188,11 @@ export default function SplitFriend({
           <QRCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
         )}
 
-        {/* Payment Status */}
-        <PaymentStatus markAsPaid={markAsPaid} setMarkAsPaid={setMarkAsPaid} />
+        {/* Payment Status Button Group */}
+        <PaymentStatusButtonGroup
+          markAsPaid={markAsPaid}
+          setMarkAsPaid={setMarkAsPaid}
+        />
 
         {/* Validation error message */}
         {validationError['generic'] && (
