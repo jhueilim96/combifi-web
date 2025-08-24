@@ -13,10 +13,12 @@ const getInstantSplitDetailedQuery = (id: string, password: string) =>
     .from('one_time_split_expenses')
     .select(
       'amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id,' +
-        'profiles (name, qr_key, qr_url, qr_expired_at)'
+        'profiles(name, payment_methods!payment_methods_user_id_fkey(provider, image_url, image_key, image_expired_at, is_primary))'
     )
     .eq('id', id)
     .eq('is_deleted', false)
+    .eq('profiles.payment_methods.is_active', true)
+    .eq('profiles.payment_methods.is_deleted', false)
     .single();
 
 type InstantSplitWithDetailedProfile = QueryData<
@@ -53,18 +55,27 @@ export async function getRecord(
       record.file_url = response.data.shareUrl;
     }
 
+    // Handle payment methods image URLs (replacing QR code logic)
     if (
-      record?.profiles.qr_expired_at &&
-      new Date(record.profiles.qr_expired_at) < new Date()
+      record?.profiles.payment_methods &&
+      Array.isArray(record.profiles.payment_methods)
     ) {
-      // console.log('QR code expired, fetching new QR file URL');
-      const response = await getQrFileSignedUrl(
-        record.profiles.qr_key,
-        password
-      );
-      // console.log('Updated QR code URL and expiration date in data:', data.profiles.qr_url, data.profiles.qr_expired_at);
-      record.profiles.qr_url = response.data.shareUrl;
-      record.profiles.qr_expired_at = response.data.expiredAt;
+      for (const paymentMethod of record.profiles.payment_methods) {
+        console.log(paymentMethod);
+        if (
+          paymentMethod?.image_expired_at &&
+          new Date(paymentMethod.image_expired_at) < new Date()
+        ) {
+          // console.log('Payment method image expired, fetching new signed URL');
+          const response = await getPaymentMethodImageUrl(
+            paymentMethod.image_key,
+            password
+          );
+          // console.log('Updated payment method image URL and expiration date');
+          paymentMethod.image_url = response.data.shareUrl;
+          paymentMethod.image_expired_at = response.data.expiredAt;
+        }
+      }
     }
 
     return record as InstantSplitWithDetailedProfile;
@@ -209,16 +220,16 @@ export async function updateParticipantRecord(
   }
 }
 
-async function getQrFileSignedUrl(qrKey: string, password: string) {
+async function getPaymentMethodImageUrl(imageKey: string, password: string) {
   try {
     // Get signed URL from backend
-    const response = await request(`/users/QR/${qrKey}/share`, password);
+    const response = await request(`/users/QR/${imageKey}/share`, password);
     if (!response.success) {
       throw new Error('Failed to get shared URL');
     }
     return response;
   } catch (error) {
-    console.error('Error fetching QR file URL:', error);
+    console.error('Error fetching payment method image URL:', error);
     throw error;
   }
 }

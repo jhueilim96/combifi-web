@@ -183,10 +183,26 @@ export default function SplitFriend({
           </div>
         )}
 
-        {/* QR Code Section */}
-        {record.profiles?.qr_url && record.profiles?.name && (
-          <QRCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
-        )}
+        {/* Payment Methods Section */}
+        {record.profiles?.payment_methods &&
+          record.profiles?.payment_methods.length > 0 &&
+          record.profiles?.name && (
+            <div className="space-y-3">
+              {record.profiles?.payment_methods.map(
+                (
+                  paymentMethod: Tables<'one_time_split_expenses'>['profiles']['payment_methods'][number],
+                  index: number
+                ) =>
+                  paymentMethod.image_url && (
+                    <QRCode
+                      key={index}
+                      name={`${record.profiles.name} - ${paymentMethod.provider}`}
+                      qrUrl={paymentMethod.image_url}
+                    />
+                  )
+              )}
+            </div>
+          )}
 
         {/* Payment Status Button Group */}
         <PaymentStatusButtonGroup

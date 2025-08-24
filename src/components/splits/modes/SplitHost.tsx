@@ -89,10 +89,23 @@ export default function SplitHost({
           amount={selectedParticipant?.amount.toFixed(2) || '0.00'}
         />
 
-        {/* QR Code Section */}
-        {record.profiles?.qr_url && record.profiles?.name && (
-          <QRCode name={record.profiles.name} qrUrl={record.profiles.qr_url} />
-        )}
+        {/* Payment Methods Section */}
+        {record.payment_methods &&
+          record.payment_methods.length > 0 &&
+          record.profiles?.name && (
+            <div className="space-y-3">
+              {record.payment_methods.map(
+                (paymentMethod, index) =>
+                  paymentMethod.image_url && (
+                    <QRCode
+                      key={index}
+                      name={`${record.profiles.name} - ${paymentMethod.provider}`}
+                      qrUrl={paymentMethod.image_url}
+                    />
+                  )
+              )}
+            </div>
+          )}
         {/* Mark as Paid toggle */}
         <PaymentStatusButtonGroup
           markAsPaid={markAsPaid}
