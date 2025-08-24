@@ -5,8 +5,9 @@ import { Loader2, Download } from 'lucide-react';
 interface QRCodeProps {
   name: string;
   qrUrl: string;
+  provider: string;
 }
-export default function QRCode({ name, qrUrl }: QRCodeProps) {
+export default function QRCode({ name, qrUrl, provider }: QRCodeProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEnlarged, setIsEnlarged] = useState(false);
   const [isQRLoading, setIsQRLoading] = useState(true);
@@ -55,11 +56,13 @@ export default function QRCode({ name, qrUrl }: QRCodeProps) {
 
   return (
     <div className="py-4">
-      <div className="text-center space-y-2 mb-2">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-          Pay {name} with DuitNow QR
-        </h3>
-      </div>
+      {name && provider && (
+        <div className="text-center space-y-2 mb-2">
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+            Pay {name} with {provider} QR
+          </h3>
+        </div>
+      )}
       <div className="flex justify-center bg-white p-4 rounded-lg">
         <div
           className="relative h-[200px] w-[200px]"

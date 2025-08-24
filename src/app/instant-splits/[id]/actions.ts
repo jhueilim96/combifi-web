@@ -19,6 +19,10 @@ const getInstantSplitDetailedQuery = (id: string, password: string) =>
     .eq('is_deleted', false)
     .eq('profiles.payment_methods.is_active', true)
     .eq('profiles.payment_methods.is_deleted', false)
+    .order('is_primary', {
+      ascending: false,
+      referencedTable: 'profiles.payment_methods',
+    })
     .single();
 
 type InstantSplitWithDetailedProfile = QueryData<

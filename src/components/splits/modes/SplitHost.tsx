@@ -5,7 +5,7 @@ import { Tables } from '@/lib/database.types';
 import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
-import QRCode from '../payment/QRCode';
+import TabbedPaymentMethods from '../payment/TabbedPaymentMethods';
 import AmountDisplay from '../payment/AmountDisplay';
 import { Crown } from 'lucide-react';
 
@@ -90,21 +90,13 @@ export default function SplitHost({
         />
 
         {/* Payment Methods Section */}
-        {record.payment_methods &&
-          record.payment_methods.length > 0 &&
+        {record.profiles?.payment_methods &&
+          record.profiles?.payment_methods.length > 0 &&
           record.profiles?.name && (
-            <div className="space-y-3">
-              {record.payment_methods.map(
-                (paymentMethod, index) =>
-                  paymentMethod.image_url && (
-                    <QRCode
-                      key={index}
-                      name={`${record.profiles.name} - ${paymentMethod.provider}`}
-                      qrUrl={paymentMethod.image_url}
-                    />
-                  )
-              )}
-            </div>
+            <TabbedPaymentMethods
+              paymentMethods={record.profiles.payment_methods}
+              hostName={record.profiles.name}
+            />
           )}
         {/* Mark as Paid toggle */}
         <PaymentStatusButtonGroup

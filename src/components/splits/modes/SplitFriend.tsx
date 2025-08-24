@@ -8,7 +8,7 @@ import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
 import { FriendMetadata, retrieveSettleMetadata } from '@/lib/utils';
 import { formatCurrency, formatCurrencyAmount } from '@/lib/currencyUtils';
-import QRCode from '../payment/QRCode';
+import TabbedPaymentMethods from '../payment/TabbedPaymentMethods';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
 
 interface SplitFriendProps {
@@ -187,21 +187,10 @@ export default function SplitFriend({
         {record.profiles?.payment_methods &&
           record.profiles?.payment_methods.length > 0 &&
           record.profiles?.name && (
-            <div className="space-y-3">
-              {record.profiles?.payment_methods.map(
-                (
-                  paymentMethod: Tables<'one_time_split_expenses'>['profiles']['payment_methods'][number],
-                  index: number
-                ) =>
-                  paymentMethod.image_url && (
-                    <QRCode
-                      key={index}
-                      name={`${record.profiles.name} - ${paymentMethod.provider}`}
-                      qrUrl={paymentMethod.image_url}
-                    />
-                  )
-              )}
-            </div>
+            <TabbedPaymentMethods
+              paymentMethods={record.profiles.payment_methods}
+              hostName={record.profiles.name}
+            />
           )}
 
         {/* Payment Status Button Group */}
