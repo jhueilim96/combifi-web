@@ -166,12 +166,6 @@ export async function insertParticipantRecord(
   try {
     // Create client and establish anonymous session for RLS policy
     const supabaseClient = createSupabaseClient(password);
-    const { error: authError } = await supabaseClient.auth.signInAnonymously();
-
-    if (authError) {
-      console.error('[DEBUG] insertParticipantRecord - Auth error:', authError);
-      throw new Error(`Authentication failed: ${authError.message}`);
-    }
 
     // Update the participant record with the new amount
     const { error } = await supabaseClient
@@ -218,12 +212,6 @@ export async function updateParticipantRecord(
   try {
     // Create client and establish anonymous session for RLS policy
     const supabaseClient = createSupabaseClient(password);
-    const { error: authError } = await supabaseClient.auth.signInAnonymously();
-
-    if (authError) {
-      console.error('[DEBUG] updateParticipantRecord - Auth error:', authError);
-      throw new Error(`Authentication failed: ${authError.message}`);
-    }
 
     // Update the participant record with the new amount
     const { error } = await supabaseClient
