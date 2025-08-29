@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Banknote } from 'lucide-react';
-import QRCode from './QRCode';
 import { Tables } from '@/lib/database.types';
+import QRCode from './QrCode';
 
 interface TabbedPaymentMethodsProps {
   paymentMethods: Tables<'one_time_split_expenses'>['profiles']['payment_methods'];

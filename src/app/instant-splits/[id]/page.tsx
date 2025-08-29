@@ -139,6 +139,10 @@ export default function RecordPage() {
           updateParticipantSchema.safeParse(dataToValidate);
 
         if (!validationResult.success) {
+          console.error(
+            '[DEBUG] handleUpdateRecord - Validation failed:',
+            validationResult.error
+          );
           const errorMessage = validationResult.error.errors
             .map((err) => err.message)
             .join(', ');
@@ -168,6 +172,10 @@ export default function RecordPage() {
         const validationResult = insertParticipantSchema.safeParse(insertData);
 
         if (!validationResult.success) {
+          console.error(
+            '[DEBUG] handleUpdateRecord - Validation failed:',
+            validationResult.error
+          );
           const errorMessage = validationResult.error.errors
             .map((err) => err.message)
             .join(', ');
@@ -187,6 +195,11 @@ export default function RecordPage() {
       setShowPromo(true); // Show promotional message after successful update
       setTimeout(() => setStatus(''), 3000); // Clear status after 3 seconds
     } catch (error) {
+      console.error('[DEBUG] handleUpdateRecord - Error caught:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       if (process.env.NODE_ENV === 'development') {
         setStatus(
           error instanceof Error ? error.message : 'Failed to update record.'

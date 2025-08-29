@@ -164,8 +164,17 @@ export async function insertParticipantRecord(
   }
 
   try {
+    // Create client and establish anonymous session for RLS policy
+    const supabaseClient = createSupabaseClient(password);
+    const { error: authError } = await supabaseClient.auth.signInAnonymously();
+
+    if (authError) {
+      console.error('[DEBUG] insertParticipantRecord - Auth error:', authError);
+      throw new Error(`Authentication failed: ${authError.message}`);
+    }
+
     // Update the participant record with the new amount
-    const { error } = await createSupabaseClient(password)
+    const { error } = await supabaseClient
       .from('one_time_split_expenses_participants')
       .insert({
         amount: parseFloat(data.amount),
@@ -178,12 +187,20 @@ export async function insertParticipantRecord(
       });
 
     if (error) {
-      throw new Error('Update failed');
+      console.error('[DEBUG] insertParticipantRecord - Supabase error:', {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      throw new Error(`Insert failed: ${error.message} (Code: ${error.code})`);
     }
 
+    console.log('[DEBUG] insertParticipantRecord - Success');
     return { success: true };
   } catch (error) {
-    console.error('Error updating record:', error);
+    console.error('[DEBUG] insertParticipantRecord - Caught error:', error);
     throw error;
   }
 }
@@ -199,8 +216,17 @@ export async function updateParticipantRecord(
   }
 
   try {
+    // Create client and establish anonymous session for RLS policy
+    const supabaseClient = createSupabaseClient(password);
+    const { error: authError } = await supabaseClient.auth.signInAnonymously();
+
+    if (authError) {
+      console.error('[DEBUG] updateParticipantRecord - Auth error:', authError);
+      throw new Error(`Authentication failed: ${authError.message}`);
+    }
+
     // Update the participant record with the new amount
-    const { error } = await createSupabaseClient(password)
+    const { error } = await supabaseClient
       .from('one_time_split_expenses_participants')
       .update({
         amount: parseFloat(data.amount),
@@ -214,12 +240,20 @@ export async function updateParticipantRecord(
       .eq('is_deleted', false);
 
     if (error) {
-      throw new Error('Update failed');
+      console.error('[DEBUG] updateParticipantRecord - Supabase error:', {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      throw new Error(`Update failed: ${error.message} (Code: ${error.code})`);
     }
 
+    console.log('[DEBUG] updateParticipantRecord - Success');
     return { success: true };
   } catch (error) {
-    console.error('Error updating record:', error);
+    console.error('[DEBUG] updateParticipantRecord - Caught error:', error);
     throw error;
   }
 }
