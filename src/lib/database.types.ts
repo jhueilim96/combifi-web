@@ -395,6 +395,7 @@ export type Database = {
           tx_type: string | null;
           updated_at: string | null;
           user_id: string;
+          file_url: string | null;
           profiles: {
             name: string | null;
             payment_methods: {
@@ -415,6 +416,7 @@ export type Database = {
           date: string;
           description: string;
           file_name?: string | null;
+          file_url?: string | null;
           id: string;
           is_deleted?: boolean;
           link?: string | null;
@@ -447,6 +449,7 @@ export type Database = {
           date?: string;
           description?: string;
           file_name?: string | null;
+          file_url?: string | null;
           id?: string;
           is_deleted?: boolean;
           link?: string | null;
