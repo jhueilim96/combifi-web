@@ -259,7 +259,7 @@ export default function RecordPage() {
     if (id) {
       fetchPublicRecord();
     }
-  }, [id]); // fetchPublicRecord is stable as it doesn't depend on external variables
+  }, [id, fetchPublicRecord]); // fetchPublicRecord is stable as it doesn't depend on external variables
 
   if (isLoading) {
     return <LoadingScreen />;
