@@ -403,6 +403,9 @@ export type Database = {
               image_url: string | null;
               image_key: string | null;
               image_expired_at: number | null;
+              label: string;
+              details: string | null;
+              type: string;
             }[];
           };
         };

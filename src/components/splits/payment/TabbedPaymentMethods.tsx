@@ -49,6 +49,8 @@ export default function TabbedPaymentMethods({
     );
   }
 
+  console.log(validPaymentMethods);
+
   return (
     <div className="space-y-4">
       {/* Payment Header */}
@@ -76,17 +78,19 @@ export default function TabbedPaymentMethods({
               }`}
             >
               <div className="flex items-center justify-center space-x-2">
-                <Image
-                  src={`/providers/provider-${method.provider.toLocaleLowerCase()}.svg`}
-                  alt={`${method.provider} logo`}
-                  width={20}
-                  height={20}
-                  className="flex-shrink-0"
-                />
+                {/* {method.label && (
+                  <Image
+                    src={`/providers/provider-${method.label.toLowerCase()}.svg`}
+                    alt={`${method.label} logo`}
+                    width={20}
+                    height={20}
+                    className="flex-shrink-0"
+                  />
+                )} */}
                 <span
                   className={`${activeTab === index ? 'font-bold text-indigo-700' : ''}`}
                 >
-                  {method.provider}
+                  {method.label}
                 </span>
               </div>
             </button>

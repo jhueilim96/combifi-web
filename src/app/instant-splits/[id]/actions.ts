@@ -13,7 +13,7 @@ const getInstantSplitDetailedQuery = (id: string, password: string) =>
     .from('one_time_split_expenses')
     .select(
       'amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id,' +
-        'profiles(name, payment_methods!payment_methods_user_id_fkey(provider, image_url, image_key, image_expired_at, is_primary))'
+        'profiles(name, payment_methods!payment_methods_user_id_fkey(image_url, image_key, image_expired_at, is_primary, type, label, details))'
     )
     .eq('id', id)
     .eq('is_deleted', false)
