@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Banknote } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
 import QRCode from './QrCode';
