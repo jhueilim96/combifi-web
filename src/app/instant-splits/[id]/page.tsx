@@ -13,6 +13,7 @@ import { Tables } from '@/lib/database.types';
 import SplitFriend from '@/components/splits/modes/SplitFriend';
 import SplitPerPax from '@/components/splits/modes/SplitPerPax';
 import SplitHost from '@/components/splits/modes/SplitHost';
+import { SelectedPaymentMethod } from '@/components/splits/payment/TabbedPaymentMethods';
 import AddNewParticipant from '@/components/splits/AddNewParticipant';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Button } from '@/components/ui/Button';
@@ -50,6 +51,8 @@ export default function RecordPage() {
   const [showSettleComponent, setShowSettleComponent] = useState(false);
   const [isUpdatingParticipant, setIsUpdatingParticipant] = useState(false);
   const [markAsPaid, setMarkAsPaid] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<SelectedPaymentMethod | null>(null);
 
   const [publicInfo, setPublicInfo] = useState<Partial<
     Tables<'one_time_split_expenses'>
@@ -121,11 +124,21 @@ export default function RecordPage() {
         // Import the validation schemas
         const { updateParticipantSchema } = await import('@/lib/validations');
 
+        // Build payment method metadata - always store selected method, paidAt only when paid
+        const paymentMethodMetadata = selectedPaymentMethod
+          ? {
+              label: selectedPaymentMethod.label,
+              type: selectedPaymentMethod.type,
+              paidAt: markAsPaid ? new Date().toISOString() : null,
+            }
+          : null;
+
         const updateData = {
           amount: participantAmount,
           name: newParticipantName,
           markAsPaid: markAsPaid,
           currency: record!.currency,
+          paymentMethodMetadata,
         };
 
         // For PERPAX mode, don't allow amount changes
@@ -161,11 +174,21 @@ export default function RecordPage() {
         // Import the validation schemas
         const { insertParticipantSchema } = await import('@/lib/validations');
 
+        // Build payment method metadata - always store selected method, paidAt only when paid
+        const paymentMethodMetadata = selectedPaymentMethod
+          ? {
+              label: selectedPaymentMethod.label,
+              type: selectedPaymentMethod.type,
+              paidAt: markAsPaid ? new Date().toISOString() : null,
+            }
+          : null;
+
         const insertData = {
           amount: participantAmount,
           name: newParticipantName,
           currency: record!.currency,
           markAsPaid: markAsPaid,
+          paymentMethodMetadata,
         };
 
         // Validate data before sending to server
@@ -252,6 +275,7 @@ export default function RecordPage() {
     setShowSettleComponent(false);
     setParticipantAmount('0.00');
     setShowNewNameInput(false);
+    setSelectedPaymentMethod(null);
     // Don't reset showPromo here - we want it to stay visible
   };
 
@@ -459,6 +483,7 @@ export default function RecordPage() {
                     markAsPaid={markAsPaid}
                     setMarkAsPaid={setMarkAsPaid}
                     handleBack={resetUIState}
+                    setSelectedPaymentMethod={setSelectedPaymentMethod}
                   />
                 )}
 
@@ -473,6 +498,7 @@ export default function RecordPage() {
                     markAsPaid={markAsPaid}
                     setMarkAsPaid={setMarkAsPaid}
                     handleBack={resetUIState}
+                    setSelectedPaymentMethod={setSelectedPaymentMethod}
                   />
                 )}
 
@@ -487,6 +513,7 @@ export default function RecordPage() {
                     setMarkAsPaid={setMarkAsPaid}
                     participants={participants}
                     handleBack={resetUIState}
+                    setSelectedPaymentMethod={setSelectedPaymentMethod}
                   />
                 )}
               </>

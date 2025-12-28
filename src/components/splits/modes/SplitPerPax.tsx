@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
 import SubmitButton from '../payment/SubmitButton';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
-import TabbedPaymentMethods from '../payment/TabbedPaymentMethods';
+import TabbedPaymentMethods, {
+  SelectedPaymentMethod,
+} from '../payment/TabbedPaymentMethods';
 import useValidationError from '@/hooks/useValidationError';
 import AmountDisplay from '../payment/AmountDisplay';
 import { PerPaxMetadata, retrieveSettleMetadata } from '@/lib/utils';
@@ -20,10 +22,12 @@ interface SplitPerPaxProps {
   markAsPaid: boolean;
   setMarkAsPaid: (isPaid: boolean) => void;
   handleBack: () => void;
+  setSelectedPaymentMethod: (method: SelectedPaymentMethod | null) => void;
 }
 
 export default function SplitPerPax({
   record,
+  selectedParticipant,
   newParticipantName,
   handleUpdateRecord,
   setParticipantAmount,
@@ -31,6 +35,7 @@ export default function SplitPerPax({
   markAsPaid,
   handleBack,
   setMarkAsPaid,
+  setSelectedPaymentMethod,
 }: SplitPerPaxProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { validationError, updateValidationError, resetValidationError } =
@@ -91,6 +96,14 @@ export default function SplitPerPax({
             <TabbedPaymentMethods
               paymentMethods={record.profiles.payment_methods}
               hostName={record.profiles.name}
+              onPaymentMethodChange={setSelectedPaymentMethod}
+              initialPaymentMethodLabel={
+                (
+                  selectedParticipant?.payment_method_metadata as {
+                    label?: string;
+                  } | null
+                )?.label
+              }
             />
           )}
 

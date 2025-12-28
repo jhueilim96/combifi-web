@@ -21,11 +21,20 @@ export const participantInputSchema = z.object({
   name: participantNameSchema,
 });
 
+export const paymentMethodMetadataSchema = z
+  .object({
+    label: z.string(),
+    type: z.string(),
+    paidAt: z.string().nullable(),
+  })
+  .nullable();
+
 export const updateParticipantSchema = z.object({
   amount: participantAmountSchema,
   name: participantNameSchema,
   markAsPaid: z.boolean(),
   currency: z.string().min(1),
+  paymentMethodMetadata: paymentMethodMetadataSchema,
 });
 
 export const insertParticipantSchema = z.object({
@@ -33,6 +42,7 @@ export const insertParticipantSchema = z.object({
   name: participantNameSchema,
   markAsPaid: z.boolean(),
   currency: z.string().min(1),
+  paymentMethodMetadata: paymentMethodMetadataSchema,
 });
 
 export type UpdateParticipantInput = z.infer<typeof updateParticipantSchema>;

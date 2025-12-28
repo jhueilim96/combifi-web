@@ -178,6 +178,7 @@ export async function insertParticipantRecord(
         is_host: false,
         is_paid: data.markAsPaid,
         name: data.name,
+        payment_method_metadata: data.paymentMethodMetadata,
       });
 
     if (error) {
@@ -222,6 +223,7 @@ export async function updateParticipantRecord(
         name: data.name,
         converted_amount: parseFloat(data.amount),
         converted_currency: data.currency,
+        payment_method_metadata: data.paymentMethodMetadata,
       })
       .eq('id', participantId)
       .eq('expense_id', id)

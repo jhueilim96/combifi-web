@@ -5,7 +5,9 @@ import { Tables } from '@/lib/database.types';
 import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
-import TabbedPaymentMethods from '../payment/TabbedPaymentMethods';
+import TabbedPaymentMethods, {
+  SelectedPaymentMethod,
+} from '../payment/TabbedPaymentMethods';
 import AmountDisplay from '../payment/AmountDisplay';
 import { Crown } from 'lucide-react';
 
@@ -19,6 +21,7 @@ interface SplitHostProps {
   markAsPaid: boolean;
   setMarkAsPaid: (isPaid: boolean) => void;
   handleBack: () => void;
+  setSelectedPaymentMethod: (method: SelectedPaymentMethod | null) => void;
 }
 
 export default function SplitHost({
@@ -30,6 +33,7 @@ export default function SplitHost({
   markAsPaid,
   setMarkAsPaid,
   handleBack,
+  setSelectedPaymentMethod,
 }: SplitHostProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { validationError } = useValidationError();
@@ -96,6 +100,14 @@ export default function SplitHost({
             <TabbedPaymentMethods
               paymentMethods={record.profiles.payment_methods}
               hostName={record.profiles.name}
+              onPaymentMethodChange={setSelectedPaymentMethod}
+              initialPaymentMethodLabel={
+                (
+                  selectedParticipant?.payment_method_metadata as {
+                    label?: string;
+                  } | null
+                )?.label
+              }
             />
           )}
         {/* Mark as Paid toggle */}

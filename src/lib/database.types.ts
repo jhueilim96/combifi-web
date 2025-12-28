@@ -62,6 +62,8 @@ export type Database = {
           emoji: string;
           group_id: string | null;
           id: string;
+          is_active: boolean;
+          is_archived: boolean;
           is_deleted: boolean;
           is_expense: boolean;
           is_system: boolean;
@@ -74,6 +76,8 @@ export type Database = {
           emoji: string;
           group_id?: string | null;
           id: string;
+          is_active?: boolean;
+          is_archived?: boolean;
           is_deleted?: boolean;
           is_expense: boolean;
           is_system: boolean;
@@ -86,6 +90,8 @@ export type Database = {
           emoji?: string;
           group_id?: string | null;
           id?: string;
+          is_active?: boolean;
+          is_archived?: boolean;
           is_deleted?: boolean;
           is_expense?: boolean;
           is_system?: boolean;
@@ -419,7 +425,6 @@ export type Database = {
           date: string;
           description: string;
           file_name?: string | null;
-          file_url?: string | null;
           id: string;
           is_deleted?: boolean;
           link?: string | null;
@@ -431,6 +436,7 @@ export type Database = {
           tx_type?: string | null;
           updated_at?: string | null;
           user_id: string;
+          file_url?: string | null;
           profiles: {
             name: string | null;
             payment_methods: {
@@ -452,7 +458,6 @@ export type Database = {
           date?: string;
           description?: string;
           file_name?: string | null;
-          file_url?: string | null;
           id?: string;
           is_deleted?: boolean;
           link?: string | null;
@@ -464,6 +469,7 @@ export type Database = {
           tx_type?: string | null;
           updated_at?: string | null;
           user_id?: string;
+          file_url?: string | null;
           profiles: {
             name: string | null;
             payment_methods: {
@@ -504,6 +510,7 @@ export type Database = {
           is_host: boolean | null;
           is_paid: boolean;
           name: string;
+          payment_method_metadata: Json | null;
           updated_at: string | null;
           user_id: string | null;
         };
@@ -518,6 +525,7 @@ export type Database = {
           is_host?: boolean | null;
           is_paid?: boolean;
           name: string;
+          payment_method_metadata?: Json | null;
           updated_at?: string | null;
           user_id?: string | null;
         };
@@ -532,6 +540,7 @@ export type Database = {
           is_host?: boolean | null;
           is_paid?: boolean;
           name?: string;
+          payment_method_metadata?: Json | null;
           updated_at?: string | null;
           user_id?: string | null;
         };
@@ -555,6 +564,7 @@ export type Database = {
       payment_methods: {
         Row: {
           created_at: string;
+          details: string | null;
           id: string;
           image_expired_at: number | null;
           image_key: string | null;
@@ -562,13 +572,15 @@ export type Database = {
           is_active: boolean;
           is_deleted: boolean;
           is_primary: boolean;
-          provider: string;
+          label: string | null;
+          provider: string | null;
           type: string;
           updated_at: string;
           user_id: string;
         };
         Insert: {
           created_at?: string;
+          details?: string | null;
           id?: string;
           image_expired_at?: number | null;
           image_key?: string | null;
@@ -576,13 +588,15 @@ export type Database = {
           is_active?: boolean;
           is_deleted?: boolean;
           is_primary?: boolean;
-          provider: string;
+          label?: string | null;
+          provider?: string | null;
           type?: string;
           updated_at?: string;
           user_id: string;
         };
         Update: {
           created_at?: string;
+          details?: string | null;
           id?: string;
           image_expired_at?: number | null;
           image_key?: string | null;
@@ -590,7 +604,8 @@ export type Database = {
           is_active?: boolean;
           is_deleted?: boolean;
           is_primary?: boolean;
-          provider?: string;
+          label?: string | null;
+          provider?: string | null;
           type?: string;
           updated_at?: string;
           user_id?: string;
@@ -610,6 +625,8 @@ export type Database = {
           created_at: string;
           emoji: string;
           id: string;
+          is_active: boolean;
+          is_archived: boolean;
           is_deleted: boolean;
           is_expense: boolean;
           is_system: boolean;
@@ -621,6 +638,8 @@ export type Database = {
           created_at?: string;
           emoji: string;
           id?: string;
+          is_active?: boolean;
+          is_archived?: boolean;
           is_deleted?: boolean;
           is_expense: boolean;
           is_system: boolean;
@@ -632,6 +651,8 @@ export type Database = {
           created_at?: string;
           emoji?: string;
           id?: string;
+          is_active?: boolean;
+          is_archived?: boolean;
           is_deleted?: boolean;
           is_expense?: boolean;
           is_system?: boolean;
@@ -721,9 +742,10 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string;
-          currency: string;
+          currency: string | null;
           id: string;
           is_deleted: boolean;
+          monthly_total_budget: number | null;
           name: string | null;
           qr_expired_at: number | null;
           qr_key: string | null;
@@ -733,9 +755,10 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
-          currency?: string;
+          currency?: string | null;
           id: string;
           is_deleted?: boolean;
+          monthly_total_budget?: number | null;
           name?: string | null;
           qr_expired_at?: number | null;
           qr_key?: string | null;
@@ -745,9 +768,10 @@ export type Database = {
         };
         Update: {
           created_at?: string;
-          currency?: string;
+          currency?: string | null;
           id?: string;
           is_deleted?: boolean;
+          monthly_total_budget?: number | null;
           name?: string | null;
           qr_expired_at?: number | null;
           qr_key?: string | null;
@@ -756,6 +780,230 @@ export type Database = {
           walkthrough_progress?: Json;
         };
         Relationships: [];
+      };
+      subscription_invites: {
+        Row: {
+          accepted_at: string | null;
+          accepted_by: string | null;
+          created_at: string | null;
+          expires_at: string;
+          id: string;
+          invited_by: string;
+          status: string;
+          subscription_id: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          created_at?: string | null;
+          expires_at: string;
+          id?: string;
+          invited_by: string;
+          status?: string;
+          subscription_id: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          created_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          invited_by?: string;
+          status?: string;
+          subscription_id?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'subscription_invites_subscription_id_fkey';
+            columns: ['subscription_id'];
+            isOneToOne: false;
+            referencedRelation: 'subscriptions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      subscription_members: {
+        Row: {
+          accepted_at: string | null;
+          created_at: string | null;
+          id: string;
+          invited_at: string | null;
+          invited_by: string | null;
+          removed_at: string | null;
+          role: string;
+          status: string;
+          subscription_id: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          created_at?: string | null;
+          id?: string;
+          invited_at?: string | null;
+          invited_by?: string | null;
+          removed_at?: string | null;
+          role?: string;
+          status?: string;
+          subscription_id: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          created_at?: string | null;
+          id?: string;
+          invited_at?: string | null;
+          invited_by?: string | null;
+          removed_at?: string | null;
+          role?: string;
+          status?: string;
+          subscription_id?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'subscription_members_subscription_id_fkey';
+            columns: ['subscription_id'];
+            isOneToOne: false;
+            referencedRelation: 'subscriptions';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      subscriptions: {
+        Row: {
+          cancelled_at: string | null;
+          created_at: string | null;
+          expires_at: string | null;
+          id: string;
+          max_members: number;
+          plan_display_name: string | null;
+          product_id: string;
+          rc_customer_id: string;
+          rc_original_transaction_id: string | null;
+          status: string;
+          tier: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          cancelled_at?: string | null;
+          created_at?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          max_members?: number;
+          plan_display_name?: string | null;
+          product_id: string;
+          rc_customer_id: string;
+          rc_original_transaction_id?: string | null;
+          status?: string;
+          tier?: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          cancelled_at?: string | null;
+          created_at?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          max_members?: number;
+          plan_display_name?: string | null;
+          product_id?: string;
+          rc_customer_id?: string;
+          rc_original_transaction_id?: string | null;
+          status?: string;
+          tier?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      user_currency_periods: {
+        Row: {
+          created_at: string;
+          currency: string;
+          effective_at: string;
+          id: string;
+          is_deleted: boolean;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          currency: string;
+          effective_at?: string;
+          id?: string;
+          is_deleted?: boolean;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          currency?: string;
+          effective_at?: string;
+          id?: string;
+          is_deleted?: boolean;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_currency_period_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      user_transaction_images: {
+        Row: {
+          created_at: string;
+          id: string;
+          image_key: string;
+          image_size: number;
+          is_active: boolean;
+          is_deleted: boolean;
+          transaction_id: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id: string;
+          image_key: string;
+          image_size: number;
+          is_active?: boolean;
+          is_deleted?: boolean;
+          transaction_id?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          image_key?: string;
+          image_size?: number;
+          is_active?: boolean;
+          is_deleted?: boolean;
+          transaction_id?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_transaction_images_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Views: {
@@ -850,14 +1098,9 @@ export type Database = {
       };
     };
     Functions: {
-      get_groups_for_user: {
-        Args: { user_id: string };
-        Returns: string[];
-      };
-      get_header: {
-        Args: { item: string };
-        Returns: string;
-      };
+      get_groups_for_user: { Args: { user_id: string }; Returns: string[] };
+      get_header: { Args: { item: string }; Returns: string };
+      get_user_entitlement: { Args: { p_user_id: string }; Returns: Json };
       pull: {
         Args: {
           current_user_id: string;
@@ -884,15 +1127,6 @@ export type Database = {
         };
         Returns: Json;
       };
-      pull2_5: {
-        Args: {
-          current_user_id: string;
-          group_pre_join_meta: Json;
-          last_pulled_at: number;
-          one_time_split_expenses_meta: Json;
-        };
-        Returns: Json;
-      };
       pull3: {
         Args: {
           current_user_id: string;
@@ -902,7 +1136,7 @@ export type Database = {
         };
         Returns: Json;
       };
-      pull3_5: {
+      pull4: {
         Args: {
           current_user_id: string;
           group_pre_join_meta: Json;
@@ -911,26 +1145,20 @@ export type Database = {
         };
         Returns: Json;
       };
-      push: {
-        Args: { changes: Json };
-        Returns: undefined;
+      pull5: {
+        Args: {
+          current_user_id: string;
+          group_pre_join_meta: Json;
+          last_pulled_at: number;
+          one_time_split_expenses_meta: Json;
+        };
+        Returns: Json;
       };
-      push1: {
-        Args: { changes: Json };
-        Returns: undefined;
-      };
-      push2_5: {
-        Args: { changes: Json };
-        Returns: undefined;
-      };
-      push3: {
-        Args: { changes: Json };
-        Returns: undefined;
-      };
-      push3_5: {
-        Args: { changes: Json };
-        Returns: undefined;
-      };
+      push: { Args: { changes: Json }; Returns: undefined };
+      push1: { Args: { changes: Json }; Returns: undefined };
+      push3: { Args: { changes: Json }; Returns: undefined };
+      push4: { Args: { changes: Json }; Returns: undefined };
+      push5: { Args: { changes: Json }; Returns: undefined };
       update_instant_split_status: {
         Args: { eps?: number; p_expense_id: string };
         Returns: {

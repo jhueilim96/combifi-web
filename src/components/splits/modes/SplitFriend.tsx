@@ -8,7 +8,9 @@ import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
 import { FriendMetadata, retrieveSettleMetadata } from '@/lib/utils';
 import { formatCurrency, formatCurrencyAmount } from '@/lib/currencyUtils';
-import TabbedPaymentMethods from '../payment/TabbedPaymentMethods';
+import TabbedPaymentMethods, {
+  SelectedPaymentMethod,
+} from '../payment/TabbedPaymentMethods';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
 
 interface SplitFriendProps {
@@ -23,6 +25,7 @@ interface SplitFriendProps {
   markAsPaid: boolean;
   setMarkAsPaid: (isPaid: boolean) => void;
   handleBack: () => void;
+  setSelectedPaymentMethod: (method: SelectedPaymentMethod | null) => void;
 }
 
 export default function SplitFriend({
@@ -36,6 +39,7 @@ export default function SplitFriend({
   markAsPaid,
   setMarkAsPaid,
   handleBack,
+  setSelectedPaymentMethod,
 }: SplitFriendProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [totalContributed, setTotalContributed] = useState(0);
@@ -190,6 +194,14 @@ export default function SplitFriend({
             <TabbedPaymentMethods
               paymentMethods={record.profiles.payment_methods}
               hostName={record.profiles.name}
+              onPaymentMethodChange={setSelectedPaymentMethod}
+              initialPaymentMethodLabel={
+                (
+                  selectedParticipant?.payment_method_metadata as {
+                    label?: string;
+                  } | null
+                )?.label
+              }
             />
           )}
 
