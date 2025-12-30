@@ -6,8 +6,14 @@ interface QRCodeProps {
   name: string;
   qrUrl: string;
   provider: string;
+  embedded?: boolean; // When true, simplifies outer container (parent handles styling)
 }
-export default function QRCode({ name, qrUrl, provider }: QRCodeProps) {
+export default function QRCode({
+  name,
+  qrUrl,
+  provider,
+  embedded = false,
+}: QRCodeProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEnlarged, setIsEnlarged] = useState(false);
   const [isQRLoading, setIsQRLoading] = useState(true);
@@ -55,17 +61,19 @@ export default function QRCode({ name, qrUrl, provider }: QRCodeProps) {
   };
 
   return (
-    <div className="py-4">
-      {name && provider && (
+    <div className={embedded ? '' : 'py-4'}>
+      {!embedded && name && provider && (
         <div className="text-center space-y-2 mb-2">
           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
             Pay {name} with {provider} QR
           </h3>
         </div>
       )}
-      <div className="flex justify-center bg-white p-4 rounded-lg">
+      <div
+        className={`flex justify-center ${embedded ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white'} p-6 rounded-xl`}
+      >
         <div
-          className="relative h-[200px] w-[200px]"
+          className="relative h-[200px] w-[200px] cursor-pointer"
           onClick={() => {
             setIsEnlarged(true);
             setIsEnlargedQRLoading(true);
@@ -73,7 +81,7 @@ export default function QRCode({ name, qrUrl, provider }: QRCodeProps) {
         >
           {/* Loading indicator for main QR code */}
           {isQRLoading && (
-            <div className="absolute inset-0 flex items-center justify-center border border-indigo-50 rounded">
+            <div className="absolute inset-0 flex items-center justify-center border border-gray-200 dark:border-gray-700 rounded-lg">
               <Loader2 size={24} className="animate-spin text-indigo-400" />
             </div>
           )}
@@ -83,7 +91,7 @@ export default function QRCode({ name, qrUrl, provider }: QRCodeProps) {
             alt="Payment QR Code"
             fill
             sizes="200px"
-            className={`rounded object-contain transition-opacity duration-300 ${isQRLoading ? 'opacity-0' : 'opacity-100'}`}
+            className={`rounded-lg object-contain transition-opacity duration-300 ${isQRLoading ? 'opacity-0' : 'opacity-100'}`}
             unoptimized={true} // Use unoptimized for S3 signed URLs as they can't be optimized by Next.js
             onLoad={() => setIsQRLoading(false)}
             onError={() => setIsQRLoading(false)}
@@ -115,28 +123,25 @@ export default function QRCode({ name, qrUrl, provider }: QRCodeProps) {
           </div>
         )}
       </div>
-      <div className="mt-2">
+      <div className="mt-3">
         <button
           onClick={handleDownload}
           disabled={isDownloading}
-          className={`flex items-center justify-center w-full py-2 px-4 ${
+          className={`flex items-center justify-center w-full py-2.5 px-4 rounded-lg transition-all duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-400 ${
             isDownloading
-              ? 'bg-gray-300 dark:bg-gray-800 cursor-not-allowed'
-              : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'
-          } text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 text-sm font-medium`}
+              ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200'
+          }`}
         >
           {isDownloading ? (
             <>
-              <Loader2
-                size={20}
-                className="animate-spin mr-2 text-gray-600 dark:text-gray-400"
-              />
+              <Loader2 size={18} className="animate-spin mr-2" />
               Downloading...
             </>
           ) : (
             <>
-              <Download size={20} className="mr-2" />
-              Download
+              <Download size={18} className="mr-2" />
+              Download QR Code
             </>
           )}
         </button>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Banknote } from 'lucide-react';
+import { QrCode, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
 import QRCode from './QrCode';
 
@@ -14,7 +14,8 @@ export default function TabbedPaymentMethods({
   paymentMethods,
   hostName,
 }: TabbedPaymentMethodsProps) {
-  const [activeTab, setActiveTab] = useState(0);
+  // null = list view, number = selected method index (detail view)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   // Filter out payment methods without image URLs
   const validPaymentMethods = paymentMethods.filter(
@@ -25,87 +26,94 @@ export default function TabbedPaymentMethods({
     return null;
   }
 
-  // If only one payment method, don't show tabs
+  // If only one payment method, show QR directly
   if (validPaymentMethods.length === 1) {
     return (
       <div className="space-y-4">
-        {/* Payment Header */}
-        <div className="flex space-x-3 items-center text-gray-600 dark:text-gray-400 mb-4">
-          <Banknote size={20} color="grey" />
-          <span>
-            Pay {hostName} with {validPaymentMethods[0].provider}
+        <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 mb-3">
+          <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <QrCode size={20} />
+          </div>
+          <span className="text-sm">
+            Pay {hostName} with {validPaymentMethods[0].label}
           </span>
         </div>
 
-        <div className="space-y-3">
-          <QRCode
-            name=""
-            qrUrl={validPaymentMethods[0].image_url!}
-            provider=""
-          />
-        </div>
+        <QRCode
+          name=""
+          qrUrl={validPaymentMethods[0].image_url!}
+          provider=""
+          embedded
+        />
       </div>
     );
   }
 
-  console.log(validPaymentMethods);
+  // Detail view - showing QR code for selected method
+  if (selectedIndex !== null) {
+    const selectedMethod = validPaymentMethods[selectedIndex];
+    return (
+      <div className="space-y-4">
+        {/* Back button */}
+        <button
+          onClick={() => setSelectedIndex(null)}
+          className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+        >
+          <ChevronLeft size={20} />
+          <span className="text-sm font-medium">Back to payment methods</span>
+        </button>
 
-  return (
-    <div className="space-y-4">
-      {/* Payment Header */}
-      <div className="flex space-x-3 items-center text-gray-600 dark:text-gray-400 mb-4">
-        <Banknote size={24} color="grey" />
-        <span>Pay {hostName} with:</span>
+        <QRCode
+          name=""
+          qrUrl={selectedMethod.image_url!}
+          provider=""
+          embedded
+        />
       </div>
+    );
+  }
 
-      {/* Tab Navigation - similar to PaymentStatusButtonGroup style */}
-      <div className="w-4/5 mx-auto">
-        <div className="flex">
-          {validPaymentMethods.map((method, index) => (
+  // List view - showing all payment methods
+  return (
+    <div className="space-y-3">
+      {/* Header */}
+      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+        Pay {hostName} using
+      </p>
+
+      {/* Payment methods list */}
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl overflow-hidden">
+        {validPaymentMethods.map((method, index) => (
+          <div key={index}>
             <button
-              key={index}
-              type="button"
-              onClick={() => setActiveTab(index)}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-all duration-200 shadow border ${
-                index === 0 ? 'rounded-l-lg' : ''
-              } ${
-                index === validPaymentMethods.length - 1 ? 'rounded-r-lg' : ''
-              } ${
-                activeTab === index
-                  ? 'bg-indigo-100/50 text-gray-900 border-indigo-600 hover:bg-indigo-50/50'
-                  : 'bg-white text-gray-400 border-stone-200 hover:bg-stone-50/50'
-              }`}
+              onClick={() => setSelectedIndex(index)}
+              className="flex items-center justify-between w-full h-14 px-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
             >
-              <div className="flex items-center justify-center space-x-2">
-                {/* {method.label && (
-                  <Image
-                    src={`/providers/provider-${method.label.toLowerCase()}.svg`}
-                    alt={`${method.label} logo`}
-                    width={20}
-                    height={20}
-                    className="flex-shrink-0"
+              <div className="flex items-center gap-3">
+                {/* Icon container */}
+                <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <QrCode
+                    size={18}
+                    className="text-gray-600 dark:text-gray-400"
                   />
-                )} */}
-                <span
-                  className={`${activeTab === index ? 'font-bold text-indigo-700' : ''}`}
-                >
-                  {method.label}
+                </div>
+                {/* Label */}
+                <span className="text-gray-800 dark:text-gray-200 font-medium">
+                  {method.label || method.provider}
                 </span>
               </div>
+              {/* Chevron */}
+              <ChevronRight
+                size={20}
+                className="text-gray-400 dark:text-gray-500"
+              />
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab Content */}
-      <div className="space-y-3">
-        {validPaymentMethods[activeTab]?.image_url && (
-          <QRCode
-            name=""
-            qrUrl={validPaymentMethods[activeTab].image_url!}
-            provider=""
-          />
-        )}
+            {/* Divider between items (except last) */}
+            {index < validPaymentMethods.length - 1 && (
+              <div className="border-t border-gray-100 dark:border-gray-700 mx-4" />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,0 +1,85 @@
+/* Animation Module for Instant Split Page */
+
+.runningLoader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.runner {
+  width: 20px;
+  height: 20px;
+  background-color: #4f46e5;
+  border-radius: 50%;
+  position: absolute;
+  top: 30px;
+  left: 0;
+  animation:
+    run 0.5s linear infinite,
+    bounce 0.5s ease-in-out infinite;
+}
+
+.ground {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: #dcdcdc;
+  overflow: hidden;
+}
+
+.ground::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    #ccc,
+    #ccc 10px,
+    #eee 10px,
+    #eee 20px
+  );
+  animation: moveGround 1s linear infinite;
+}
+
+.loadingText {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  font-size: 14px;
+  color: #4a4a4a;
+  font-weight: 600;
+  margin-top: 3rem;
+}
+
+@keyframes run {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: calc(100% - 20px);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    top: 30px;
+  }
+  50% {
+    top: 10px;
+  }
+}
+
+@keyframes moveGround {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-20px);
+  }
+}

@@ -112,39 +112,53 @@ export default function SplitFriend({
     : remainingAmount;
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-6 mt-6">
       {/* Pay What You Spend Header + Description */}
       <div className="text-center space-y-2 mb-6">
-        <div className="text-2xl font-medium text-gray-800 dark:text-gray-200 flex items-center justify-center">
-          <HandCoins
-            size={24}
-            className="mr-2 text-indigo-500 dark:text-indigo-400"
-          />
+        <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2">
+          <div className="w-9 h-9 rounded-lg bg-gray-50 dark:bg-indigo-900/50 flex items-center justify-center">
+            <HandCoins
+              size={20}
+              className="text-indigo-600 dark:text-indigo-400"
+            />
+          </div>
           Pay What You Spend
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          You pick how much to pay for this expense. View the remaining balance
-          and enter your portion.
+        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+          Choose your portion of the expense. The remaining balance updates as
+          you type.
         </p>
       </div>
 
       <div className="space-y-6">
         {/* Amount Info and Input Field Section */}
         <div>
-          <div className="flex space-x-3 items-center text-gray-600 dark:text-gray-400 mb-3">
-            <Coins size={20} color="grey" />
-            <span>
-              {newParticipantName}, Enter Your Portion [Remaining:{' '}
-              {formatCurrencyAmount(displayRemainingAmount, record.currency)}]
-            </span>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <Coins size={18} className="text-gray-600 dark:text-gray-400" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                Enter Your Portion
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Remaining:{' '}
+                <span className="font-semibold">
+                  {formatCurrencyAmount(
+                    displayRemainingAmount,
+                    record.currency
+                  )}
+                </span>
+              </p>
+            </div>
           </div>
 
           {/* Amount input field */}
           <div className="relative">
             <div
-              className={`absolute inset-y-0 left-0 pl-3 ${validationError['amount'] ? 'pb-6' : ''} flex items-center pointer-events-none`}
+              className={`absolute inset-y-0 left-0 pl-4 ${validationError['amount'] ? 'pb-6' : ''} flex items-center pointer-events-none`}
             >
-              <span className="text-gray-500 text-lg">
+              <span className="text-gray-500 dark:text-gray-400 text-lg">
                 {formatCurrency(record.currency)}
               </span>
             </div>
@@ -154,16 +168,16 @@ export default function SplitFriend({
               step="0.01"
               placeholder="0.00"
               min={0}
-              className={`w-full px-4 py-5 pl-10 border ${
+              className={`w-full px-4 py-5 pl-12 border rounded-lg transition-colors text-4xl ${
                 validationError['amount']
-                  ? 'border-red-500 dark:border-red-400'
-                  : 'border-gray-300 dark:border-gray-600'
-              } rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white text-4xl dark:bg-gray-700 text-gray-900 dark:text-gray-100`}
+                  ? 'border-red-500 dark:border-red-400 bg-red-50 dark:bg-red-900/10'
+                  : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
+              } text-gray-900 dark:text-gray-100`}
               value={participantAmount}
               onChange={(e) => handleAmountChange(e.target.value)}
             />
             {validationError['amount'] && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                 {validationError['amount']}
               </p>
             )}
@@ -173,11 +187,18 @@ export default function SplitFriend({
         {/* Payment Instructions */}
         {paymentInstruction && (
           <div>
-            <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 mb-2">
-              <Wallet size={20} color="grey" />
-              <span>Payment Instructions</span>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <Wallet
+                  size={18}
+                  className="text-gray-600 dark:text-gray-400"
+                />
+              </div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                Payment Instructions
+              </p>
             </div>
-            <div className="bg-indigo-50 p-4 rounded-lg text-gray-800 dark:text-gray-200 whitespace-pre-line">
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 p-4 rounded-xl text-gray-800 dark:text-gray-200 whitespace-pre-line text-sm">
               {paymentInstruction}
             </div>
           </div>

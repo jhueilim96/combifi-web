@@ -24,10 +24,10 @@ export default function SubmitButton({
     );
   };
   return (
-    <div className="flex mt-10 space-x-3">
+    <div className="flex gap-3 mt-8">
       <button
         type="button"
-        className="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
+        className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200 font-semibold text-base border border-gray-200 dark:border-gray-600"
         onClick={() => {
           handleBack();
         }}
@@ -39,6 +39,7 @@ export default function SubmitButton({
         disabled={hasValidationErrors() || isLoading}
         isLoading={isLoading}
         onClick={handleSubmit}
+        className="flex-1"
       />
     </div>
   );
