@@ -42,6 +42,7 @@ export default function RecordPage() {
   const [participantAmount, setParticipantAmount] = useState('');
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isJoiningRecord, setIsJoiningRecord] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [selectedParticipant, setSelectedParticipant] =
     useState<Tables<'one_time_split_expenses_participants'> | null>(null);
@@ -79,15 +80,16 @@ export default function RecordPage() {
     }
   }, [id]);
 
-  const fetchRecord = async () => {
-    if (!id || !password) return;
+  const fetchRecord = async (passwordOverride?: string) => {
+    const pwd = passwordOverride || password;
+    if (!id || !pwd) return;
 
-    setIsLoading(true);
-    setStatus('Fetching ...');
+    setIsJoiningRecord(true);
+    setStatus('');
 
     try {
-      const data = await getRecord(id, password);
-      const participantsData = await getParticipantRecords(id, password);
+      const data = await getRecord(id, pwd);
+      const participantsData = await getParticipantRecords(id, pwd);
       setRecord(data);
       setParticipants(
         Array.isArray(participantsData) ? participantsData : [participantsData]
@@ -105,7 +107,7 @@ export default function RecordPage() {
         setStatus('Oops. Something went wrong.');
       }
     } finally {
-      setIsLoading(false);
+      setIsJoiningRecord(false);
     }
   };
 
@@ -270,56 +272,73 @@ export default function RecordPage() {
 
   if (showPasswordModal && publicInfo) {
     return (
-      <div className="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50 px-4 animate-fadeIn">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-lg w-full border border-gray-100 dark:border-gray-700 animate-scaleIn">
-          <div className="flex items-center mb-8 gap-4">
-            {/* Circular avatar */}
-            <div className="w-14 h-14 bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-800 dark:to-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xl font-bold flex-shrink-0 shadow-sm">
+      <div className="fixed inset-0 bg-gray-100 dark:bg-gray-950 flex items-start justify-center z-50 px-4 pt-12 sm:pt-20 animate-fadeIn overflow-y-auto">
+        <div className="bg-gray-50 dark:bg-gray-900 p-5 rounded-2xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-800 animate-scaleIn mb-8">
+          {/* Invitation header - compact */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-800 dark:to-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-sm font-bold flex-shrink-0">
               {publicInfo.profiles?.name
                 ? publicInfo.profiles.name.charAt(0).toUpperCase()
                 : '?'}
             </div>
-
-            {/* Invitation text */}
-            <div className="flex-1">
-              <p className="text-gray-800 dark:text-gray-200 text-lg font-medium leading-relaxed">
-                <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
-                  {publicInfo.profiles?.name}
-                </span>{' '}
-                has invited you to split
-                <span className="block mt-1 font-semibold text-indigo-600 dark:text-indigo-400">
-                  {publicInfo.description}
-                </span>
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                {formatLocalDateTime(publicInfo.date)}
-              </p>
-            </div>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              <span className="font-medium text-gray-800 dark:text-gray-200">
+                {publicInfo.profiles?.name}
+              </span>{' '}
+              invited you to join
+            </p>
           </div>
 
-          <div className="space-y-6">
-            <div>
-              <p className="text-gray-700 dark:text-gray-300 font-medium mb-4 text-sm uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          {/* Split details - compact white card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-8 border border-gray-100 dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+              {publicInfo.description}
+            </p>
+            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
+              {formatCurrencyAmount(
+                publicInfo.amount || 0,
+                publicInfo.currency || 'USD'
+              )}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              {formatLocalDateTime(publicInfo.date)}
+            </p>
+          </div>
+
+          {/* Join form - emphasized with more spacing */}
+          <div>
+            <div className="flex items-center justify-between mb-8">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 Enter code to join
               </p>
-              <div className="space-y-4">
-                <OTPInput
-                  value={password}
-                  onChange={(value) => setPassword(value)}
-                  length={4}
-                />
-                <Button
-                  onClick={fetchRecord}
-                  isLoading={isLoading}
-                  loadingText="Loading..."
-                  text="Join Split"
-                  className="w-full"
-                />
-              </div>
+              {password && (
+                <button
+                  type="button"
+                  onClick={() => setPassword('')}
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
             </div>
+            <div className="mb-12">
+              <OTPInput
+                value={password}
+                onChange={(value) => setPassword(value)}
+                onComplete={(value) => fetchRecord(value)}
+                length={4}
+              />
+            </div>
+            <Button
+              onClick={() => fetchRecord()}
+              isLoading={isJoiningRecord}
+              loadingText="Joining..."
+              text="Join Split"
+              className="w-full"
+            />
 
             {status && (
-              <div className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg flex items-center gap-2">
+              <div className="mt-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg flex items-center gap-2">
                 <AlertTriangle size={18} className="flex-shrink-0" />
                 <span className="text-sm">{status}</span>
               </div>
