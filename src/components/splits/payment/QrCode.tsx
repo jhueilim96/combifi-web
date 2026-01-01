@@ -63,9 +63,9 @@ export default function QRCode({ name, qrUrl, provider }: QRCodeProps) {
           </h3>
         </div>
       )}
-      <div className="flex justify-center bg-white p-4 rounded-lg">
+      <div className="flex justify-center bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
         <div
-          className="relative h-[200px] w-[200px]"
+          className="relative h-[200px] w-[200px] cursor-pointer"
           onClick={() => {
             setIsEnlarged(true);
             setIsEnlargedQRLoading(true);
@@ -73,7 +73,7 @@ export default function QRCode({ name, qrUrl, provider }: QRCodeProps) {
         >
           {/* Loading indicator for main QR code */}
           {isQRLoading && (
-            <div className="absolute inset-0 flex items-center justify-center border border-indigo-50 rounded">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded">
               <Loader2 size={24} className="animate-spin text-indigo-400" />
             </div>
           )}

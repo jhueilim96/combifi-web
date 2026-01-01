@@ -92,7 +92,7 @@ export async function getRecord(
 const getInstantSplitPublicDataQuery = (id: string) =>
   createSupabaseClient('', true)
     .from('one_time_split_expenses')
-    .select('date,description,' + 'profiles (name)')
+    .select('date,description,amount,currency,' + 'profiles (name)')
     .eq('id', id)
     .eq('is_deleted', false)
     .single();

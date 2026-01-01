@@ -12,12 +12,12 @@ export default function AmountDisplay({
   amount,
 }: AmountDisplayProps) {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl p-6 bg-white dark:bg-gray-800">
+    <div className="bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl p-6">
       <div className="text-center">
-        <p className="text-lg text-gray-700 dark:text-gray-300">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
           {name}, you should pay
         </p>
-        <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mt-2">
+        <p className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">
           {formatCurrencyAmount(amount, currency)}
         </p>
       </div>

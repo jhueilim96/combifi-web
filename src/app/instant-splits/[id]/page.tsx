@@ -30,6 +30,11 @@ import { AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
 export const runtime = 'edge';
 
+// Development bypass - set to a password to skip the modal during dev
+// e.g., 'TEST' to bypass, or '' to disable
+const DEV_BYPASS_PASSWORD =
+  process.env.NODE_ENV === 'development' ? 'AMZH' : '';
+
 export default function RecordPage() {
   const params = useParams();
   const id = params?.id as string;
@@ -43,6 +48,7 @@ export default function RecordPage() {
   const [participantAmount, setParticipantAmount] = useState('');
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isJoiningRecord, setIsJoiningRecord] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(true);
   const [selectedParticipant, setSelectedParticipant] =
     useState<Tables<'one_time_split_expenses_participants'> | null>(null);
@@ -82,15 +88,16 @@ export default function RecordPage() {
     }
   }, [id]);
 
-  const fetchRecord = async () => {
-    if (!id || !password) return;
+  const fetchRecord = async (passwordOverride?: string) => {
+    const pwd = passwordOverride || password;
+    if (!id || !pwd) return;
 
-    setIsLoading(true);
-    setStatus('Fetching ...');
+    setIsJoiningRecord(true);
+    setStatus('');
 
     try {
-      const data = await getRecord(id, password);
-      const participantsData = await getParticipantRecords(id, password);
+      const data = await getRecord(id, pwd);
+      const participantsData = await getParticipantRecords(id, pwd);
       setRecord(data);
       setParticipants(
         Array.isArray(participantsData) ? participantsData : [participantsData]
@@ -108,7 +115,7 @@ export default function RecordPage() {
         setStatus('Oops. Something went wrong.');
       }
     } finally {
-      setIsLoading(false);
+      setIsJoiningRecord(false);
     }
   };
 
@@ -285,6 +292,19 @@ export default function RecordPage() {
     }
   }, [id, fetchPublicRecord]); // fetchPublicRecord is stable as it doesn't depend on external variables
 
+  // Development bypass - auto-submit password
+  useEffect(() => {
+    if (
+      DEV_BYPASS_PASSWORD &&
+      publicInfo &&
+      showPasswordModal &&
+      !isJoiningRecord
+    ) {
+      fetchRecord(DEV_BYPASS_PASSWORD);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicInfo, showPasswordModal]);
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -294,62 +314,78 @@ export default function RecordPage() {
 
   if (showPasswordModal && publicInfo) {
     return (
-      <div className="fixed inset-0 bg-white dark:bg-gray-900 bg-opacity-100 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-xl w-full transform transition-all duration-300 animate-scaleIn">
-          <div className="flex items-center mb-10">
-            {/* Circular avatar */}
-            <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xl font-semibold mr-4 flex-shrink-0">
+      <div className="fixed inset-0 bg-gray-100 dark:bg-gray-950 flex items-start justify-center z-50 px-4 pt-12 sm:pt-20 animate-fadeIn overflow-y-auto">
+        <div className="bg-gray-50 dark:bg-gray-900 p-5 rounded-2xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-800 animate-scaleIn mb-8">
+          {/* Invitation header - compact */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-800 dark:to-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-sm font-bold flex-shrink-0">
               {publicInfo.profiles?.name
                 ? publicInfo.profiles.name.charAt(0).toUpperCase()
                 : '?'}
             </div>
-
-            {/* Invitation text */}
-            <div>
-              <p className="text-gray-800 dark:text-gray-200 text-lg font-medium">
-                <span className="text-indigo-600 dark:text-indigo-400">
-                  {publicInfo.profiles?.name}
-                </span>{' '}
-                has invited you to split
-                <span className="ml-1 font-bold text-indigo-600 dark:text-indigo-400">
-                  {publicInfo.description}
-                </span>
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {formatLocalDateTime(publicInfo.date)}
-              </p>
-            </div>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              <span className="font-medium text-gray-800 dark:text-gray-200">
+                {publicInfo.profiles?.name}
+              </span>{' '}
+              invited you to join
+            </p>
           </div>
 
-          <div className="mb-5">
-            <p className="text-gray-700 dark:text-gray-300 font-normal mb-5">
-              Enter code to join:
+          {/* Split details - compact white card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-8 border border-gray-100 dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+              {publicInfo.description}
             </p>
-            <div className="flex flex-col space-y-5">
+            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
+              {formatCurrencyAmount(
+                publicInfo.amount || 0,
+                publicInfo.currency || 'USD'
+              )}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              {formatLocalDateTime(publicInfo.date)}
+            </p>
+          </div>
+
+          {/* Join form - emphasized with more spacing */}
+          <div>
+            <div className="flex items-center justify-between mb-8">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                Enter code to join
+              </p>
+              {password && (
+                <button
+                  type="button"
+                  onClick={() => setPassword('')}
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="mb-12">
               <OTPInput
                 value={password}
                 onChange={(value) => setPassword(value)}
+                onComplete={(value) => fetchRecord(value)}
                 length={4}
-                className="mb-5"
-              />
-              <Button
-                onClick={fetchRecord}
-                isLoading={isLoading}
-                loadingText="Loading..."
-                text="Join"
-                className="w-1/2 mx-auto"
               />
             </div>
-          </div>
+            <Button
+              onClick={() => fetchRecord()}
+              isLoading={isJoiningRecord}
+              loadingText="Joining..."
+              text="Join Split"
+              className="w-full"
+            />
 
-          {status && (
-            <div className="w-full">
-              <p className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-center flex items-center justify-center">
-                <AlertTriangle size={20} className="mr-2 flex-shrink-0" />
-                {status}
-              </p>
-            </div>
-          )}
+            {status && (
+              <div className="mt-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg flex items-center gap-2">
+                <AlertTriangle size={18} className="flex-shrink-0" />
+                <span className="text-sm">{status}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );

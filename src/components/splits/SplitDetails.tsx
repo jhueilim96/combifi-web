@@ -30,31 +30,31 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
       : 0;
   const hasExtraInfo = record.settle_mode === 'PERPAX' || record.notes;
   return (
-    <div className="border bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-4 flex flex-col space-y-4 mb-6">
-      <div className="flex justify-between items-center space-x-6">
-        <div className="text-left overflow-hidden">
-          <h2 className="text-sm text-gray-700 dark:text-gray-300 font-normal cursor-pointer">
+    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-6 flex flex-col gap-6 mb-6">
+      <div className="flex justify-between items-start gap-6">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
             {record.description || 'Untitled Split'}
           </h2>
 
-          <div className="flex items-baseline cursor-pointer">
-            <span className="text-[2.5rem] font-semibold text-gray-800 dark:text-gray-200 tracking-tight truncate overflow-hidden">
+          <div className="mb-2">
+            <span className="text-5xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
               {formatCurrencyAmount(record.amount, record.currency)}
             </span>
           </div>
 
-          <div className="flex items-baseline">
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               {formatLocalDateTime(record.date)}
             </span>
           </div>
         </div>
-        <div className="w-24 h-24 overflow-hidden rounded-lg border border-indigo-50 flex flex-col justify-center items-center relative">
+        <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex items-center justify-center relative">
           {record.file_url ? (
             <>
               {/* Loading indicator for main image */}
               {isImageLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                <div className="absolute inset-0 flex items-center justify-center">
                   <Loader2 size={24} className="animate-spin text-indigo-400" />
                 </div>
               )}
@@ -116,37 +116,40 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
 
       {/* Additional content section with single top border */}
       {hasExtraInfo && (
-        <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
           {/* Number of participants if split evenly */}
           {record.settle_mode === 'PERPAX' && (
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <Users size={20} color="grey" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                <Users size={18} className="text-gray-600 dark:text-gray-400" />
               </div>
-              <div className="flex items-center space-x-2">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Number of People:
-                </h3>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  Number of People
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 font-semibold">
                   {numberOfPax}
-                </div>
+                </p>
               </div>
             </div>
           )}
 
           {/* Notes section */}
           {record.notes && (
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 mt-1">
-                <FileText size={20} color="grey" />
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                <FileText
+                  size={18}
+                  className="text-gray-600 dark:text-gray-400"
+                />
               </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <div className="flex-1">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
                   Notes
-                </h3>
-                <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
                   {record.notes}
-                </div>
+                </p>
               </div>
             </div>
           )}

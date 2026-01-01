@@ -71,16 +71,15 @@ export default function SplitHost({
   };
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-6 mt-6">
       <div className="text-center space-y-2 mb-6">
-        <div className="text-2xl font-medium text-gray-800 dark:text-gray-200 flex items-center justify-center">
-          <Crown
-            size={24}
-            className="mr-2 text-amber-600 dark:text-amber-400"
-          />
+        <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2">
+          <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-900/50 flex items-center justify-center">
+            <Crown size={20} className="text-amber-600 dark:text-amber-400" />
+          </div>
           Host Assigned Split
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
           {record.profiles.name} has determined how much each person should pay
         </p>
       </div>

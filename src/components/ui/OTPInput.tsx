@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, KeyboardEvent, ChangeEvent } from 'react';
 interface OTPInputProps {
   value: string;
   onChange: (value: string) => void;
+  onComplete?: (value: string) => void;
   length?: number;
   className?: string;
 }
@@ -13,6 +14,7 @@ interface OTPInputProps {
 export function OTPInput({
   value,
   onChange,
+  onComplete,
   length = 4,
   className = '',
 }: OTPInputProps) {
@@ -76,6 +78,11 @@ export function OTPInput({
       const otpValue = newOtp.join('');
       onChange(otpValue);
 
+      // Call onComplete if all characters are filled
+      if (otpValue.length === length && onComplete) {
+        onComplete(otpValue);
+      }
+
       focusNextInput(index);
     } else if (value === '') {
       // Handle case where input is cleared (important for iOS)
@@ -138,7 +145,13 @@ export function OTPInput({
       }
 
       setOtp(newOtp);
-      onChange(newOtp.join(''));
+      const otpValue = newOtp.join('');
+      onChange(otpValue);
+
+      // Call onComplete if all characters are filled
+      if (otpValue.length === length && onComplete) {
+        onComplete(otpValue);
+      }
 
       // Focus the next empty input or the last input
       const nextEmptyIndex = newOtp.findIndex((value) => !value);

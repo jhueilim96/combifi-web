@@ -70,13 +70,12 @@ export default function SplitPerPax({
   };
 
   return (
-    <div className="border border-gray-50 dark:border-gray-700 rounded-2xl shadow-lg p-6 bg-white dark:bg-gray-800 mt-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-6 mt-6">
       <div className="text-center space-y-2 mb-6">
-        <div className="text-2xl font-medium text-gray-800 dark:text-gray-200 flex items-center justify-center">
-          <Scale
-            size={24}
-            className="mr-2 text-indigo-600 dark:text-indigo-400"
-          />
+        <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2">
+          <div className="w-9 h-9 rounded-lg bg-gray-50 dark:bg-indigo-900/50 flex items-center justify-center">
+            <Scale size={20} className="text-indigo-600 dark:text-indigo-400" />
+          </div>
           Split Evenly
         </div>
       </div>

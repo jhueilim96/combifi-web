@@ -152,11 +152,13 @@ export default function TabbedPaymentMethods({
     return (
       <div className="space-y-4">
         {/* Payment Header */}
-        <div className="flex space-x-3 items-center text-gray-600 dark:text-gray-400 mb-4">
-          <Banknote size={20} color="grey" />
-          <span>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <Banknote size={18} className="text-gray-600 dark:text-gray-400" />
+          </div>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
             Pay {hostName} with {validPaymentMethods[0].label}
-          </span>
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -178,9 +180,13 @@ export default function TabbedPaymentMethods({
   return (
     <div className="space-y-4">
       {/* Payment Header */}
-      <div className="flex space-x-3 items-center text-gray-600 dark:text-gray-400 mb-4">
-        <Banknote size={24} color="grey" />
-        <span>Pay {hostName} with:</span>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+          <Banknote size={18} className="text-gray-600 dark:text-gray-400" />
+        </div>
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Pay {hostName} with
+        </p>
       </div>
 
       {/* Tab Navigation - similar to PaymentStatusButtonGroup style */}
@@ -197,22 +203,13 @@ export default function TabbedPaymentMethods({
                 index === validPaymentMethods.length - 1 ? 'rounded-r-lg' : ''
               } ${
                 activeTab === index
-                  ? 'bg-indigo-100/50 text-gray-900 border-indigo-600 hover:bg-indigo-50/50'
-                  : 'bg-white text-gray-400 border-stone-200 hover:bg-stone-50/50'
+                  ? 'bg-indigo-100/50 text-gray-900 dark:bg-indigo-900/30 dark:text-gray-100 border-indigo-600 dark:border-indigo-500 hover:bg-indigo-50/50'
+                  : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               <div className="flex items-center justify-center space-x-2">
-                {/* {method.label && (
-                  <Image
-                    src={`/providers/provider-${method.label.toLowerCase()}.svg`}
-                    alt={`${method.label} logo`}
-                    width={20}
-                    height={20}
-                    className="flex-shrink-0"
-                  />
-                )} */}
                 <span
-                  className={`${activeTab === index ? 'font-bold text-indigo-700' : ''}`}
+                  className={`${activeTab === index ? 'font-bold text-indigo-700 dark:text-indigo-300' : ''}`}
                 >
                   {method.label}
                 </span>

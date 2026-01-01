@@ -24,10 +24,10 @@ export default function SubmitButton({
     );
   };
   return (
-    <div className="flex mt-10 space-x-3">
+    <div className="flex mt-10 gap-3">
       <button
         type="button"
-        className="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-2"
+        className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-medium text-lg"
         onClick={() => {
           handleBack();
         }}
