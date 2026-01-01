@@ -5,9 +5,9 @@ import { Tables } from '@/lib/database.types';
 import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
-import TabbedPaymentMethods, {
+import ListPaymentMethods, {
   SelectedPaymentMethod,
-} from '../payment/TabbedPaymentMethods';
+} from '../payment/ListPaymentMethods';
 import AmountDisplay from '../payment/AmountDisplay';
 import { Crown } from 'lucide-react';
 
@@ -96,7 +96,7 @@ export default function SplitHost({
         {record.profiles?.payment_methods &&
           record.profiles?.payment_methods.length > 0 &&
           record.profiles?.name && (
-            <TabbedPaymentMethods
+            <ListPaymentMethods
               paymentMethods={record.profiles.payment_methods}
               hostName={record.profiles.name}
               onPaymentMethodChange={setSelectedPaymentMethod}

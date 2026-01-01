@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { Tables } from '@/lib/database.types';
 import SubmitButton from '../payment/SubmitButton';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
-import TabbedPaymentMethods, {
+import ListPaymentMethods, {
   SelectedPaymentMethod,
-} from '../payment/TabbedPaymentMethods';
+} from '../payment/ListPaymentMethods';
 import useValidationError from '@/hooks/useValidationError';
 import AmountDisplay from '../payment/AmountDisplay';
 import { PerPaxMetadata, retrieveSettleMetadata } from '@/lib/utils';
@@ -92,7 +92,7 @@ export default function SplitPerPax({
         {record.profiles?.payment_methods &&
           record.profiles?.payment_methods.length > 0 &&
           record.profiles?.name && (
-            <TabbedPaymentMethods
+            <ListPaymentMethods
               paymentMethods={record.profiles.payment_methods}
               hostName={record.profiles.name}
               onPaymentMethodChange={setSelectedPaymentMethod}

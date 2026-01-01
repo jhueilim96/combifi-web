@@ -8,9 +8,9 @@ import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
 import { FriendMetadata, retrieveSettleMetadata } from '@/lib/utils';
 import { formatCurrency, formatCurrencyAmount } from '@/lib/currencyUtils';
-import TabbedPaymentMethods, {
+import ListPaymentMethods, {
   SelectedPaymentMethod,
-} from '../payment/TabbedPaymentMethods';
+} from '../payment/ListPaymentMethods';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
 
 interface SplitFriendProps {
@@ -212,7 +212,7 @@ export default function SplitFriend({
         {record.profiles?.payment_methods &&
           record.profiles?.payment_methods.length > 0 &&
           record.profiles?.name && (
-            <TabbedPaymentMethods
+            <ListPaymentMethods
               paymentMethods={record.profiles.payment_methods}
               hostName={record.profiles.name}
               onPaymentMethodChange={setSelectedPaymentMethod}
