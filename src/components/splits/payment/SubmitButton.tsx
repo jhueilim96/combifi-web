@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button';
 
 interface SubmitButtonProps {
-  handleBack: () => void;
+  handleBack?: () => void;
   handleSubmit: () => Promise<void>;
   isLoading: boolean;
   validationError: {
@@ -24,21 +24,13 @@ export default function SubmitButton({
     );
   };
   return (
-    <div className="flex mt-10 gap-3">
-      <button
-        type="button"
-        className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-medium text-lg"
-        onClick={() => {
-          handleBack();
-        }}
-      >
-        Back
-      </button>
-
+    <div className="mt-8">
       <Button
         disabled={hasValidationErrors() || isLoading}
         isLoading={isLoading}
         onClick={handleSubmit}
+        className="w-full"
+        text="Update"
       />
     </div>
   );

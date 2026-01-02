@@ -408,16 +408,11 @@ export default function RecordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
-      {/* Enhanced gradient background */}
-      <div className="absolute inset-0 ">
-        <div
-          className="absolute top-0 left-0 right-0 bg-gradient-to-br from-indigo-500 via-indigo-400 to-purple-500 dark:from-indigo-700 dark:via-indigo-600 dark:to-purple-800"
-          style={{
-            height: 'calc(180px + 8vh)',
-            clipPath: 'ellipse(150% 100% at 50% 0%)',
-          }}
-        />
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Soft Aurora Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/40 dark:bg-indigo-900/40 blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse" />
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/40 dark:bg-purple-900/40 blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-70" />
       </div>
       {/* Content container with spacing matching Vue page */}
       <div className="max-w-xl mx-auto px-4 py-8 absolute top-0 w-full">

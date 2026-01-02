@@ -9,7 +9,7 @@ import ListPaymentMethods, {
   SelectedPaymentMethod,
 } from '../payment/ListPaymentMethods';
 import AmountDisplay from '../payment/AmountDisplay';
-import { Crown } from 'lucide-react';
+import { Crown, ChevronLeft } from 'lucide-react';
 
 interface SplitHostProps {
   record: Tables<'one_time_split_expenses'>;
@@ -72,8 +72,14 @@ export default function SplitHost({
 
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-6 mt-6">
-      <div className="text-center space-y-2 mb-6">
-        <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2">
+      <div className="relative text-center space-y-2 mb-6">
+        <button
+          onClick={handleBack}
+          className="absolute left-0 top-0 p-2 -ml-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2 pt-1">
           <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-900/50 flex items-center justify-center">
             <Crown size={20} className="text-amber-600 dark:text-amber-400" />
           </div>

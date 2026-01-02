@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { HandCoins, Coins, Wallet } from 'lucide-react';
+import { HandCoins, Coins, Wallet, ChevronLeft } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
 import { participantInputSchema } from '@/lib/validations';
 import SubmitButton from '../payment/SubmitButton';
@@ -120,8 +120,14 @@ export default function SplitFriend({
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-6 mt-6">
       {/* Pay What You Spend Header + Description */}
-      <div className="text-center space-y-2 mb-6">
-        <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2">
+      <div className="relative text-center space-y-2 mb-6">
+        <button
+          onClick={handleBack}
+          className="absolute left-0 top-0 p-2 -ml-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2 pt-1">
           <div className="w-9 h-9 rounded-lg bg-gray-50 dark:bg-indigo-900/50 flex items-center justify-center">
             <HandCoins
               size={20}
