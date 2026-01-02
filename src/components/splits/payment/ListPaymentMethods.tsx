@@ -242,24 +242,24 @@ export default function ListPaymentMethods({
           }`}
         >
           {selectedMethod && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700">
-              {/* Back Button & Method Header */}
-              <div className="flex items-center h-12 mb-2">
-                <button
-                  type="button"
-                  onClick={handleBackToList}
-                  className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                >
-                  <ChevronLeft
-                    size={18}
-                    className="text-gray-600 dark:text-gray-400"
-                  />
-                </button>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                    {selectedMethod.label}
-                  </p>
-                </div>
+            <div className="relative bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700">
+              {/* Back Button - Top Left Corner */}
+              <button
+                type="button"
+                onClick={handleBackToList}
+                className="absolute top-3 left-3 w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors z-10"
+              >
+                <ChevronLeft
+                  size={18}
+                  className="text-gray-600 dark:text-gray-400"
+                />
+              </button>
+
+              {/* Method Header - Centered */}
+              <div className="text-center pt-1 pb-2">
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {selectedMethod.label}
+                </p>
               </div>
 
               {/* Method Content */}

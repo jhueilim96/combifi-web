@@ -82,6 +82,7 @@ export default function SplitFriend({
 
   const handleSubmit = async () => {
     // Reset any existing validation errors
+    console.log('friend submit');
     resetValidationError();
 
     if (
@@ -102,6 +103,7 @@ export default function SplitFriend({
       }
     } finally {
       setIsLoading(false);
+      console.log('friend submit done');
     }
   };
 

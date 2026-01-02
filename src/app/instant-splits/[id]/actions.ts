@@ -65,7 +65,7 @@ export async function getRecord(
       Array.isArray(record.profiles.payment_methods)
     ) {
       for (const paymentMethod of record.profiles.payment_methods) {
-        console.log(paymentMethod);
+        // console.log(paymentMethod);
         if (
           paymentMethod?.image_expired_at &&
           new Date(paymentMethod.image_expired_at) < new Date()

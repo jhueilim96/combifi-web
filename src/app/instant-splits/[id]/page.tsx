@@ -104,6 +104,8 @@ export default function RecordPage() {
       );
       // Get amount from the first participant or default to 0
       setParticipantAmount('0.00');
+      // Explicitly save password to state after successful auth
+      setPassword(pwd);
       setShowPasswordModal(false);
       setStatus('');
     } catch (error) {
@@ -120,7 +122,17 @@ export default function RecordPage() {
   };
 
   const handleUpdateRecord = async () => {
-    if (!id || !password) return;
+    console.log('[DEBUG] handleUpdateRecord called with:', {
+      id,
+      password,
+      isUpdatingParticipant,
+      selectedParticipant: selectedParticipant?.id,
+      settleMode: record?.settle_mode,
+    });
+    if (!id || !password) {
+      console.log('[DEBUG] Early return - missing id or password');
+      return;
+    }
 
     setIsLoading(true);
     setStatus('Updating...');
@@ -128,6 +140,7 @@ export default function RecordPage() {
     try {
       // If updating an existing participant
       if (isUpdatingParticipant && selectedParticipant?.id) {
+        console.log('[DEBUG] Entering UPDATE branch');
         // Import the validation schemas
         const { updateParticipantSchema } = await import('@/lib/validations');
 
@@ -178,6 +191,7 @@ export default function RecordPage() {
       }
       // If adding a new participant (not available in HOST mode)
       else if (!isUpdatingParticipant && record?.settle_mode !== 'HOST') {
+        console.log('[DEBUG] Entering INSERT branch');
         // Import the validation schemas
         const { insertParticipantSchema } = await import('@/lib/validations');
 
@@ -213,6 +227,8 @@ export default function RecordPage() {
         }
 
         await insertParticipantRecord(id, password, validationResult.data);
+      } else {
+        console.log('[DEBUG] Neither UPDATE nor INSERT branch entered!');
       }
 
       // Refresh participant data after update
