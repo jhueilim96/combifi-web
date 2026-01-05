@@ -80,10 +80,13 @@ export default function SplitPerPax({
         </button>
         <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2 pt-1">
           <div className="w-9 h-9 rounded-lg bg-gray-50 dark:bg-indigo-900/50 flex items-center justify-center">
-             <Scale size={20} className="text-indigo-600 dark:text-indigo-400" />
+            <Scale size={20} className="text-indigo-600 dark:text-indigo-400" />
           </div>
           Split Evenly
         </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+          Everyone pays equally
+        </p>
       </div>
 
       <div className="space-y-6">

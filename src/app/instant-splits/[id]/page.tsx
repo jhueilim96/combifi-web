@@ -26,14 +26,19 @@ import {
   retrieveSettleMetadata,
 } from '@/lib/utils';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
-import { AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  AlertCircle,
+  ArrowRight,
+} from 'lucide-react';
 
 export const runtime = 'edge';
 
 // Development bypass - set to a password to skip the modal during dev
 // e.g., 'TEST' to bypass, or '' to disable
 const DEV_BYPASS_PASSWORD =
-  process.env.NODE_ENV === 'development' ? 'DRFS' : '';
+  process.env.NODE_ENV === 'development' ? 'MUDS' : '';
 
 export default function RecordPage() {
   const params = useParams();
@@ -325,9 +330,6 @@ export default function RecordPage() {
     return <LoadingScreen />;
   }
 
-  // Compute display values
-  const hostParticipant = record?.profiles;
-
   if (showPasswordModal && publicInfo) {
     return (
       <div className="fixed inset-0 bg-gray-100 dark:bg-gray-950 flex items-start justify-center z-50 px-4 pt-12 sm:pt-20 animate-fadeIn overflow-y-auto">
@@ -408,106 +410,85 @@ export default function RecordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
-      {/* Soft Aurora Background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/40 dark:bg-indigo-900/40 blur-[120px] mix-blend-multiply dark:mix-blend-screen animate-pulse" />
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/40 dark:bg-purple-900/40 blur-[120px] mix-blend-multiply dark:mix-blend-screen opacity-70" />
-      </div>
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex items-start justify-center px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
       <div className="max-w-xl mx-auto px-4 py-8 relative w-full z-10">
-        <div className="text-center mb-4">
-          <h1 className="text-3xl font-bold text-white mb-2">Split and Pay</h1>
-          <p className="text-white text-base mb-2">
-            <b>{hostParticipant?.name || 'Someone'}</b> has invited you to
-            settle a <br /> shared expense
-          </p>
-        </div>
-
-        {/* Main content when record is available with improved card styling */}
+        {/* Main content when record is available */}
         {record && !showPasswordModal && (
           <div className="rounded-2xl">
             <SplitDetails record={record} />
-            {/* Improved Participants section */}
+            {/* Participants section */}
             {!showSettleComponent && (
-              <div className="bg-white border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6">
-                <div className="text-center space-y-2 mb-4">
-                  <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-                    Who are you?
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    Select your name below to continue.
-                  </p>
+              <>
+                {/* SELECT NAME divider */}
+                <div className="flex items-center gap-4 mt-8 mb-6">
+                  <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                  <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-widest uppercase">
+                    Select Name
+                  </span>
+                  <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
                 </div>
 
-                <div className="grid grid-cols-1 gap-2 mb-4">
+                <div className="space-y-2">
                   {participants
                     .filter((p) => p.is_host === false)
                     .map((participant, index) => (
                       <div
                         key={index}
-                        className={`flex justify-between items-center px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 ${
+                        className={`flex items-center justify-between px-4 py-3 rounded-2xl cursor-pointer transition-all duration-200 ${
                           selectedParticipant?.id === participant.id
-                            ? 'bg-indigo-100 dark:bg-indigo-900 border-2 border-indigo-500 dark:border-indigo-400'
-                            : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-indigo-200 dark:hover:border-indigo-700'
+                            ? 'border-2 border-indigo-500 dark:border-indigo-400'
+                            : 'border-2 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
                         }`}
                         onClick={() => handleParticipantSelect(participant)}
                       >
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              selectedParticipant?.id === participant.id
-                                ? 'bg-indigo-500 text-white'
-                                : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                            }`}
-                          >
-                            <span className="text-sm font-medium">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                            <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-300">
                               {participant.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-gray-800 dark:text-gray-200 font-medium">
+                            <span className="text-gray-900 dark:text-white font-medium">
                               {participant.name}
                             </span>
-                            <span
-                              className={`text-xs ${participant.is_paid ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}
-                            >
-                              {participant.is_paid ? '✓ Paid' : '○ Not Paid'}
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {participant.is_paid ? '✓ Paid' : 'Not paid'}
+                              {' · '}
+                              {formatCurrencyAmount(
+                                participant.amount,
+                                record.currency
+                              )}
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center">
-                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                            {formatCurrencyAmount(
-                              participant.amount,
-                              record.currency
-                            )}
-                          </span>
-                          {selectedParticipant?.id === participant.id && (
-                            <CheckCircle
-                              size={20}
-                              className="ml-2 text-indigo-500"
-                            />
-                          )}
-                        </div>
+                        {selectedParticipant?.id === participant.id && (
+                          <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center">
+                            <CheckCircle size={16} className="text-white" />
+                          </div>
+                        )}
                       </div>
                     ))}
-                    
-                    <AddNewParticipant
-                      record={record}
-                      participants={participants}
-                      numberOfPax={numberOfPax}
-                      showNewNameInput={showNewNameInput}
-                      newParticipantName={newParticipantName}
-                      selectedParticipant={selectedParticipant}
-                      onNewNameToggle={handleNewNameToggle}
-                      onNewParticipantNameChange={setNewParticipantName}
-                    />
+
+                  <AddNewParticipant
+                    record={record}
+                    participants={participants}
+                    numberOfPax={numberOfPax}
+                    showNewNameInput={showNewNameInput}
+                    newParticipantName={newParticipantName}
+                    selectedParticipant={selectedParticipant}
+                    onNewNameToggle={handleNewNameToggle}
+                    onNewParticipantNameChange={setNewParticipantName}
+                  />
                 </div>
-              </div>
+              </>
             )}
 
             {showSettleComponent && record ? (
               <>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mt-8 mb-4">
+                  Complete payment
+                </h3>
+
                 {record.settle_mode === 'FRIEND' && (
                   <SplitFriend
                     record={record}
@@ -556,33 +537,27 @@ export default function RecordPage() {
                 )}
               </>
             ) : (
-              <>
-                <button
-                  className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-6"
-                  onClick={() => {
-                    if (
-                      selectedParticipant ||
-                      (newParticipantName.trim() &&
-                        record?.settle_mode !== 'HOST')
-                    ) {
-                      setShowSettleComponent(true);
-                    } else {
-                      handleUpdateRecord();
-                    }
-                  }}
-                  disabled={
-                    !selectedParticipant &&
-                    (record?.settle_mode === 'HOST' ||
-                      !newParticipantName.trim())
+              <button
+                className="w-full py-4 px-6 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-semibold text-lg mt-8 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  if (
+                    selectedParticipant ||
+                    (newParticipantName.trim() &&
+                      record?.settle_mode !== 'HOST')
+                  ) {
+                    setShowSettleComponent(true);
+                  } else {
+                    handleUpdateRecord();
                   }
-                >
-                  {selectedParticipant
-                    ? `Join as ${selectedParticipant.name}`
-                    : newParticipantName.trim()
-                      ? `Join as ${newParticipantName}`
-                      : 'Join Expense'}
-                </button>
-              </>
+                }}
+                disabled={
+                  !selectedParticipant &&
+                  (record?.settle_mode === 'HOST' || !newParticipantName.trim())
+                }
+              >
+                <span>Continue</span>
+                <ArrowRight size={20} />
+              </button>
             )}
           </div>
         )}

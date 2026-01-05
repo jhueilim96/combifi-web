@@ -1,158 +1,187 @@
-import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import { formatCurrency, formatAmountOnly } from '@/lib/currencyUtils';
 import { Tables } from '@/lib/database.types';
-import {
-  formatLocalDateTime,
-  PerPaxMetadata,
-  retrieveSettleMetadata,
-} from '@/lib/utils';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { FileText, Users, Loader2 } from 'lucide-react';
+import { Loader2, Scale, Users, UserCog, NotebookPen } from 'lucide-react';
 
 interface SplitDetailsProps {
   record: Tables<'one_time_split_expenses'>;
 }
+
+// Format date as "24 Oct · FRIDAY"
+function formatSplitDate(date: string | null | undefined): string {
+  if (!date) return '';
+  const d = new Date(date);
+  const day = d.getDate();
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  const weekday = d
+    .toLocaleDateString('en-US', { weekday: 'long' })
+    .toUpperCase();
+  return `${day} ${month} · ${weekday}`;
+}
+
+// Get settle mode display info
+function getSettleModeInfo(mode: string | null): {
+  label: string;
+  icon: React.ReactNode;
+} {
+  switch (mode) {
+    case 'PERPAX':
+      return { label: 'SPLIT EVENLY', icon: <Scale size={14} /> };
+    case 'FRIEND':
+      return { label: 'CUSTOM SPLIT', icon: <Users size={14} /> };
+    case 'HOST':
+      return { label: 'HOST MANAGED', icon: <UserCog size={14} /> };
+    default:
+      return { label: 'SPLIT', icon: <Scale size={14} /> };
+  }
+}
+
+// Extract emoji from description if present, otherwise return default
+function getCategoryEmoji(description: string | null): string {
+  if (!description) return '💸';
+  // Match emoji at start of string or anywhere in string
+  const emojiRegex =
+    /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+  const match = description.match(emojiRegex);
+  return match ? match[0] : '💸';
+}
+
+const NOTES_TRUNCATE_LENGTH = 20;
+
 export default function SplitDetails({ record }: SplitDetailsProps) {
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
-  const [isImageLoading, setIsImageLoading] = useState(true);
   const [isEnlargedImageLoading, setIsEnlargedImageLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [showFullNotes, setShowFullNotes] = useState(false);
 
-  const toggleEnlargedImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowEnlargedImage(!showEnlargedImage);
-    if (!showEnlargedImage) {
-      setIsEnlargedImageLoading(true);
-    }
-  };
-  const numberOfPax =
-    record.settle_mode === 'PERPAX'
-      ? retrieveSettleMetadata<PerPaxMetadata>(record).numberOfPax
-      : 0;
-  const hasExtraInfo = record.settle_mode === 'PERPAX' || record.notes;
+  const emoji = getCategoryEmoji(record.description);
+
+  const isNotesTruncated =
+    record.notes && record.notes.length > NOTES_TRUNCATE_LENGTH;
+  const displayedNotes =
+    isNotesTruncated && !showFullNotes
+      ? record.notes!.slice(0, NOTES_TRUNCATE_LENGTH) + '...'
+      : record.notes;
+
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-6 flex flex-col gap-6 mb-6">
-      <div className="flex justify-between items-start gap-6">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-            {record.description || 'Untitled Split'}
-          </h2>
-
-          <div className="mb-2">
-            <span className="text-5xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-              {formatCurrencyAmount(record.amount, record.currency)}
-            </span>
-          </div>
-
-          <div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {formatLocalDateTime(record.date)}
-            </span>
-          </div>
-        </div>
-        <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex items-center justify-center relative">
-          {record.file_url ? (
-            <>
-              {/* Loading indicator for main image */}
-              {isImageLoading && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Loader2 size={24} className="animate-spin text-indigo-400" />
-                </div>
-              )}
-
-              <Image
-                src={record.file_url}
-                alt="Receipt Photo"
-                width={200}
-                height={200}
-                className={`object-cover w-full h-full cursor-pointer transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
-                onClick={toggleEnlargedImage}
-                unoptimized={true} // For S3 signed URLs
-                onLoad={() => setIsImageLoading(false)}
-                onError={() => setIsImageLoading(false)}
-              />
-
-              {showEnlargedImage && (
-                <div
-                  className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 cursor-zoom-out"
-                  onClick={() => setShowEnlargedImage(false)}
-                >
-                  <div className="relative w-[90vw] h-[90vh] max-w-[600px] max-h-[600px]">
-                    {/* Loading indicator for enlarged image */}
-                    {isEnlargedImageLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Loader2
-                          size={32}
-                          className="animate-spin text-white"
-                        />
-                      </div>
-                    )}
-
-                    <Image
-                      src={record.file_url}
-                      alt="Enlarged Receipt Photo"
-                      fill
-                      className={`object-contain transition-opacity duration-300 ${isEnlargedImageLoading ? 'opacity-0' : 'opacity-100'}`}
-                      unoptimized={true}
-                      onLoad={() => setIsEnlargedImageLoading(false)}
-                      onError={() => setIsEnlargedImageLoading(false)}
-                    />
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex flex-col justify-center items-center w-full h-full">
-              <Image
-                src="/logo.svg"
-                alt="No Image"
-                width={40}
-                height={40}
-                className="text-gray-400 dark:text-gray-500"
-              />
-            </div>
-          )}
-        </div>
+    <div className="flex flex-col items-center text-center pt-1 pb-4">
+      {/* Category emoji square */}
+      <div
+        className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4 cursor-pointer"
+        onClick={() => {
+          if (record.file_url) {
+            setShowEnlargedImage(true);
+            setIsEnlargedImageLoading(true);
+          }
+        }}
+      >
+        <span className="text-3xl">{emoji}</span>
       </div>
 
-      {/* Additional content section with single top border */}
-      {hasExtraInfo && (
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
-          {/* Number of participants if split evenly */}
-          {record.settle_mode === 'PERPAX' && (
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                <Users size={18} className="text-gray-600 dark:text-gray-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                  Number of People
-                </p>
-                <p className="text-sm text-gray-700 dark:text-gray-300 font-semibold">
-                  {numberOfPax}
-                </p>
-              </div>
-            </div>
-          )}
+      {/* Title */}
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
+        {record.description || 'Untitled Split'}
+      </h2>
 
-          {/* Notes section */}
-          {record.notes && (
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                <FileText
-                  size={18}
-                  className="text-gray-600 dark:text-gray-400"
+      {/* Date and status */}
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        {formatSplitDate(record.date)}
+      </p>
+
+      {/* Amount */}
+      <div className="flex items-start justify-center gap-0.5 mb-3">
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">
+          {formatCurrency(record.currency)}
+        </span>
+        <span className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-wide">
+          {formatAmountOnly(record.amount, record.currency)}
+        </span>
+      </div>
+
+      {/* Settle mode badge */}
+      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 mb-4">
+        {getSettleModeInfo(record.settle_mode).icon}
+        <span className="text-xs font-semibold tracking-wide">
+          {getSettleModeInfo(record.settle_mode).label}
+        </span>
+      </div>
+
+      {/* Paid by */}
+      {/* <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        @ Paid by {hostName}
+      </p> */}
+
+      {/* Image and Notes row */}
+      {(record.file_url || record.notes) && (
+        <div className="flex items-center justify-center gap-6">
+          {/* Image preview */}
+          {record.file_url && (
+            <button
+              onClick={() => {
+                setShowEnlargedImage(true);
+                setIsEnlargedImageLoading(true);
+              }}
+              className="flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0 relative">
+                {isImageLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 size={12} className="animate-spin text-gray-400" />
+                  </div>
+                )}
+                <Image
+                  src={record.file_url}
+                  alt="Receipt"
+                  width={32}
+                  height={32}
+                  className={`object-cover w-full h-full transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
+                  unoptimized={true}
+                  onLoad={() => setIsImageLoading(false)}
+                  onError={() => setIsImageLoading(false)}
                 />
               </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                  Notes
-                </p>
-                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
-                  {record.notes}
-                </p>
-              </div>
-            </div>
+              <span className="text-sm">Image</span>
+            </button>
           )}
+
+          {/* Notes preview/expanded */}
+          {record.notes && (
+            <button
+              onClick={() =>
+                isNotesTruncated && setShowFullNotes(!showFullNotes)
+              }
+              className={`flex items-center gap-2 text-gray-400 dark:text-gray-500 transition-colors ${isNotesTruncated ? 'hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer' : 'cursor-default'}`}
+            >
+              <NotebookPen size={16} className="flex-shrink-0" />
+              <span className="text-sm text-left">{displayedNotes}</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Enlarged image modal */}
+      {showEnlargedImage && record.file_url && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 cursor-zoom-out"
+          onClick={() => setShowEnlargedImage(false)}
+        >
+          <div className="relative w-[90vw] h-[90vh] max-w-[600px] max-h-[600px]">
+            {isEnlargedImageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 size={32} className="animate-spin text-white" />
+              </div>
+            )}
+            <Image
+              src={record.file_url}
+              alt="Enlarged Receipt Photo"
+              fill
+              className={`object-contain transition-opacity duration-300 ${isEnlargedImageLoading ? 'opacity-0' : 'opacity-100'}`}
+              unoptimized={true}
+              onLoad={() => setIsEnlargedImageLoading(false)}
+              onError={() => setIsEnlargedImageLoading(false)}
+            />
+          </div>
         </div>
       )}
     </div>
