@@ -12,6 +12,7 @@ interface AddNewParticipantProps {
   selectedParticipant: Tables<'one_time_split_expenses_participants'> | null;
   onNewNameToggle: () => void;
   onNewParticipantNameChange: (name: string) => void;
+  onAddClick: () => void;
 }
 
 export default function AddNewParticipant({
@@ -20,6 +21,7 @@ export default function AddNewParticipant({
   numberOfPax,
   newParticipantName,
   onNewParticipantNameChange,
+  onAddClick,
 }: AddNewParticipantProps) {
   // Don't show if conditions are not met
   if (
@@ -31,7 +33,10 @@ export default function AddNewParticipant({
 
   return (
     <div className="mt-4 flex items-center gap-3 bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
-      <UserPlus size={20} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+      <UserPlus
+        size={20}
+        className="text-gray-400 dark:text-gray-500 flex-shrink-0"
+      />
       <input
         type="text"
         placeholder="Or type name to join..."
@@ -40,9 +45,12 @@ export default function AddNewParticipant({
         onChange={(e) => onNewParticipantNameChange(e.target.value)}
       />
       {newParticipantName.trim() && (
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-800 bg-white dark:bg-gray-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-300 transition-colors shadow-sm">
-          Add
-        </span>
+        <button
+          onClick={onAddClick}
+          className="text-sm font-medium text-gray-700 dark:text-gray-800 bg-white dark:bg-gray-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-300 transition-colors shadow-sm"
+        >
+          Join
+        </button>
       )}
     </div>
   );

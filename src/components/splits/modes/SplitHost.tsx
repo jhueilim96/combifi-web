@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
 import SubmitButton from '../payment/SubmitButton';
 import useValidationError from '@/hooks/useValidationError';
@@ -8,8 +9,7 @@ import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
 import ListPaymentMethods, {
   SelectedPaymentMethod,
 } from '../payment/ListPaymentMethods';
-import AmountDisplay from '../payment/AmountDisplay';
-import { Crown, ChevronLeft } from 'lucide-react';
+import { formatCurrency } from '@/lib/currencyUtils';
 
 interface SplitHostProps {
   record: Tables<'one_time_split_expenses'>;
@@ -71,63 +71,83 @@ export default function SplitHost({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-lg p-6 mt-6">
-      <div className="relative text-center space-y-2 mb-6">
-        <button
-          onClick={handleBack}
-          className="absolute left-0 top-0 p-2 -ml-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <div className="text-2xl font-semibold text-gray-800 dark:text-gray-200 flex items-center justify-center gap-2 pt-1">
-          <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-900/50 flex items-center justify-center">
-            <Crown size={20} className="text-amber-600 dark:text-amber-400" />
-          </div>
-          Host Assigned Split
+    <div className="mt-6">
+      {/* Back Button */}
+      <button
+        type="button"
+        onClick={handleBack}
+        className="flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors mb-6"
+      >
+        <ArrowLeft size={18} strokeWidth={1.5} />
+        <span className="text-sm font-medium">Name List</span>
+      </button>
+
+      {/* YOUR AMOUNT separator */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+        <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-widest uppercase">
+          Your Amount
+        </span>
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+      </div>
+
+      {/* Amount display (read-only) */}
+      <div className="flex items-center justify-center mb-4">
+        <div className="flex items-start">
+          <span className="text-sm font-medium text-gray-400 dark:text-gray-500 mt-1 mr-0.5">
+            {formatCurrency(record.currency)}
+          </span>
+          <span className="text-5xl font-bold text-gray-900 dark:text-white">
+            {participantAmount || '0.00'}
+          </span>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-          {record.profiles.name} has determined how much each person should pay
-        </p>
       </div>
 
-      <div className="space-y-6">
-        {/* Updated UI - Card showing who should pay what */}
-        <AmountDisplay
-          name={selectedParticipant?.name || ''}
-          currency={record.currency}
-          amount={selectedParticipant?.amount.toFixed(2) || '0.00'}
-        />
+      {/* Mode indicator */}
+      <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Amount set by host
+      </p>
 
-        {/* Payment Methods Section */}
-        {record.profiles?.payment_methods &&
-          record.profiles?.payment_methods.length > 0 &&
-          record.profiles?.name && (
-            <ListPaymentMethods
-              paymentMethods={record.profiles.payment_methods}
-              hostName={record.profiles.name}
-              onPaymentMethodChange={setSelectedPaymentMethod}
-              initialPaymentMethodLabel={
-                (
-                  selectedParticipant?.payment_method_metadata as {
-                    label?: string;
-                  } | null
-                )?.label
-              }
-            />
-          )}
-        {/* Mark as Paid toggle */}
-        <PaymentStatusButtonGroup
-          markAsPaid={markAsPaid}
-          setMarkAsPaid={setMarkAsPaid}
-        />
-
-        <SubmitButton
-          handleBack={handleBack}
-          handleSubmit={handleSubmit}
-          isLoading={isLoading}
-          validationError={validationError}
-        />
+      {/* COMPLETE PAYMENT separator */}
+      <div className="flex items-center gap-4 mt-12 mb-6">
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+        <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-widest uppercase">
+          Complete Payment
+        </span>
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
       </div>
+
+      {/* Payment Methods Section */}
+      {record.profiles?.payment_methods &&
+        record.profiles?.payment_methods.length > 0 &&
+        record.profiles?.name && (
+          <ListPaymentMethods
+            paymentMethods={record.profiles.payment_methods}
+            hostName={record.profiles.name}
+            onPaymentMethodChange={setSelectedPaymentMethod}
+            initialPaymentMethodLabel={
+              (
+                selectedParticipant?.payment_method_metadata as {
+                  label?: string;
+                } | null
+              )?.label
+            }
+          />
+        )}
+
+      {/* Mark as Paid toggle */}
+      <PaymentStatusButtonGroup
+        markAsPaid={markAsPaid}
+        setMarkAsPaid={setMarkAsPaid}
+      />
+
+      <SubmitButton
+        handleBack={handleBack}
+        handleSubmit={handleSubmit}
+        isLoading={isLoading}
+        isUpdate={!!selectedParticipant}
+        validationError={validationError}
+      />
     </div>
   );
 }

@@ -26,12 +26,7 @@ import {
   retrieveSettleMetadata,
 } from '@/lib/utils';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
-import {
-  AlertTriangle,
-  CheckCircle,
-  AlertCircle,
-  ArrowRight,
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
 export const runtime = 'edge';
 
@@ -478,17 +473,14 @@ export default function RecordPage() {
                     selectedParticipant={selectedParticipant}
                     onNewNameToggle={handleNewNameToggle}
                     onNewParticipantNameChange={setNewParticipantName}
+                    onAddClick={() => setShowSettleComponent(true)}
                   />
                 </div>
               </>
             )}
 
-            {showSettleComponent && record ? (
+            {showSettleComponent && record && (
               <>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mt-8 mb-4">
-                  Complete payment
-                </h3>
-
                 {record.settle_mode === 'FRIEND' && (
                   <SplitFriend
                     record={record}
@@ -536,28 +528,6 @@ export default function RecordPage() {
                   />
                 )}
               </>
-            ) : (
-              <button
-                className="w-full py-4 px-6 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 font-semibold text-lg mt-8 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => {
-                  if (
-                    selectedParticipant ||
-                    (newParticipantName.trim() &&
-                      record?.settle_mode !== 'HOST')
-                  ) {
-                    setShowSettleComponent(true);
-                  } else {
-                    handleUpdateRecord();
-                  }
-                }}
-                disabled={
-                  !selectedParticipant &&
-                  (record?.settle_mode === 'HOST' || !newParticipantName.trim())
-                }
-              >
-                <span>Continue</span>
-                <ArrowRight size={20} />
-              </button>
             )}
           </div>
         )}
