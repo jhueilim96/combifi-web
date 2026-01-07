@@ -12,9 +12,10 @@ import ListPaymentMethods, {
   SelectedPaymentMethod,
 } from '../payment/ListPaymentMethods';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
+import { InstantSplitDetailedView } from '@/lib/viewTypes';
 
 interface SplitFriendProps {
-  record: Tables<'one_time_split_expenses'>;
+  record: InstantSplitDetailedView;
   selectedParticipant: Tables<'one_time_split_expenses_participants'> | null;
   newParticipantName: string;
   setNewParticipantName: (name: string) => void;
@@ -191,12 +192,12 @@ export default function SplitFriend({
       </div>
 
       {/* Payment Methods Section */}
-      {record.profiles?.payment_methods &&
-        record.profiles?.payment_methods.length > 0 &&
-        record.profiles?.name && (
+      {record.payment_methods &&
+        record.payment_methods.length > 0 &&
+        record.name && (
           <ListPaymentMethods
-            paymentMethods={record.profiles.payment_methods}
-            hostName={record.profiles.name}
+            paymentMethods={record.payment_methods}
+            hostName={record.name}
             onPaymentMethodChange={setSelectedPaymentMethod}
             initialPaymentMethodLabel={
               (

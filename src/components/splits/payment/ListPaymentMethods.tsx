@@ -10,12 +10,11 @@ import {
   CheckCircle,
   Landmark,
 } from 'lucide-react';
-import { Tables } from '@/lib/database.types';
 import QRCode from './QrCode';
 import RoundedHexagon from '@/components/common/RoundedHexagon';
+import { InstantSplitPaymentMethod } from '@/lib/viewTypes';
 
-type PaymentMethod =
-  Tables<'one_time_split_expenses'>['profiles']['payment_methods'][number];
+type PaymentMethod = InstantSplitPaymentMethod;
 
 type ImagePaymentMethod = PaymentMethod & {
   type: 'IMAGE';
@@ -124,7 +123,7 @@ export type SelectedPaymentMethod = {
 };
 
 interface ListPaymentMethodsProps {
-  paymentMethods: Tables<'one_time_split_expenses'>['profiles']['payment_methods'];
+  paymentMethods: InstantSplitPaymentMethod[];
   hostName: string;
   onPaymentMethodChange?: (paymentMethod: SelectedPaymentMethod | null) => void;
   initialPaymentMethodLabel?: string | null;

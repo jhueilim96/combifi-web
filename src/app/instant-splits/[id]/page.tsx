@@ -10,6 +10,7 @@ import {
   getPublicRecord,
 } from './actions';
 import { Tables } from '@/lib/database.types';
+import { InstantSplitDetailedView } from '@/lib/viewTypes';
 import SplitFriend from '@/components/splits/modes/SplitFriend';
 import SplitPerPax from '@/components/splits/modes/SplitPerPax';
 import SplitHost from '@/components/splits/modes/SplitHost';
@@ -39,8 +40,7 @@ export default function RecordPage() {
   const params = useParams();
   const id = params?.id as string;
 
-  const [record, setRecord] =
-    useState<Tables<'one_time_split_expenses'> | null>(null);
+  const [record, setRecord] = useState<InstantSplitDetailedView | null>(null);
   const [participants, setParticipants] = useState<
     Tables<'one_time_split_expenses_participants'>[]
   >([]);

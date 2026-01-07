@@ -2,9 +2,10 @@
 
 import { UserPlus } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
+import { InstantSplitDetailedView } from '@/lib/viewTypes';
 
 interface AddNewParticipantProps {
-  record: Tables<'one_time_split_expenses'>;
+  record: InstantSplitDetailedView;
   participants: Tables<'one_time_split_expenses_participants'>[];
   numberOfPax: number;
   showNewNameInput: boolean;

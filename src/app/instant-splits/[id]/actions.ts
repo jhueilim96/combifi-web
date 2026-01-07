@@ -7,40 +7,25 @@ import {
   InsertParticipantInput,
   UpdateParticipantInput,
 } from '@/lib/validations';
-
-const getInstantSplitDetailedQuery = (id: string, password: string) =>
-  createSupabaseClient(password)
-    .from('one_time_split_expenses')
-    .select(
-      'amount,category_id,converted_amount,converted_currency,created_at,currency,date,description,file_name,id,is_deleted,link,notes,settle_metadata,settle_mode,status,updated_at,user_id,' +
-        'profiles(name, payment_methods!payment_methods_user_id_fkey(image_url, image_key, image_expired_at, is_primary, type, label, details))'
-    )
-    .eq('id', id)
-    .eq('is_deleted', false)
-    .eq('profiles.payment_methods.is_active', true)
-    .eq('profiles.payment_methods.is_deleted', false)
-    .order('is_primary', {
-      ascending: false,
-      referencedTable: 'profiles.payment_methods',
-    })
-    .single();
-
-type InstantSplitWithDetailedProfile = QueryData<
-  typeof getInstantSplitDetailedQuery
->;
+import { InstantSplitDetailedView } from '@/lib/viewTypes';
 
 export async function getRecord(
   id: string,
   password: string
-): Promise<InstantSplitWithDetailedProfile> {
+): Promise<InstantSplitDetailedView> {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
 
   try {
-    // console.log('Fetching record with ID:', id);
-    // Always exclude password
-    const { data, error } = await getInstantSplitDetailedQuery(id, password);
+    // Note: instant_split_detailed_view is a custom view - regenerate types to remove 'as any'
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const { data, error } = await (createSupabaseClient(password) as any)
+      /* eslint-enable @typescript-eslint/no-explicit-any */
+      .from('instant_split_detailed_view')
+      .select('*')
+      .eq('id', id)
+      .single();
 
     if (error) {
       console.error('Error fetching record:', error);
@@ -51,38 +36,38 @@ export async function getRecord(
       throw new Error('Record not found');
     }
 
-    /* eslint-disable */
-    const record = data as any;
-    /* eslint-enable */
-    if (record.file_name !== null && record.file_name !== '') {
-      const response = await getFileSignedURL(record.file_name, password);
-      record.file_url = response.data.shareUrl;
+    const record = data as unknown as InstantSplitDetailedView;
+
+    // Handle transaction images - fetch signed URLs
+    if (record.transaction_images && record.transaction_images.length > 0) {
+      for (const image of record.transaction_images) {
+        if (image.image_key) {
+          const response = await getFileSignedURL(image.image_key, password);
+          if (response) {
+            image.image_url = response.data.shareUrl;
+          }
+        }
+      }
     }
 
-    // Handle payment methods image URLs (replacing QR code logic)
-    if (
-      record?.profiles.payment_methods &&
-      Array.isArray(record.profiles.payment_methods)
-    ) {
-      for (const paymentMethod of record.profiles.payment_methods) {
-        // console.log(paymentMethod);
+    // Handle payment methods image URLs - refresh if expired
+    if (record.payment_methods && record.payment_methods.length > 0) {
+      for (const paymentMethod of record.payment_methods) {
         if (
-          paymentMethod?.image_expired_at &&
+          paymentMethod.image_expired_at &&
           new Date(paymentMethod.image_expired_at) < new Date()
         ) {
-          // console.log('Payment method image expired, fetching new signed URL');
           const response = await getPaymentMethodImageUrl(
-            paymentMethod.image_key,
+            paymentMethod.image_key!,
             password
           );
-          // console.log('Updated payment method image URL and expiration date');
           paymentMethod.image_url = response.data.shareUrl;
           paymentMethod.image_expired_at = response.data.expiredAt;
         }
       }
     }
 
-    return record as InstantSplitWithDetailedProfile;
+    return record;
   } catch (error) {
     console.error('Error fetching record:', error);
     throw error;

@@ -1,11 +1,11 @@
 import { formatCurrency, formatAmountOnly } from '@/lib/currencyUtils';
-import { Tables } from '@/lib/database.types';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Loader2, Scale, Users, UserCog, NotebookPen } from 'lucide-react';
+import { InstantSplitDetailedView } from '@/lib/viewTypes';
 
 interface SplitDetailsProps {
-  record: Tables<'one_time_split_expenses'>;
+  record: InstantSplitDetailedView;
 }
 
 // Format date as "24 Oct · FRIDAY"
@@ -57,6 +57,12 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
 
   const emoji = getCategoryEmoji(record.description);
 
+  // Get first transaction image URL if available
+  const imageUrl =
+    record.transaction_images && record.transaction_images.length > 0
+      ? record.transaction_images[0]?.image_url
+      : null;
+
   const isNotesTruncated =
     record.notes && record.notes.length > NOTES_TRUNCATE_LENGTH;
   const displayedNotes =
@@ -68,9 +74,9 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
     <div className="flex flex-col items-center text-center pt-1 pb-4">
       {/* Category emoji square */}
       <div
-        className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4 cursor-pointer"
+        className={`w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4 ${imageUrl ? 'cursor-pointer' : ''}`}
         onClick={() => {
-          if (record.file_url) {
+          if (imageUrl) {
             setShowEnlargedImage(true);
             setIsEnlargedImageLoading(true);
           }
@@ -113,10 +119,10 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
       </p> */}
 
       {/* Image and Notes row */}
-      {(record.file_url || record.notes) && (
+      {(imageUrl || record.notes) && (
         <div className="flex items-center justify-center gap-6">
           {/* Image preview */}
-          {record.file_url && (
+          {imageUrl && (
             <button
               onClick={() => {
                 setShowEnlargedImage(true);
@@ -131,7 +137,7 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
                   </div>
                 )}
                 <Image
-                  src={record.file_url}
+                  src={imageUrl}
                   alt="Receipt"
                   width={32}
                   height={32}
@@ -161,7 +167,7 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
       )}
 
       {/* Enlarged image modal */}
-      {showEnlargedImage && record.file_url && (
+      {showEnlargedImage && imageUrl && (
         <div
           className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 cursor-zoom-out"
           onClick={() => setShowEnlargedImage(false)}
@@ -173,7 +179,7 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
               </div>
             )}
             <Image
-              src={record.file_url}
+              src={imageUrl}
               alt="Enlarged Receipt Photo"
               fill
               className={`object-contain transition-opacity duration-300 ${isEnlargedImageLoading ? 'opacity-0' : 'opacity-100'}`}

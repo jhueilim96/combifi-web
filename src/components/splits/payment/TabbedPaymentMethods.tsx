@@ -165,7 +165,7 @@ export default function TabbedPaymentMethods({
           {(() => {
             const method = validPaymentMethods[0];
             if (isImagePaymentMethod(method)) {
-              return <QRCode name="" qrUrl={method.image_url} provider="" />;
+              return <QRCode name="" qrUrl={method.image_url} />;
             }
             if (isTextPaymentMethod(method)) {
               return <PaymentDetailsBox details={method.details} />;
@@ -225,7 +225,7 @@ export default function TabbedPaymentMethods({
           const activeMethod = validPaymentMethods[activeTab];
           if (isImagePaymentMethod(activeMethod)) {
             return (
-              <QRCode name="" qrUrl={activeMethod.image_url} provider="" />
+              <QRCode name="" qrUrl={activeMethod.image_url} />
             );
           }
           if (isTextPaymentMethod(activeMethod)) {

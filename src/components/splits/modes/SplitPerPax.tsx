@@ -11,9 +11,10 @@ import ListPaymentMethods, {
 import useValidationError from '@/hooks/useValidationError';
 import { PerPaxMetadata, retrieveSettleMetadata } from '@/lib/utils';
 import { formatCurrency } from '@/lib/currencyUtils';
+import { InstantSplitDetailedView } from '@/lib/viewTypes';
 
 interface SplitPerPaxProps {
-  record: Tables<'one_time_split_expenses'>;
+  record: InstantSplitDetailedView;
   selectedParticipant: Tables<'one_time_split_expenses_participants'> | null;
   newParticipantName: string;
   handleUpdateRecord: () => Promise<void>;
@@ -116,12 +117,12 @@ export default function SplitPerPax({
       </div>
 
       {/* Payment Methods Section */}
-      {record.profiles?.payment_methods &&
-        record.profiles?.payment_methods.length > 0 &&
-        record.profiles?.name && (
+      {record.payment_methods &&
+        record.payment_methods.length > 0 &&
+        record.name && (
           <ListPaymentMethods
-            paymentMethods={record.profiles.payment_methods}
-            hostName={record.profiles.name}
+            paymentMethods={record.payment_methods}
+            hostName={record.name}
             onPaymentMethodChange={setSelectedPaymentMethod}
             initialPaymentMethodLabel={
               (
