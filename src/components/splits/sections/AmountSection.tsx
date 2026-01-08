@@ -176,13 +176,13 @@ export function AmountExpanded({
   );
 }
 
-// Collapsed content - just shows the amount (left aligned)
+// Collapsed content - just shows the amount (center aligned)
 export function AmountCollapsed({
   participantAmount,
   record,
 }: Pick<AmountSectionProps, 'participantAmount' | 'record'>) {
   return (
-    <div className="flex items-center">
+    <div className="flex items-center justify-center">
       <span className="text-xs font-medium text-gray-400 dark:text-gray-500 mr-0.5">
         {formatCurrency(record.currency)}
       </span>

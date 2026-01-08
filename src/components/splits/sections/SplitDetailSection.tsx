@@ -35,8 +35,8 @@ export function SplitDetailCollapsed({
       : null;
 
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+    <div className="flex items-center justify-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         <span className="text-xl font-bold text-gray-900 dark:text-white flex-shrink-0">
           {formatCurrencyAmount(record.amount, record.currency)}
         </span>

@@ -2,7 +2,7 @@ export default function HoneycombBackground() {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
       {/* Soft honey color wash */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-100/60 via-amber-50/30 to-yellow-100/50 dark:from-amber-900/15 dark:via-amber-950/10 dark:to-yellow-900/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-100/60 via-amber-50/30 to-yellow-200/50 dark:from-amber-900/15 dark:via-amber-950/10 dark:to-yellow-900/10" />
 
       {/* Top-left honeycomb cluster */}
       <svg

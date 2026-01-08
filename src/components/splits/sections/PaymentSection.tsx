@@ -17,7 +17,7 @@ export function PaymentExpanded({
     record.payment_methods && record.payment_methods.length > 0 && record.name;
 
   return (
-    <div>
+    <div className="pb-20">
       {/* Payment Methods Section */}
       {hasPaymentMethods && (
         <ListPaymentMethods
@@ -41,7 +41,16 @@ export function PaymentExpanded({
         </div>
       )}
 
-      {/* Payment Status Button Group */}
+      {/* Divider line - matches section header line colors */}
+      <div className="flex items-center gap-3 my-4">
+        <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider">
+          Status
+        </span>
+        <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+      </div>
+
+      {/* Payment Status - Secondary control */}
       <PaymentStatusButtonGroup
         markAsPaid={markAsPaid}
         setMarkAsPaid={setMarkAsPaid}
@@ -67,7 +76,7 @@ export function PaymentCollapsed({
   };
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-center gap-4">
       <div className="flex items-center gap-2">
         <PaymentIcon />
         {selectedPaymentMethod ? (

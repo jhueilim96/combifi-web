@@ -31,8 +31,8 @@ export default function FixedFooter({
               transition-all duration-200
               ${
                 isLoading
-                  ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-                  : 'bg-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 active:scale-[0.98]'
+                  ? 'bg-indigo-300 dark:bg-indigo-800 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 active:scale-[0.98]'
               }
             `}
           >

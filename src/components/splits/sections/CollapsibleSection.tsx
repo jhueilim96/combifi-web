@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Circle } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { CollapsibleSectionProps } from './types';
 
 export default function CollapsibleSection({
@@ -24,29 +24,19 @@ export default function CollapsibleSection({
     }
   };
 
-  // Status indicator icon - subtle for completed, prominent for active, red for error
-  const StatusIcon = () => {
-    // Show error state (red) when hasError is true and not expanded
+  // Get line color based on status and error state
+  const getLineColor = () => {
     if (hasError && !isExpanded && status !== 'upcoming') {
-      return <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />;
+      return 'bg-red-400 dark:bg-red-500';
+    }
+    if (status === 'active' || isExpanded) {
+      return 'bg-indigo-400 dark:bg-indigo-500';
     }
     if (status === 'completed') {
-      // Subtle, smaller indicator for completed state
-      return (
-        <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-      );
-    }
-    if (status === 'active') {
-      return (
-        <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center flex-shrink-0">
-          <Circle size={8} className="text-white fill-white" />
-        </div>
-      );
+      return 'bg-gray-300 dark:bg-gray-600';
     }
     // Upcoming
-    return (
-      <div className="w-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
-    );
+    return 'bg-gray-200 dark:bg-gray-700';
   };
 
   return (
@@ -58,94 +48,99 @@ export default function CollapsibleSection({
             ? 'opacity-40 pointer-events-none'
             : 'opacity-100'
         }
+        ${status === 'upcoming' ? 'blur-[0.5px]' : ''}
       `}
       style={{ transitionDelay }}
     >
-      <div
+      {/* Header - Line with centered title and chevron */}
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={!canToggle}
         className={`
-          rounded-2xl overflow-hidden
-          transition-all duration-300 ease-out
-          ${
-            isExpanded
-              ? 'bg-white dark:bg-gray-900 shadow-sm'
-              : 'bg-gray-50 dark:bg-gray-900/50'
-          }
-          ${status === 'upcoming' ? 'blur-[0.5px]' : ''}
+          w-full flex items-center gap-3 py-3
+          transition-colors duration-200
+          ${canToggle ? 'cursor-pointer' : 'cursor-default'}
         `}
       >
-        {/* Header - Always visible */}
-        <button
-          type="button"
-          onClick={handleClick}
-          disabled={!canToggle}
+        {/* Left spacer to balance chevron - keeps title centered */}
+        <div className="w-4 flex-shrink-0" />
+
+        {/* Left line */}
+        <div
           className={`
-            w-full flex items-center justify-between py-4 px-4 text-left
+            flex-1 h-px
+            transition-colors duration-300
+            ${getLineColor()}
+          `}
+        />
+
+        {/* Centered title */}
+        <span
+          className={`
+            text-xs font-semibold tracking-wider uppercase px-3
             transition-colors duration-200
             ${
-              canToggle
-                ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800'
-                : 'cursor-default'
+              status === 'active'
+                ? 'text-gray-900 dark:text-white'
+                : status === 'completed'
+                  ? 'text-gray-500 dark:text-gray-500'
+                  : 'text-gray-400 dark:text-gray-500'
             }
           `}
         >
-          <div className="flex items-center gap-3">
-            <StatusIcon />
-            <span
-              className={`
-              text-sm font-semibold tracking-wide uppercase
-              transition-colors duration-200
-              ${
-                status === 'active'
-                  ? 'text-gray-900 dark:text-white'
-                  : status === 'completed'
-                    ? 'text-gray-500 dark:text-gray-500'
-                    : 'text-gray-400 dark:text-gray-500'
-              }
-            `}
-            >
-              {displayTitle}
-            </span>
-          </div>
-          {canToggle && (
-            <div
-              className={`
-              text-gray-400 dark:text-gray-500
-              transition-transform duration-300 ease-out
-              ${isExpanded ? 'rotate-180' : 'rotate-0'}
-            `}
-            >
-              <ChevronDown size={20} />
-            </div>
-          )}
-        </button>
+          {displayTitle}
+        </span>
 
-        {/* Collapsed Summary - Visible when collapsed and not upcoming */}
-        {!isExpanded && status !== 'upcoming' && (
+        {/* Right line */}
+        <div
+          className={`
+            flex-1 h-px
+            transition-colors duration-300
+            ${getLineColor()}
+          `}
+        />
+
+        {/* Chevron indicator */}
+        {canToggle && (
           <div
             className={`
-              overflow-hidden
+              w-4 flex-shrink-0
               transition-all duration-300 ease-out
-              max-h-24 opacity-100
+              ${isExpanded ? 'rotate-90 text-indigo-500' : 'rotate-0 text-gray-400 dark:text-gray-500'}
             `}
           >
-            <div className="px-4 pb-4">{collapsedContent}</div>
+            <ChevronRight size={16} strokeWidth={1.5} />
           </div>
         )}
+      </button>
 
-        {/* Expanded Content - Visible when expanded */}
+      {/* Collapsed Summary - Visible when collapsed and not upcoming */}
+      {!isExpanded && status !== 'upcoming' && (
         <div
           className={`
             overflow-hidden
             transition-all duration-300 ease-out
-            ${
-              isExpanded
-                ? 'max-h-[2000px] opacity-100'
-                : 'max-h-0 opacity-0 pointer-events-none'
-            }
+            max-h-24 opacity-100
           `}
         >
-          <div className="px-4 pb-6">{expandedContent}</div>
+          <div className="py-3">{collapsedContent}</div>
         </div>
+      )}
+
+      {/* Expanded Content - Visible when expanded */}
+      <div
+        className={`
+          overflow-hidden
+          transition-all duration-300 ease-out
+          ${
+            isExpanded
+              ? 'max-h-[2000px] opacity-100'
+              : 'max-h-0 opacity-0 pointer-events-none'
+          }
+        `}
+      >
+        <div className="py-4">{expandedContent}</div>
       </div>
     </div>
   );

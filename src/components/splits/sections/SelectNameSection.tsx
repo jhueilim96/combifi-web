@@ -4,6 +4,7 @@ import { CheckCircle, UserPlus } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
 import { SelectNameSectionProps } from './types';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
+import RoundedHexagon from '@/components/common/RoundedHexagon';
 
 // Expanded content - participant list + add new name
 export function SelectNameExpanded({
@@ -38,72 +39,81 @@ export function SelectNameExpanded({
   };
 
   return (
-    <div className="space-y-2">
-      {/* Existing participants */}
-      {nonHostParticipants.map((participant, index) => (
-        <div
-          key={index}
-          className={`flex items-center justify-between px-4 py-3 rounded-2xl cursor-pointer transition-all duration-200 ${
-            selectedParticipant?.id === participant.id
-              ? 'border-2 border-indigo-500 dark:border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
-              : 'border-2 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
-          }`}
-          onClick={() => handleParticipantClick(participant)}
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-              <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-300">
-                {participant.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-gray-900 dark:text-white font-medium">
-                {participant.name}
-              </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {participant.is_paid ? '✓ Paid' : 'Not paid'}
-                {' · '}
-                {formatCurrencyAmount(participant.amount, record.currency)}
-              </span>
-            </div>
-          </div>
-          {selectedParticipant?.id === participant.id && (
-            <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center">
-              <CheckCircle size={16} className="text-white" />
-            </div>
-          )}
-        </div>
-      ))}
-
-      {/* Add new participant input */}
-      {canAddNewParticipant && (
-        <div className="mt-4 flex items-center gap-3 bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
-          <UserPlus
-            size={20}
-            className="text-gray-400 dark:text-gray-500 flex-shrink-0"
-          />
-          <input
-            type="text"
-            placeholder="Or type name to join..."
-            className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none"
-            value={newParticipantName}
-            onChange={(e) => onNewParticipantNameChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleNewNameSubmit();
-              }
-            }}
-          />
-          {newParticipantName.trim() && (
-            <button
-              onClick={handleNewNameSubmit}
-              className="text-sm font-medium text-gray-700 dark:text-gray-800 bg-white dark:bg-gray-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-300 transition-colors shadow-sm"
+    <div className="flex justify-center">
+      <div className="space-y-2">
+        {/* Existing participants */}
+        {nonHostParticipants.map((participant, index) => {
+          const isSelected = selectedParticipant?.id === participant.id;
+          return (
+            <div
+              key={index}
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all duration-200 ${
+                isSelected
+                  ? 'border-2 border-indigo-500 dark:border-indigo-400'
+                  : 'border-2 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
+              }`}
+              onClick={() => handleParticipantClick(participant)}
             >
-              Join
-            </button>
-          )}
-        </div>
-      )}
+              <RoundedHexagon
+                className="w-10 h-10 flex-shrink-0"
+                bgClassName="text-gray-100 dark:text-gray-800"
+              >
+                <span className="text-base font-semibold text-gray-600 dark:text-gray-300">
+                  {participant.name.charAt(0).toUpperCase()}
+                </span>
+              </RoundedHexagon>
+              <div className="flex flex-col min-w-32">
+                <span className="text-gray-900 dark:text-white font-medium">
+                  {participant.name}
+                </span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {participant.is_paid ? '✓ Paid' : 'Not paid'}
+                  {' · '}
+                  {formatCurrencyAmount(participant.amount, record.currency)}
+                </span>
+              </div>
+              {/* Always reserve space for checkmark */}
+              <div className="w-5 h-5 flex-shrink-0">
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                    <CheckCircle size={14} className="text-white" />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Add new participant input */}
+        {canAddNewParticipant && (
+          <div className="mt-4 flex items-center gap-3 bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
+            <UserPlus
+              size={18}
+              className="text-gray-400 dark:text-gray-500 flex-shrink-0"
+            />
+            <input
+              type="text"
+              placeholder="Or type name to join..."
+              className="bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none w-40"
+              value={newParticipantName}
+              onChange={(e) => onNewParticipantNameChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleNewNameSubmit();
+                }
+              }}
+            />
+            {newParticipantName.trim() && (
+              <button
+                onClick={handleNewNameSubmit}
+                className="text-sm font-medium text-gray-700 dark:text-gray-800 bg-white dark:bg-gray-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-300 transition-colors shadow-sm"
+              >
+                Join
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -118,12 +128,15 @@ export function SelectNameCollapsed({
 
   if (!selectedParticipant && !newParticipantName) {
     return (
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+      <div className="flex items-center justify-center gap-3">
+        <RoundedHexagon
+          className="w-8 h-8"
+          bgClassName="text-gray-200 dark:text-gray-700"
+        >
           <span className="text-sm font-semibold text-gray-400 dark:text-gray-500">
             ?
           </span>
-        </div>
+        </RoundedHexagon>
         <span className="text-gray-400 dark:text-gray-500 text-sm">
           No name selected
         </span>
@@ -132,12 +145,15 @@ export function SelectNameCollapsed({
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-        <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-300">
+    <div className="flex items-center justify-center gap-3">
+      <RoundedHexagon
+        className="w-10 h-10"
+        bgClassName="text-gray-100 dark:text-gray-800"
+      >
+        <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
           {initial}
         </span>
-      </div>
+      </RoundedHexagon>
       <span className="text-gray-900 dark:text-white font-medium">
         {displayName}
       </span>

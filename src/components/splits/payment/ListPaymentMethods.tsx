@@ -78,26 +78,23 @@ function PaymentDetailsBox({ details }: { details: string }) {
   };
 
   return (
-    <div className="py-4">
-      <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
-        Details
-      </p>
-      <div className="flex items-start bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-        <p className="flex-1 text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+    <div className="py-4 flex flex-col items-center">
+      <div className="inline-flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-2xl px-4 py-3">
+        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed font-medium">
           {details}
         </p>
         <button
           onClick={handleCopy}
-          className={`ml-3 p-2 rounded-lg transition-colors ${
+          className={`p-2 rounded-xl transition-colors flex-shrink-0 ${
             copied
               ? 'bg-green-100 dark:bg-green-900/30'
-              : 'bg-white dark:bg-gray-600 hover:bg-gray-100 dark:hover:bg-gray-500'
+              : 'bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
           }`}
         >
           {copied ? (
-            <Check size={20} className="text-green-600 dark:text-green-400" />
+            <Check size={18} className="text-green-600 dark:text-green-400" />
           ) : (
-            <Copy size={20} className="text-gray-500 dark:text-gray-400" />
+            <Copy size={18} className="text-gray-400 dark:text-gray-500" />
           )}
         </button>
       </div>
@@ -191,40 +188,45 @@ export default function ListPaymentMethods({
               : 'translate-x-0 opacity-100 relative'
           }`}
         >
-          <div className="space-y-2">
-            {validPaymentMethods.map((method) => (
-              <div
-                key={method.label}
-                onClick={() => handleMethodPress(method)}
-                className={`flex items-center justify-between px-4 py-3 rounded-2xl cursor-pointer transition-all duration-200 ${
-                  selectedMethod?.label === method.label
-                    ? 'border-2 border-gray-700 dark:border-gray-300'
-                    : 'border-2 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <RoundedHexagon>
-                    <PaymentMethodIcon type={method.type} />
-                  </RoundedHexagon>
-                  <div className="flex flex-col">
-                    <span className="text-gray-900 dark:text-white font-medium">
-                      {method.label}
-                    </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {method.type === 'IMAGE' ? 'QR Code' : 'Account Details'}
-                    </span>
+          <div className="flex justify-center">
+            <div className="space-y-2">
+              {validPaymentMethods.map((method) => {
+                const isSelected = selectedMethod?.label === method.label;
+                return (
+                  <div
+                    key={method.label}
+                    onClick={() => handleMethodPress(method)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all duration-200 ${
+                      isSelected
+                        ? 'border-2 border-indigo-500 dark:border-indigo-400'
+                        : 'border-2 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <RoundedHexagon bgClassName="text-gray-100 dark:text-gray-800">
+                      <PaymentMethodIcon type={method.type} />
+                    </RoundedHexagon>
+                    <div className="flex flex-col min-w-32">
+                      <span className="text-gray-900 dark:text-white font-medium">
+                        {method.label}
+                      </span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {method.type === 'IMAGE'
+                          ? 'QR Code'
+                          : 'Account Details'}
+                      </span>
+                    </div>
+                    {/* Always reserve space for checkmark */}
+                    <div className="w-5 h-5 flex-shrink-0">
+                      {isSelected && (
+                        <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                          <CheckCircle size={14} className="text-white" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                {selectedMethod?.label === method.label && (
-                  <div className="w-6 h-6 rounded-full bg-gray-700 dark:bg-gray-300 flex items-center justify-center">
-                    <CheckCircle
-                      size={16}
-                      className="text-white dark:text-gray-900"
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -238,23 +240,24 @@ export default function ListPaymentMethods({
         >
           {selectedMethod && (
             <div className="rounded-2xl">
-              {/* Back Button */}
+              {/* Method Header with Back Button */}
               <button
                 type="button"
                 onClick={handleBackToList}
-                className="flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors mb-4"
+                className="flex items-center justify-center gap-3 w-full mb-4 group"
               >
-                <ArrowLeft size={18} strokeWidth={1.5} />
-                <span className="text-sm font-medium">Payment Methods</span>
-              </button>
-
-              {/* Method Title */}
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <PaymentMethodIcon type={selectedMethod.type} />
+                <ArrowLeft
+                  size={16}
+                  strokeWidth={1.5}
+                  className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors"
+                />
+                <RoundedHexagon>
+                  <PaymentMethodIcon type={selectedMethod.type} />
+                </RoundedHexagon>
                 <span className="font-medium text-gray-900 dark:text-gray-200">
                   {selectedMethod.label}
                 </span>
-              </div>
+              </button>
 
               {/* Method Content */}
               {isImagePaymentMethod(selectedMethod) ? (
