@@ -1,19 +1,22 @@
 'use client';
 
-import { ChevronDown, Check, Circle } from 'lucide-react';
+import { ChevronDown, Circle } from 'lucide-react';
 import { CollapsibleSectionProps } from './types';
 
 export default function CollapsibleSection({
   id,
   title,
+  collapsedTitle,
   isExpanded,
   status,
+  hasError = false,
   onToggle,
   expandedContent,
   collapsedContent,
   transitionDelay = '0ms',
 }: CollapsibleSectionProps) {
   const canToggle = status !== 'upcoming';
+  const displayTitle = isExpanded ? title : collapsedTitle || title;
 
   const handleClick = () => {
     if (canToggle) {
@@ -21,13 +24,16 @@ export default function CollapsibleSection({
     }
   };
 
-  // Status indicator icon
+  // Status indicator icon - subtle for completed, prominent for active, red for error
   const StatusIcon = () => {
+    // Show error state (red) when hasError is true and not expanded
+    if (hasError && !isExpanded && status !== 'upcoming') {
+      return <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />;
+    }
     if (status === 'completed') {
+      // Subtle, smaller indicator for completed state
       return (
-        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-          <Check size={14} className="text-white" strokeWidth={3} />
-        </div>
+        <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
       );
     }
     if (status === 'active') {
@@ -39,7 +45,7 @@ export default function CollapsibleSection({
     }
     // Upcoming
     return (
-      <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-600 flex-shrink-0" />
+      <div className="w-2 h-2 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
     );
   };
 
@@ -92,12 +98,12 @@ export default function CollapsibleSection({
                 status === 'active'
                   ? 'text-gray-900 dark:text-white'
                   : status === 'completed'
-                    ? 'text-gray-600 dark:text-gray-400'
+                    ? 'text-gray-500 dark:text-gray-500'
                     : 'text-gray-400 dark:text-gray-500'
               }
             `}
             >
-              {title}
+              {displayTitle}
             </span>
           </div>
           {canToggle && (

@@ -34,7 +34,7 @@ export const SECTION_METADATA: Record<
   { title: string; collapsedTitle: string }
 > = {
   details: {
-    title: 'Split Details',
+    title: 'Expense Details',
     collapsedTitle: 'Details',
   },
   name: {

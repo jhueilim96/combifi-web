@@ -69,6 +69,7 @@ export default function RecordPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPromo, setShowPromo] = useState(false);
+  const [showEnlargedImage, setShowEnlargedImage] = useState(false);
 
   // Form state
   const [selectedParticipant, setSelectedParticipant] =
@@ -100,6 +101,10 @@ export default function RecordPage() {
   const hasAmount = !!(participantAmount && parseFloat(participantAmount) > 0);
   const isFooterVisible =
     hasSelectedName && hasAmount && sectionStatuses.payment !== 'upcoming';
+
+  // Error states for sections (shown when collapsed)
+  const nameHasError = !hasSelectedName && sectionStatuses.name === 'completed';
+  const amountHasError = !hasAmount && sectionStatuses.amount === 'completed';
 
   // Fetch public record info
   const fetchPublicRecord = useCallback(async () => {
@@ -412,20 +417,28 @@ export default function RecordPage() {
             <CollapsibleSection
               id="details"
               title={SECTION_METADATA.details.title}
+              collapsedTitle={SECTION_METADATA.details.collapsedTitle}
               isExpanded={expandedSections.includes('details')}
               status={sectionStatuses.details}
               onToggle={toggleSection}
               transitionDelay={SECTION_DELAYS.details}
               expandedContent={<SplitDetailExpanded record={record} />}
-              collapsedContent={<SplitDetailCollapsed record={record} />}
+              collapsedContent={
+                <SplitDetailCollapsed
+                  record={record}
+                  onImageClick={() => setShowEnlargedImage(true)}
+                />
+              }
             />
 
             {/* Section 2: Select Name */}
             <CollapsibleSection
               id="name"
               title={SECTION_METADATA.name.title}
+              collapsedTitle={SECTION_METADATA.name.collapsedTitle}
               isExpanded={expandedSections.includes('name')}
               status={sectionStatuses.name}
+              hasError={nameHasError}
               onToggle={toggleSection}
               transitionDelay={SECTION_DELAYS.name}
               expandedContent={
@@ -452,8 +465,10 @@ export default function RecordPage() {
             <CollapsibleSection
               id="amount"
               title={SECTION_METADATA.amount.title}
+              collapsedTitle={SECTION_METADATA.amount.collapsedTitle}
               isExpanded={expandedSections.includes('amount')}
               status={sectionStatuses.amount}
+              hasError={amountHasError}
               onToggle={toggleSection}
               transitionDelay={SECTION_DELAYS.amount}
               expandedContent={
@@ -479,6 +494,7 @@ export default function RecordPage() {
             <CollapsibleSection
               id="payment"
               title={SECTION_METADATA.payment.title}
+              collapsedTitle={SECTION_METADATA.payment.collapsedTitle}
               isExpanded={expandedSections.includes('payment')}
               status={sectionStatuses.payment}
               onToggle={toggleSection}
@@ -535,6 +551,25 @@ export default function RecordPage() {
         onSubmit={handleUpdateRecord}
         isUpdate={isUpdatingParticipant}
       />
+
+      {/* Enlarged image modal */}
+      {showEnlargedImage &&
+        record?.transaction_images &&
+        record.transaction_images.length > 0 && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 cursor-zoom-out"
+            onClick={() => setShowEnlargedImage(false)}
+          >
+            <div className="relative w-[90vw] h-[90vh] max-w-[600px] max-h-[600px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={record.transaction_images[0]?.image_url || ''}
+                alt="Enlarged Receipt"
+                className="object-contain w-full h-full"
+              />
+            </div>
+          </div>
+        )}
     </div>
   );
 }

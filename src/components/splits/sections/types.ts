@@ -41,8 +41,10 @@ export interface SectionVisualProps {
 export interface CollapsibleSectionProps {
   id: SectionId;
   title: string;
+  collapsedTitle?: string; // Shorter title for collapsed state
   isExpanded: boolean;
   status: SectionStatus;
+  hasError?: boolean; // Show red indicator when there's a validation error
   onToggle: (id: SectionId) => void;
   expandedContent: React.ReactNode;
   collapsedContent: React.ReactNode;
