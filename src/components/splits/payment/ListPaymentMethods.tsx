@@ -196,7 +196,7 @@ export default function ListPaymentMethods({
                   <div
                     key={method.label}
                     onClick={() => handleMethodPress(method)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-[1.7rem] cursor-pointer transition-all duration-200 ${
                       isSelected
                         ? 'border-2 border-indigo-500 dark:border-indigo-400'
                         : 'border-2 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -244,7 +244,7 @@ export default function ListPaymentMethods({
               <button
                 type="button"
                 onClick={handleBackToList}
-                className="flex items-center justify-center gap-3 w-full mb-4 group"
+                className="flex items-center justify-center gap-3 w-full group"
               >
                 <ArrowLeft
                   size={16}

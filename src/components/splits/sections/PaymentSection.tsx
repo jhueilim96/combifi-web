@@ -17,7 +17,7 @@ export function PaymentExpanded({
     record.payment_methods && record.payment_methods.length > 0 && record.name;
 
   return (
-    <div className="pb-20">
+    <div>
       {/* Payment Methods Section */}
       {hasPaymentMethods && (
         <ListPaymentMethods
@@ -41,13 +41,13 @@ export function PaymentExpanded({
         </div>
       )}
 
-      {/* Divider line - matches section header line colors */}
-      <div className="flex items-center gap-3 my-4">
-        <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
-        <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider">
+      {/* Subsection divider - shorter lines to indicate hierarchy */}
+      <div className="flex items-center justify-center gap-2 my-3">
+        <div className="w-16 h-px bg-gray-200 dark:bg-gray-700" />
+        <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider px-2">
           Status
         </span>
-        <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+        <div className="w-16 h-px bg-gray-200 dark:bg-gray-700" />
       </div>
 
       {/* Payment Status - Secondary control */}

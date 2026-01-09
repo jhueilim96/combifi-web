@@ -12,6 +12,7 @@ export { PaymentExpanded, PaymentCollapsed } from './PaymentSection';
 
 // Footer
 export { default as FixedFooter } from './FixedFooter';
+export { default as SuccessBanner } from './SuccessBanner';
 
 // Types
 export * from './types';

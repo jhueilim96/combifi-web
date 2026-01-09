@@ -15,14 +15,13 @@ import { SelectedPaymentMethod } from '@/components/splits/payment/TabbedPayment
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Button } from '@/components/ui/Button';
 import { OTPInput } from '@/components/ui/OTPInput';
-import AppPromoModal from '@/components/common/AppPromoModal';
 import {
   formatLocalDateTime,
   PerPaxMetadata,
   retrieveSettleMetadata,
 } from '@/lib/utils';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
-import { AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { AlertTriangle, AlertCircle } from 'lucide-react';
 import { useSectionState } from '@/lib/useSectionState';
 import {
   CollapsibleSection,
@@ -68,8 +67,8 @@ export default function RecordPage() {
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPromo, setShowPromo] = useState(false);
   const [showEnlargedImage, setShowEnlargedImage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Form state
   const [selectedParticipant, setSelectedParticipant] =
@@ -100,7 +99,10 @@ export default function RecordPage() {
   const hasSelectedName = !!(selectedParticipant || newParticipantName.trim());
   const hasAmount = !!(participantAmount && parseFloat(participantAmount) > 0);
   const isFooterVisible =
-    hasSelectedName && hasAmount && sectionStatuses.payment !== 'upcoming';
+    hasSelectedName &&
+    hasAmount &&
+    sectionStatuses.payment !== 'upcoming' &&
+    selectedPaymentMethod !== null;
 
   // Error states for sections (shown when collapsed)
   const nameHasError = !hasSelectedName && sectionStatuses.name === 'completed';
@@ -165,8 +167,6 @@ export default function RecordPage() {
     }
 
     setIsSubmitting(true);
-    setStatus('Updating...');
-
     try {
       // If updating an existing participant
       if (isUpdatingParticipant && selectedParticipant?.id) {
@@ -182,7 +182,7 @@ export default function RecordPage() {
 
         const updateData = {
           amount: participantAmount,
-          name: newParticipantName,
+          name: newParticipantName || selectedParticipant.name,
           markAsPaid: markAsPaid,
           currency: record.currency,
           paymentMethodMetadata,
@@ -251,9 +251,12 @@ export default function RecordPage() {
       // Collapse all sections to show summary
       goToStep('complete');
 
-      setStatus('Updated successfully!');
-      setShowPromo(true);
-      setTimeout(() => setStatus(''), 3000);
+      // Show success message with host name and amount
+      const amount = formatCurrencyAmount(
+        parseFloat(participantAmount),
+        record.currency
+      );
+      setSuccessMessage(`Paid ${record.name} ${amount}`);
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         setStatus(
@@ -296,13 +299,8 @@ export default function RecordPage() {
     setIsUpdatingParticipant(false);
     setParticipantAmount(''); // Empty to show placeholder
     setSelectedPaymentMethod(null);
+    setSuccessMessage(null);
     goToStep('initial');
-  };
-
-  // Handle promo modal close
-  const handlePromoModalClose = () => {
-    setShowPromo(false);
-    resetUIState();
   };
 
   // Effects
@@ -413,7 +411,7 @@ export default function RecordPage() {
   // Main content with collapsible sections
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-start justify-center px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
-      <div className="max-w-xl mx-auto py-6 relative w-full z-10 pb-32">
+      <div className="max-w-xl mx-auto py-6 relative w-full z-10">
         {record && !showPasswordModal && (
           <div className="space-y-3">
             {/* Section 1: Split Details */}
@@ -522,42 +520,29 @@ export default function RecordPage() {
                 />
               }
             />
+
+            {/* Submit Button - appears after payment method selected */}
+            <FixedFooter
+              isVisible={isFooterVisible}
+              isLoading={isSubmitting}
+              onSubmit={handleUpdateRecord}
+              isUpdate={isUpdatingParticipant}
+              successMessage={successMessage}
+              onReset={resetUIState}
+            />
           </div>
         )}
 
-        {/* Status message */}
-        {status && !showPasswordModal && (
+        {/* Error message */}
+        {status && !showPasswordModal && !status.includes('success') && (
           <div className="mt-4 text-center animate-fadeIn">
-            <p
-              className={`px-4 py-3 rounded-lg flex items-center justify-center ${
-                status.includes('success')
-                  ? 'bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
-                  : 'bg-red-100 dark:bg-red-900/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
-              }`}
-            >
-              {status.includes('success') ? (
-                <CheckCircle size={20} className="mr-2" />
-              ) : (
-                <AlertCircle size={20} className="mr-2" />
-              )}
+            <p className="px-4 py-3 rounded-lg flex items-center justify-center bg-red-100 dark:bg-red-900/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300">
+              <AlertCircle size={20} className="mr-2" />
               {status}
             </p>
           </div>
         )}
-
-        {/* Promotional Message */}
-        {showPromo && (
-          <AppPromoModal handleModalClose={handlePromoModalClose} />
-        )}
       </div>
-
-      {/* Fixed Footer with Submit Button */}
-      <FixedFooter
-        isVisible={isFooterVisible}
-        isLoading={isSubmitting}
-        onSubmit={handleUpdateRecord}
-        isUpdate={isUpdatingParticipant}
-      />
 
       {/* Enlarged image modal */}
       {showEnlargedImage &&

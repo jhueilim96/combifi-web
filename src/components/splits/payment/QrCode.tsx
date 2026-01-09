@@ -117,7 +117,7 @@ export default function QRCode({ name, qrUrl }: QRCodeProps) {
       <button
         onClick={handleDownload}
         disabled={isDownloading}
-        className={`mt-3 inline-flex items-center gap-2 py-1.5 px-4 rounded-full text-xs font-medium transition-all duration-200 ${
+        className={`mt-1 inline-flex items-center gap-2 py-1.5 px-4 rounded-full text-xs font-medium transition-all duration-200 ${
           isDownloading
             ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700 cursor-not-allowed'
             : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow hover:border-gray-300 dark:hover:border-gray-500 active:scale-[0.98]'

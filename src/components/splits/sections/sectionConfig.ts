@@ -46,7 +46,7 @@ export const SECTION_METADATA: Record<
     collapsedTitle: 'Amount',
   },
   payment: {
-    title: 'Payment',
+    title: 'Choose Payment',
     collapsedTitle: 'Payment',
   },
 };

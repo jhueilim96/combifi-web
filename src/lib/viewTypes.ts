@@ -29,7 +29,7 @@ export interface InstantSplitTransactionImage {
 export interface InstantSplitDetailedView {
   id: string;
   amount: number;
-  category_id: string | null;
+  emoji: string;
   converted_amount: number | null;
   converted_currency: string | null;
   created_at: string;

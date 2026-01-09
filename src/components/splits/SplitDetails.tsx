@@ -29,22 +29,12 @@ function getSettleModeInfo(mode: string | null): {
     case 'PERPAX':
       return { label: 'SPLIT EVENLY', icon: <Scale size={14} /> };
     case 'FRIEND':
-      return { label: 'CUSTOM SPLIT', icon: <Users size={14} /> };
+      return { label: 'FRIEND CHOOSE', icon: <Users size={14} /> };
     case 'HOST':
       return { label: 'HOST MANAGED', icon: <UserCog size={14} /> };
     default:
       return { label: 'SPLIT', icon: <Scale size={14} /> };
   }
-}
-
-// Extract emoji from description if present, otherwise return default
-function getCategoryEmoji(description: string | null): string {
-  if (!description) return '💸';
-  // Match emoji at start of string or anywhere in string
-  const emojiRegex =
-    /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
-  const match = description.match(emojiRegex);
-  return match ? match[0] : '💸';
 }
 
 const NOTES_TRUNCATE_LENGTH = 20;
@@ -54,8 +44,6 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
   const [isEnlargedImageLoading, setIsEnlargedImageLoading] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [showFullNotes, setShowFullNotes] = useState(false);
-
-  const emoji = getCategoryEmoji(record.description);
 
   // Get first transaction image URL if available
   const imageUrl =
@@ -82,7 +70,7 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
           }
         }}
       >
-        <span className="text-3xl">{emoji}</span>
+        <span className="text-3xl">{record.emoji}</span>
       </div>
 
       {/* Title */}

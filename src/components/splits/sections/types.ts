@@ -98,6 +98,8 @@ export interface FixedFooterProps {
   isLoading: boolean;
   onSubmit: () => void;
   isUpdate: boolean;
+  successMessage?: string | null;
+  onReset?: () => void;
 }
 
 // Return type for useSectionState hook

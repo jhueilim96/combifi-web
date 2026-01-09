@@ -18,11 +18,11 @@ export async function getRecord(
   }
 
   try {
-    // Note: instant_split_detailed_view is a custom view - regenerate types to remove 'as any'
+    // Note: view_instant_split_details is a custom view - regenerate types to remove 'as any'
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const { data, error } = await (createSupabaseClient(password) as any)
       /* eslint-enable @typescript-eslint/no-explicit-any */
-      .from('instant_split_detailed_view')
+      .from('view_instant_split_details')
       .select('*')
       .eq('id', id)
       .single();
