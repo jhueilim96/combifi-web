@@ -141,7 +141,7 @@ export default function RecordPage() {
       setParticipants(
         Array.isArray(participantsData) ? participantsData : [participantsData]
       );
-      setParticipantAmount('0.00');
+      setParticipantAmount(''); // Empty to show placeholder
       setPassword(pwd);
       setShowPasswordModal(false);
       setStatus('');
@@ -248,6 +248,9 @@ export default function RecordPage() {
         Array.isArray(participantsData) ? participantsData : [participantsData]
       );
 
+      // Collapse all sections to show summary
+      goToStep('complete');
+
       setStatus('Updated successfully!');
       setShowPromo(true);
       setTimeout(() => setStatus(''), 3000);
@@ -270,7 +273,7 @@ export default function RecordPage() {
   ) => {
     setSelectedParticipant(participant);
     setParticipantAmount(participant.amount.toFixed(2));
-    setNewParticipantName(participant.name);
+    setNewParticipantName(''); // Clear new name input when selecting existing participant
     setMarkAsPaid(participant.is_paid);
     setIsUpdatingParticipant(true);
   };
@@ -291,7 +294,7 @@ export default function RecordPage() {
     setNewParticipantName('');
     setMarkAsPaid(false);
     setIsUpdatingParticipant(false);
-    setParticipantAmount('0.00');
+    setParticipantAmount(''); // Empty to show placeholder
     setSelectedPaymentMethod(null);
     goToStep('initial');
   };
@@ -450,6 +453,10 @@ export default function RecordPage() {
                   numberOfPax={numberOfPax}
                   onParticipantSelect={handleParticipantSelect}
                   onNewParticipantNameChange={setNewParticipantName}
+                  onClearParticipantSelection={() => {
+                    setSelectedParticipant(null);
+                    setIsUpdatingParticipant(false);
+                  }}
                   onProceed={handleNameProceed}
                 />
               }

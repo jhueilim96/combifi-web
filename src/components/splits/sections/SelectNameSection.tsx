@@ -15,6 +15,7 @@ export function SelectNameExpanded({
   numberOfPax,
   onParticipantSelect,
   onNewParticipantNameChange,
+  onClearParticipantSelection,
   onProceed,
 }: SelectNameSectionProps) {
   // Filter out host participants
@@ -86,17 +87,39 @@ export function SelectNameExpanded({
 
         {/* Add new participant input */}
         {canAddNewParticipant && (
-          <div className="mt-4 flex items-center gap-3 bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
+          <div
+            className={`mt-4 flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200 ${
+              newParticipantName.trim()
+                ? 'bg-gray-50 dark:bg-gray-800/50 border-2 border-indigo-500 dark:border-indigo-400'
+                : 'bg-gray-100 dark:bg-gray-800 border-2 border-transparent'
+            }`}
+          >
             <UserPlus
               size={18}
-              className="text-gray-400 dark:text-gray-500 flex-shrink-0"
+              className={`flex-shrink-0 transition-colors ${
+                newParticipantName.trim()
+                  ? 'text-indigo-500 dark:text-indigo-400'
+                  : 'text-gray-400 dark:text-gray-500'
+              }`}
             />
             <input
               type="text"
               placeholder="Or type name to join..."
               className="bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none w-40"
               value={newParticipantName}
-              onChange={(e) => onNewParticipantNameChange(e.target.value)}
+              onChange={(e) => {
+                onNewParticipantNameChange(e.target.value);
+                // Clear selected participant when typing a new name
+                if (e.target.value && selectedParticipant) {
+                  onClearParticipantSelection();
+                }
+              }}
+              onFocus={() => {
+                // Clear selected participant when focusing on new name input
+                if (selectedParticipant) {
+                  onClearParticipantSelection();
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleNewNameSubmit();

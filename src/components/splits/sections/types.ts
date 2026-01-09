@@ -69,6 +69,7 @@ export interface SelectNameSectionProps extends BaseSectionProps {
     participant: Tables<'one_time_split_expenses_participants'>
   ) => void;
   onNewParticipantNameChange: (name: string) => void;
+  onClearParticipantSelection: () => void;
   onProceed: () => void;
 }
 
