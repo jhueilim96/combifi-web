@@ -58,14 +58,11 @@ export default function CollapsibleSection({
         onClick={handleClick}
         disabled={!canToggle}
         className={`
-          w-full flex items-center gap-3 py-3
+          w-full flex items-center gap-3 py-3 relative
           transition-colors duration-200
           ${canToggle ? 'cursor-pointer' : 'cursor-default'}
         `}
       >
-        {/* Left spacer to balance chevron - keeps title centered */}
-        <div className="w-0 flex-shrink-0" />
-
         {/* Left line */}
         <div
           className={`
@@ -101,12 +98,12 @@ export default function CollapsibleSection({
           `}
         />
 
-        {/* Chevron indicator */}
+        {/* Chevron indicator - absolute positioned so it doesn't affect centering */}
         {canToggle && (
           <div
             className={`
-              w-4 flex-shrink-0
-              transition-all duration-300 ease-out
+              absolute right-0 top-1/2 -translate-y-1/2
+              transition-all duration-300 ease-out bg-gray-50 dark:bg-gray-600
               ${isExpanded ? 'rotate-90 text-indigo-500' : 'rotate-0 text-gray-400 dark:text-gray-500'}
             `}
           >

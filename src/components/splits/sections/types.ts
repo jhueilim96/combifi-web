@@ -99,6 +99,7 @@ export interface FixedFooterProps {
   onSubmit: () => void;
   isUpdate: boolean;
   successMessage?: string | null;
+  isPaid?: boolean;
   onReset?: () => void;
 }
 

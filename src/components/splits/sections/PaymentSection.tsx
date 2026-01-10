@@ -1,6 +1,6 @@
 'use client';
 
-import { QrCode, Landmark, Check, Clock } from 'lucide-react';
+import { QrCode, Landmark, Clock } from 'lucide-react';
 import { PaymentSectionProps } from './types';
 import ListPaymentMethods from '../payment/ListPaymentMethods';
 import PaymentStatusButtonGroup from '../payment/PaymentStatusButtonGroup';
@@ -21,6 +21,7 @@ export function PaymentExpanded({
       {/* Payment Methods Section */}
       {hasPaymentMethods && (
         <ListPaymentMethods
+          key={selectedParticipant?.id ?? 'new'}
           paymentMethods={record.payment_methods!}
           hostName={record.name!}
           onPaymentMethodChange={setSelectedPaymentMethod}
@@ -62,8 +63,7 @@ export function PaymentExpanded({
 // Collapsed content - selected payment method summary
 export function PaymentCollapsed({
   selectedPaymentMethod,
-  markAsPaid,
-}: Pick<PaymentSectionProps, 'selectedPaymentMethod' | 'markAsPaid'>) {
+}: Pick<PaymentSectionProps, 'selectedPaymentMethod'>) {
   // Determine icon based on payment method type
   const PaymentIcon = () => {
     if (!selectedPaymentMethod) {
@@ -76,7 +76,7 @@ export function PaymentCollapsed({
   };
 
   return (
-    <div className="flex items-center justify-center gap-4">
+    <div className="flex items-center justify-center">
       <div className="flex items-center gap-2">
         <PaymentIcon />
         {selectedPaymentMethod ? (
@@ -87,22 +87,6 @@ export function PaymentCollapsed({
           <span className="text-gray-400 dark:text-gray-500 text-sm">
             No payment method selected
           </span>
-        )}
-      </div>
-      <div
-        className={`flex items-center gap-1.5 text-sm font-medium ${
-          markAsPaid
-            ? 'text-green-600 dark:text-green-400'
-            : 'text-gray-400 dark:text-gray-500'
-        }`}
-      >
-        {markAsPaid ? (
-          <>
-            <Check size={14} />
-            <span>Paid</span>
-          </>
-        ) : (
-          <span>Unpaid</span>
         )}
       </div>
     </div>

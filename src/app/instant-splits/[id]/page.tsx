@@ -108,6 +108,15 @@ export default function RecordPage() {
   const nameHasError = !hasSelectedName && sectionStatuses.name === 'completed';
   const amountHasError = !hasAmount && sectionStatuses.amount === 'completed';
 
+  // Locked state - prevent section toggling after successful save
+  const isLocked = successMessage !== null;
+  const handleToggleSection = (
+    sectionId: 'details' | 'name' | 'amount' | 'payment'
+  ) => {
+    if (isLocked) return; // Prevent toggling when locked
+    toggleSection(sectionId);
+  };
+
   // Fetch public record info
   const fetchPublicRecord = useCallback(async () => {
     if (!id) return;
@@ -251,12 +260,16 @@ export default function RecordPage() {
       // Collapse all sections to show summary
       goToStep('complete');
 
-      // Show success message with host name and amount
+      // Show success message based on paid status
       const amount = formatCurrencyAmount(
         parseFloat(participantAmount),
         record.currency
       );
-      setSuccessMessage(`Paid ${record.name} ${amount}`);
+      if (markAsPaid) {
+        setSuccessMessage(`Paid ${record.name} ${amount}`);
+      } else {
+        setSuccessMessage(`Pending payment ${amount} to ${record.name}`);
+      }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         setStatus(
@@ -279,6 +292,20 @@ export default function RecordPage() {
     setNewParticipantName(''); // Clear new name input when selecting existing participant
     setMarkAsPaid(participant.is_paid);
     setIsUpdatingParticipant(true);
+
+    // Restore saved payment method if exists
+    const savedPaymentMethod = participant.payment_method_metadata as {
+      label?: string;
+      type?: 'IMAGE' | 'TEXT';
+    } | null;
+    if (savedPaymentMethod?.label && savedPaymentMethod?.type) {
+      setSelectedPaymentMethod({
+        label: savedPaymentMethod.label,
+        type: savedPaymentMethod.type,
+      });
+    } else {
+      setSelectedPaymentMethod(null);
+    }
   };
 
   // Handle proceeding from name section
@@ -421,7 +448,7 @@ export default function RecordPage() {
               collapsedTitle={SECTION_METADATA.details.collapsedTitle}
               isExpanded={expandedSections.includes('details')}
               status={sectionStatuses.details}
-              onToggle={toggleSection}
+              onToggle={handleToggleSection}
               transitionDelay={SECTION_DELAYS.details}
               expandedContent={<SplitDetailExpanded record={record} />}
               collapsedContent={
@@ -440,7 +467,7 @@ export default function RecordPage() {
               isExpanded={expandedSections.includes('name')}
               status={sectionStatuses.name}
               hasError={nameHasError}
-              onToggle={toggleSection}
+              onToggle={handleToggleSection}
               transitionDelay={SECTION_DELAYS.name}
               expandedContent={
                 <SelectNameExpanded
@@ -474,7 +501,7 @@ export default function RecordPage() {
               isExpanded={expandedSections.includes('amount')}
               status={sectionStatuses.amount}
               hasError={amountHasError}
-              onToggle={toggleSection}
+              onToggle={handleToggleSection}
               transitionDelay={SECTION_DELAYS.amount}
               expandedContent={
                 <AmountExpanded
@@ -502,7 +529,7 @@ export default function RecordPage() {
               collapsedTitle={SECTION_METADATA.payment.collapsedTitle}
               isExpanded={expandedSections.includes('payment')}
               status={sectionStatuses.payment}
-              onToggle={toggleSection}
+              onToggle={handleToggleSection}
               transitionDelay={SECTION_DELAYS.payment}
               expandedContent={
                 <PaymentExpanded
@@ -516,7 +543,6 @@ export default function RecordPage() {
               collapsedContent={
                 <PaymentCollapsed
                   selectedPaymentMethod={selectedPaymentMethod}
-                  markAsPaid={markAsPaid}
                 />
               }
             />
@@ -528,6 +554,7 @@ export default function RecordPage() {
               onSubmit={handleUpdateRecord}
               isUpdate={isUpdatingParticipant}
               successMessage={successMessage}
+              isPaid={markAsPaid}
               onReset={resetUIState}
             />
           </div>

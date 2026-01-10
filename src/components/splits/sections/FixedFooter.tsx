@@ -11,6 +11,7 @@ export default function FixedFooter({
   onSubmit,
   isUpdate,
   successMessage,
+  isPaid = false,
   onReset,
 }: FixedFooterProps) {
   if (!isVisible && !successMessage) {
@@ -21,7 +22,11 @@ export default function FixedFooter({
   if (successMessage) {
     return (
       <div className="mt-6 space-y-4">
-        <SuccessSection successMessage={successMessage} onReset={onReset} />
+        <SuccessSection
+          successMessage={successMessage}
+          isPaid={isPaid}
+          onReset={onReset}
+        />
         <PromoBanner />
       </div>
     );
