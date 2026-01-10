@@ -2,7 +2,8 @@
 
 import { Loader2, Check } from 'lucide-react';
 import { FixedFooterProps } from './types';
-import SuccessBanner from './SuccessBanner';
+import SuccessSection from './SuccessSection';
+import PromoBanner from './PromoBanner';
 
 export default function FixedFooter({
   isVisible,
@@ -16,11 +17,12 @@ export default function FixedFooter({
     return null;
   }
 
-  // Success state - inline success banner with promo
+  // Success state - hero section + promo banner
   if (successMessage) {
     return (
-      <div className="mt-6">
-        <SuccessBanner successMessage={successMessage} onReset={onReset} />
+      <div className="mt-6 space-y-4">
+        <SuccessSection successMessage={successMessage} onReset={onReset} />
+        <PromoBanner />
       </div>
     );
   }

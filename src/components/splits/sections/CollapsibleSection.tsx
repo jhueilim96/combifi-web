@@ -64,7 +64,7 @@ export default function CollapsibleSection({
         `}
       >
         {/* Left spacer to balance chevron - keeps title centered */}
-        <div className="w-4 flex-shrink-0" />
+        <div className="w-0 flex-shrink-0" />
 
         {/* Left line */}
         <div
