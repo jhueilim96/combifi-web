@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Wallet } from 'lucide-react';
+
+const INSTRUCTION_TRUNCATE_LENGTH = 20;
 import { AmountSectionProps } from './types';
 import { formatCurrency, formatCurrencyAmount } from '@/lib/currencyUtils';
 import {
@@ -24,6 +26,7 @@ export function AmountExpanded({
 }: AmountSectionProps) {
   const settleMode = record.settle_mode;
   const { validationError, handleValidation } = useValidationError();
+  const [showFullInstruction, setShowFullInstruction] = useState(false);
 
   // Calculate total contributed for FRIEND mode
   const totalContributed = useMemo(() => {
@@ -54,6 +57,14 @@ export function AmountExpanded({
     settleMode === 'FRIEND'
       ? retrieveSettleMetadata<FriendMetadata>(record).paymentInstruction
       : null;
+
+  const isInstructionTruncated =
+    paymentInstruction &&
+    paymentInstruction.length > INSTRUCTION_TRUNCATE_LENGTH;
+  const displayedInstruction =
+    isInstructionTruncated && !showFullInstruction
+      ? paymentInstruction.slice(0, INSTRUCTION_TRUNCATE_LENGTH) + '...'
+      : paymentInstruction;
 
   // Calculate remaining amount for FRIEND mode
   const remainingAmount = useMemo(() => {
@@ -91,7 +102,14 @@ export function AmountExpanded({
     if (settleMode === 'FRIEND') {
       const amount = parseFloat(participantAmount);
       if (isNaN(amount) || amount <= 0) {
-        return; // Don't proceed if amount is invalid
+        // Trigger validation to show error message
+        handleValidation(
+          { name: newParticipantName, amount: participantAmount },
+          'amount',
+          participantAmount,
+          participantInputSchema
+        );
+        return;
       }
     }
     onProceed();
@@ -154,14 +172,51 @@ export function AmountExpanded({
         </p>
       )}
 
-      {/* Payment Instructions for FRIEND mode */}
-      {paymentInstruction && (
+      {/* Payment Instructions for FRIEND mode - collapsed */}
+      {paymentInstruction && !showFullInstruction && (
         <div className="flex justify-center mb-4">
-          <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
+          <button
+            onClick={() =>
+              isInstructionTruncated && setShowFullInstruction(true)
+            }
+            className={`flex items-center gap-2 text-gray-400 dark:text-gray-500 transition-colors ${isInstructionTruncated ? 'hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer' : 'cursor-default'}`}
+          >
             <Wallet size={16} className="flex-shrink-0" />
-            <span className="text-sm">{paymentInstruction}</span>
-          </div>
+            <span className="text-sm text-left">
+              {displayedInstruction}
+              {isInstructionTruncated && (
+                <span className="text-indigo-500 dark:text-indigo-400 ml-1">
+                  Expand
+                </span>
+              )}
+            </span>
+          </button>
         </div>
+      )}
+
+      {/* Payment Instructions expanded */}
+      {paymentInstruction && showFullInstruction && (
+        <button
+          onClick={() => setShowFullInstruction(false)}
+          className="w-full mb-4 cursor-pointer"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
+              <Wallet size={16} />
+              <span className="text-xs font-semibold tracking-wider uppercase">
+                Payment Instruction
+              </span>
+            </div>
+            <div className="max-h-[22.5rem] overflow-y-auto w-full">
+              <p className="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap text-center">
+                {paymentInstruction}
+              </p>
+            </div>
+            <span className="text-xs text-indigo-500 dark:text-indigo-400">
+              Collapse
+            </span>
+          </div>
+        </button>
       )}
 
       {/* Continue button */}

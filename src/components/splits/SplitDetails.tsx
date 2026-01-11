@@ -139,19 +139,49 @@ export default function SplitDetails({ record }: SplitDetailsProps) {
             </button>
           )}
 
-          {/* Notes preview/expanded */}
-          {record.notes && (
+          {/* Notes preview (collapsed) */}
+          {record.notes && !showFullNotes && (
             <button
-              onClick={() =>
-                isNotesTruncated && setShowFullNotes(!showFullNotes)
-              }
+              onClick={() => isNotesTruncated && setShowFullNotes(true)}
               className={`flex items-center gap-2 text-gray-400 dark:text-gray-500 transition-colors ${isNotesTruncated ? 'hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer' : 'cursor-default'}`}
             >
               <NotebookPen size={16} className="flex-shrink-0" />
-              <span className="text-sm text-left">{displayedNotes}</span>
+              <span className="text-sm text-left">
+                {displayedNotes}
+                {isNotesTruncated && (
+                  <span className="text-indigo-500 dark:text-indigo-400 ml-1">
+                    Expand
+                  </span>
+                )}
+              </span>
             </button>
           )}
         </div>
+      )}
+
+      {/* Notes expanded view */}
+      {record.notes && showFullNotes && (
+        <button
+          onClick={() => setShowFullNotes(false)}
+          className="w-full mt-4 cursor-pointer"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
+              <NotebookPen size={16} />
+              <span className="text-xs font-semibold tracking-wider uppercase">
+                Note
+              </span>
+            </div>
+            <div className="max-h-[22.5rem] overflow-y-auto w-full">
+              <p className="text-sm text-gray-500 dark:text-gray-400 whitespace-pre-wrap text-center">
+                {record.notes}
+              </p>
+            </div>
+            <span className="text-xs text-indigo-500 dark:text-indigo-400">
+              Collapse
+            </span>
+          </div>
+        </button>
       )}
 
       {/* Enlarged image modal */}
