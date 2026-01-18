@@ -42,8 +42,7 @@ export const runtime = 'edge';
 
 // Development bypass - set to a password to skip the modal during dev
 // e.g., 'TEST' to bypass, or '' to disable
-const DEV_BYPASS_PASSWORD =
-  process.env.NODE_ENV === 'development' ? 'MUDS' : '';
+const DEV_BYPASS_PASSWORD = process.env.NODE_ENV === 'development' ? '' : '';
 
 export default function RecordPage() {
   const params = useParams();
@@ -96,7 +95,17 @@ export default function RecordPage() {
       ? retrieveSettleMetadata<PerPaxMetadata>(record).numberOfPax
       : 0;
 
-  const hasSelectedName = !!(selectedParticipant || newParticipantName.trim());
+  // Check for duplicate name (case-insensitive)
+  const isDuplicateName =
+    newParticipantName.trim() !== '' &&
+    participants.some(
+      (p) => p.name.toLowerCase() === newParticipantName.trim().toLowerCase()
+    );
+
+  const hasSelectedName = !!(
+    selectedParticipant ||
+    (newParticipantName.trim() && !isDuplicateName)
+  );
   const hasAmount = !!(participantAmount && parseFloat(participantAmount) > 0);
   const isFooterVisible =
     hasSelectedName &&
@@ -253,9 +262,24 @@ export default function RecordPage() {
 
       // Refresh participant data after update
       const participantsData = await getParticipantRecords(id, password);
-      setParticipants(
-        Array.isArray(participantsData) ? participantsData : [participantsData]
-      );
+      const participantsList = Array.isArray(participantsData)
+        ? participantsData
+        : [participantsData];
+      setParticipants(participantsList);
+
+      // For new participants: find and select the newly created one
+      if (!isUpdatingParticipant) {
+        const newParticipant = participantsList.find(
+          (p) =>
+            p.name.toLowerCase() === newParticipantName.trim().toLowerCase()
+        );
+        if (newParticipant) {
+          setSelectedParticipant(newParticipant);
+        }
+      }
+
+      // Clear the input field
+      setNewParticipantName('');
 
       // Collapse all sections to show summary
       goToStep('complete');
@@ -498,8 +522,10 @@ export default function RecordPage() {
               id="amount"
               title={SECTION_METADATA.amount.title}
               collapsedTitle={SECTION_METADATA.amount.collapsedTitle}
-              isExpanded={expandedSections.includes('amount')}
-              status={sectionStatuses.amount}
+              isExpanded={
+                expandedSections.includes('amount') && !isDuplicateName
+              }
+              status={isDuplicateName ? 'upcoming' : sectionStatuses.amount}
               hasError={amountHasError}
               onToggle={handleToggleSection}
               transitionDelay={SECTION_DELAYS.amount}
@@ -527,8 +553,10 @@ export default function RecordPage() {
               id="payment"
               title={SECTION_METADATA.payment.title}
               collapsedTitle={SECTION_METADATA.payment.collapsedTitle}
-              isExpanded={expandedSections.includes('payment')}
-              status={sectionStatuses.payment}
+              isExpanded={
+                expandedSections.includes('payment') && !isDuplicateName
+              }
+              status={isDuplicateName ? 'upcoming' : sectionStatuses.payment}
               onToggle={handleToggleSection}
               transitionDelay={SECTION_DELAYS.payment}
               expandedContent={
