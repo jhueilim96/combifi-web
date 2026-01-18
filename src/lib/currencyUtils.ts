@@ -16,3 +16,11 @@ export const formatCurrency = (currencyCode: string) => {
   const selectedCurrency = CommonCurrencyList.get(currencyCode);
   return selectedCurrency.symbol;
 };
+
+export const formatAmountOnly = (amount: number | string, currency: string) => {
+  if (typeof amount === 'string') {
+    amount = parseFloat(amount);
+  }
+  const selectedCurrency = CommonCurrencyList.get(currency);
+  return amount.toFixed(selectedCurrency.decimal_digits);
+};

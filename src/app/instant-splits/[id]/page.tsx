@@ -10,59 +10,123 @@ import {
   getPublicRecord,
 } from './actions';
 import { Tables } from '@/lib/database.types';
-import SplitFriend from '@/components/splits/modes/SplitFriend';
-import SplitPerPax from '@/components/splits/modes/SplitPerPax';
-import SplitHost from '@/components/splits/modes/SplitHost';
+import { InstantSplitDetailedView } from '@/lib/viewTypes';
 import { SelectedPaymentMethod } from '@/components/splits/payment/TabbedPaymentMethods';
-import AddNewParticipant from '@/components/splits/AddNewParticipant';
 import { formatCurrencyAmount } from '@/lib/currencyUtils';
 import { Button } from '@/components/ui/Button';
 import { OTPInput } from '@/components/ui/OTPInput';
-import SplitDetails from '@/components/splits/SplitDetails';
-import AppPromoModal from '@/components/common/AppPromoModal';
 import {
   formatLocalDateTime,
   PerPaxMetadata,
   retrieveSettleMetadata,
 } from '@/lib/utils';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
-import { AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { AlertTriangle, AlertCircle } from 'lucide-react';
+import { useSectionState } from '@/lib/useSectionState';
+import {
+  CollapsibleSection,
+  SplitDetailExpanded,
+  SplitDetailCollapsed,
+  SelectNameExpanded,
+  SelectNameCollapsed,
+  AmountExpanded,
+  AmountCollapsed,
+  PaymentExpanded,
+  PaymentCollapsed,
+  FixedFooter,
+  SECTION_METADATA,
+  SECTION_DELAYS,
+} from '@/components/splits/sections';
 
 export const runtime = 'edge';
+
+// Development bypass - set to a password to skip the modal during dev
+// e.g., 'TEST' to bypass, or '' to disable
+const DEV_BYPASS_PASSWORD = process.env.NODE_ENV === 'development' ? '' : '';
 
 export default function RecordPage() {
   const params = useParams();
   const id = params?.id as string;
 
-  const [record, setRecord] =
-    useState<Tables<'one_time_split_expenses'> | null>(null);
+  // Core data state
+  const [record, setRecord] = useState<InstantSplitDetailedView | null>(null);
   const [participants, setParticipants] = useState<
     Tables<'one_time_split_expenses_participants'>[]
   >([]);
-  const [password, setPassword] = useState('');
-  const [participantAmount, setParticipantAmount] = useState('');
-  const [status, setStatus] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [showPasswordModal, setShowPasswordModal] = useState(true);
-  const [selectedParticipant, setSelectedParticipant] =
-    useState<Tables<'one_time_split_expenses_participants'> | null>(null);
-  const [newParticipantName, setNewParticipantName] = useState('');
-  const [showNewNameInput, setShowNewNameInput] = useState(false);
-  const [showSettleComponent, setShowSettleComponent] = useState(false);
-  const [isUpdatingParticipant, setIsUpdatingParticipant] = useState(false);
-  const [markAsPaid, setMarkAsPaid] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState<SelectedPaymentMethod | null>(null);
-
   const [publicInfo, setPublicInfo] = useState<Partial<
     Tables<'one_time_split_expenses'>
   > | null>(null);
-  const [showPromo, setShowPromo] = useState(false);
+
+  // Auth state
+  const [password, setPassword] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(true);
+  const [isJoiningRecord, setIsJoiningRecord] = useState(false);
+
+  // UI state
+  const [status, setStatus] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEnlargedImage, setShowEnlargedImage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Form state
+  const [selectedParticipant, setSelectedParticipant] =
+    useState<Tables<'one_time_split_expenses_participants'> | null>(null);
+  const [newParticipantName, setNewParticipantName] = useState('');
+  const [participantAmount, setParticipantAmount] = useState('');
+  const [markAsPaid, setMarkAsPaid] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<SelectedPaymentMethod | null>(null);
+  const [isUpdatingParticipant, setIsUpdatingParticipant] = useState(false);
+
+  // Section state management
+  const {
+    expandedSections,
+    sectionStatuses,
+    toggleSection,
+    advanceFromName,
+    advanceFromAmount,
+    goToStep,
+  } = useSectionState();
+
+  // Derived values
   const numberOfPax =
     record?.settle_mode === 'PERPAX'
       ? retrieveSettleMetadata<PerPaxMetadata>(record).numberOfPax
       : 0;
 
+  // Check for duplicate name (case-insensitive)
+  const isDuplicateName =
+    newParticipantName.trim() !== '' &&
+    participants.some(
+      (p) => p.name.toLowerCase() === newParticipantName.trim().toLowerCase()
+    );
+
+  const hasSelectedName = !!(
+    selectedParticipant ||
+    (newParticipantName.trim() && !isDuplicateName)
+  );
+  const hasAmount = !!(participantAmount && parseFloat(participantAmount) > 0);
+  const isFooterVisible =
+    hasSelectedName &&
+    hasAmount &&
+    sectionStatuses.payment !== 'upcoming' &&
+    selectedPaymentMethod !== null;
+
+  // Error states for sections (shown when collapsed)
+  const nameHasError = !hasSelectedName && sectionStatuses.name === 'completed';
+  const amountHasError = !hasAmount && sectionStatuses.amount === 'completed';
+
+  // Locked state - prevent section toggling after successful save
+  const isLocked = successMessage !== null;
+  const handleToggleSection = (
+    sectionId: 'details' | 'name' | 'amount' | 'payment'
+  ) => {
+    if (isLocked) return; // Prevent toggling when locked
+    toggleSection(sectionId);
+  };
+
+  // Fetch public record info
   const fetchPublicRecord = useCallback(async () => {
     if (!id) return;
 
@@ -82,21 +146,23 @@ export default function RecordPage() {
     }
   }, [id]);
 
-  const fetchRecord = async () => {
-    if (!id || !password) return;
+  // Fetch full record with password
+  const fetchRecord = async (passwordOverride?: string) => {
+    const pwd = passwordOverride || password;
+    if (!id || !pwd) return;
 
-    setIsLoading(true);
-    setStatus('Fetching ...');
+    setIsJoiningRecord(true);
+    setStatus('');
 
     try {
-      const data = await getRecord(id, password);
-      const participantsData = await getParticipantRecords(id, password);
+      const data = await getRecord(id, pwd);
+      const participantsData = await getParticipantRecords(id, pwd);
       setRecord(data);
       setParticipants(
         Array.isArray(participantsData) ? participantsData : [participantsData]
       );
-      // Get amount from the first participant or default to 0
-      setParticipantAmount('0.00');
+      setParticipantAmount(''); // Empty to show placeholder
+      setPassword(pwd);
       setShowPasswordModal(false);
       setStatus('');
     } catch (error) {
@@ -108,23 +174,22 @@ export default function RecordPage() {
         setStatus('Oops. Something went wrong.');
       }
     } finally {
-      setIsLoading(false);
+      setIsJoiningRecord(false);
     }
   };
 
+  // Handle participant/record update
   const handleUpdateRecord = async () => {
-    if (!id || !password) return;
+    if (!id || !password || !record) {
+      return;
+    }
 
-    setIsLoading(true);
-    setStatus('Updating...');
-
+    setIsSubmitting(true);
     try {
       // If updating an existing participant
       if (isUpdatingParticipant && selectedParticipant?.id) {
-        // Import the validation schemas
         const { updateParticipantSchema } = await import('@/lib/validations');
 
-        // Build payment method metadata - always store selected method, paidAt only when paid
         const paymentMethodMetadata = selectedPaymentMethod
           ? {
               label: selectedPaymentMethod.label,
@@ -135,27 +200,21 @@ export default function RecordPage() {
 
         const updateData = {
           amount: participantAmount,
-          name: newParticipantName,
+          name: newParticipantName || selectedParticipant.name,
           markAsPaid: markAsPaid,
-          currency: record!.currency,
+          currency: record.currency,
           paymentMethodMetadata,
         };
 
-        // For PERPAX mode, don't allow amount changes
         const dataToValidate =
-          record?.settle_mode === 'PERPAX'
+          record.settle_mode === 'PERPAX'
             ? { ...updateData, amount: selectedParticipant.amount.toFixed(2) }
             : updateData;
 
-        // Validate data before sending to server
         const validationResult =
           updateParticipantSchema.safeParse(dataToValidate);
 
         if (!validationResult.success) {
-          console.error(
-            '[DEBUG] handleUpdateRecord - Validation failed:',
-            validationResult.error
-          );
           const errorMessage = validationResult.error.errors
             .map((err) => err.message)
             .join(', ');
@@ -170,11 +229,9 @@ export default function RecordPage() {
         );
       }
       // If adding a new participant (not available in HOST mode)
-      else if (!isUpdatingParticipant && record?.settle_mode !== 'HOST') {
-        // Import the validation schemas
+      else if (!isUpdatingParticipant && record.settle_mode !== 'HOST') {
         const { insertParticipantSchema } = await import('@/lib/validations');
 
-        // Build payment method metadata - always store selected method, paidAt only when paid
         const paymentMethodMetadata = selectedPaymentMethod
           ? {
               label: selectedPaymentMethod.label,
@@ -186,19 +243,14 @@ export default function RecordPage() {
         const insertData = {
           amount: participantAmount,
           name: newParticipantName,
-          currency: record!.currency,
+          currency: record.currency,
           markAsPaid: markAsPaid,
           paymentMethodMetadata,
         };
 
-        // Validate data before sending to server
         const validationResult = insertParticipantSchema.safeParse(insertData);
 
         if (!validationResult.success) {
-          console.error(
-            '[DEBUG] handleUpdateRecord - Validation failed:',
-            validationResult.error
-          );
           const errorMessage = validationResult.error.errors
             .map((err) => err.message)
             .join(', ');
@@ -210,19 +262,39 @@ export default function RecordPage() {
 
       // Refresh participant data after update
       const participantsData = await getParticipantRecords(id, password);
-      setParticipants(
-        Array.isArray(participantsData) ? participantsData : [participantsData]
-      );
+      const participantsList = Array.isArray(participantsData)
+        ? participantsData
+        : [participantsData];
+      setParticipants(participantsList);
 
-      setStatus('Updated successfully!');
-      setShowPromo(true); // Show promotional message after successful update
-      setTimeout(() => setStatus(''), 3000); // Clear status after 3 seconds
+      // For new participants: find and select the newly created one
+      if (!isUpdatingParticipant) {
+        const newParticipant = participantsList.find(
+          (p) =>
+            p.name.toLowerCase() === newParticipantName.trim().toLowerCase()
+        );
+        if (newParticipant) {
+          setSelectedParticipant(newParticipant);
+        }
+      }
+
+      // Clear the input field
+      setNewParticipantName('');
+
+      // Collapse all sections to show summary
+      goToStep('complete');
+
+      // Show success message based on paid status
+      const amount = formatCurrencyAmount(
+        parseFloat(participantAmount),
+        record.currency
+      );
+      if (markAsPaid) {
+        setSuccessMessage(`Paid ${record.name} ${amount}`);
+      } else {
+        setSuccessMessage(`Pending payment ${amount} to ${record.name}`);
+      }
     } catch (error) {
-      console.error('[DEBUG] handleUpdateRecord - Error caught:', {
-        error,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-      });
       if (process.env.NODE_ENV === 'development') {
         setStatus(
           error instanceof Error ? error.message : 'Failed to update record.'
@@ -231,482 +303,320 @@ export default function RecordPage() {
         setStatus('Oops. Something went wrong.');
       }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handlePromoModalClose = () => {
-    setShowPromo(false);
-    resetUIState();
-  };
+  // Handle participant selection from list
   const handleParticipantSelect = (
     participant: Tables<'one_time_split_expenses_participants'>
   ) => {
-    // console.log('Selected participant:', participant);
     setSelectedParticipant(participant);
     setParticipantAmount(participant.amount.toFixed(2));
-    setNewParticipantName(participant.name);
+    setNewParticipantName(''); // Clear new name input when selecting existing participant
     setMarkAsPaid(participant.is_paid);
-    setShowNewNameInput(false);
     setIsUpdatingParticipant(true);
-    setShowSettleComponent(true);
-  };
 
-  const handleNewNameToggle = () => {
-    setShowNewNameInput(true);
-    setSelectedParticipant(null);
-    setNewParticipantName('');
-    setMarkAsPaid(false);
-    setIsUpdatingParticipant(false);
-    setShowSettleComponent(false);
-    // Reset showNewNameInput to false when clicking the plus button (like a reset)
-    if (showNewNameInput) {
-      setShowNewNameInput(false);
+    // Restore saved payment method if exists
+    const savedPaymentMethod = participant.payment_method_metadata as {
+      label?: string;
+      type?: 'IMAGE' | 'TEXT';
+    } | null;
+    if (savedPaymentMethod?.label && savedPaymentMethod?.type) {
+      setSelectedPaymentMethod({
+        label: savedPaymentMethod.label,
+        type: savedPaymentMethod.type,
+      });
+    } else {
+      setSelectedPaymentMethod(null);
     }
   };
 
+  // Handle proceeding from name section
+  const handleNameProceed = () => {
+    advanceFromName();
+  };
+
+  // Handle proceeding from amount section
+  const handleAmountProceed = () => {
+    advanceFromAmount();
+  };
+
+  // Reset UI state
   const resetUIState = () => {
-    setIsLoading(false);
-    // Reset UI state after record update
     setSelectedParticipant(null);
     setNewParticipantName('');
     setMarkAsPaid(false);
     setIsUpdatingParticipant(false);
-    setShowSettleComponent(false);
-    setParticipantAmount('0.00');
-    setShowNewNameInput(false);
+    setParticipantAmount(''); // Empty to show placeholder
     setSelectedPaymentMethod(null);
-    // Don't reset showPromo here - we want it to stay visible
+    setSuccessMessage(null);
+    goToStep('initial');
   };
 
+  // Effects
   useEffect(() => {
     if (id) {
       fetchPublicRecord();
     }
-  }, [id, fetchPublicRecord]); // fetchPublicRecord is stable as it doesn't depend on external variables
+  }, [id, fetchPublicRecord]);
 
+  // Development bypass
+  useEffect(() => {
+    if (
+      DEV_BYPASS_PASSWORD &&
+      publicInfo &&
+      showPasswordModal &&
+      !isJoiningRecord
+    ) {
+      fetchRecord(DEV_BYPASS_PASSWORD);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicInfo, showPasswordModal]);
+
+  // Loading state
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  // Compute display values
-  const hostParticipant = record?.profiles;
-
+  // Password modal
   if (showPasswordModal && publicInfo) {
     return (
-      <div className="fixed inset-0 bg-white dark:bg-gray-900 bg-opacity-100 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-xl w-full transform transition-all duration-300 animate-scaleIn">
-          <div className="flex items-center mb-10">
-            {/* Circular avatar */}
-            <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-xl font-semibold mr-4 flex-shrink-0">
+      <div className="fixed inset-0 bg-gray-100 dark:bg-gray-950 flex items-start justify-center z-50 px-4 pt-12 sm:pt-20 animate-fadeIn overflow-y-auto">
+        <div className="bg-gray-50 dark:bg-gray-900 p-5 rounded-2xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-800 animate-scaleIn mb-8">
+          {/* Invitation header */}
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-800 dark:to-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-sm font-bold flex-shrink-0">
               {publicInfo.profiles?.name
                 ? publicInfo.profiles.name.charAt(0).toUpperCase()
                 : '?'}
             </div>
-
-            {/* Invitation text */}
-            <div>
-              <p className="text-gray-800 dark:text-gray-200 text-lg font-medium">
-                <span className="text-indigo-600 dark:text-indigo-400">
-                  {publicInfo.profiles?.name}
-                </span>{' '}
-                has invited you to split
-                <span className="ml-1 font-bold text-indigo-600 dark:text-indigo-400">
-                  {publicInfo.description}
-                </span>
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {formatLocalDateTime(publicInfo.date)}
-              </p>
-            </div>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              <span className="font-medium text-gray-800 dark:text-gray-200">
+                {publicInfo.profiles?.name}
+              </span>{' '}
+              invited you to join
+            </p>
           </div>
 
-          <div className="mb-5">
-            <p className="text-gray-700 dark:text-gray-300 font-normal mb-5">
-              Enter code to join:
+          {/* Split details card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-8 border border-gray-100 dark:border-gray-700">
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+              {publicInfo.description}
             </p>
-            <div className="flex flex-col space-y-5">
+            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
+              {formatCurrencyAmount(
+                publicInfo.amount || 0,
+                publicInfo.currency || 'USD'
+              )}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              {formatLocalDateTime(publicInfo.date)}
+            </p>
+          </div>
+
+          {/* Join form */}
+          <div>
+            <div className="flex items-center justify-between mb-8">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                Enter code to join
+              </p>
+              {password && (
+                <button
+                  type="button"
+                  onClick={() => setPassword('')}
+                  className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="mb-12">
               <OTPInput
                 value={password}
                 onChange={(value) => setPassword(value)}
+                onComplete={(value) => fetchRecord(value)}
                 length={4}
-                className="mb-5"
-              />
-              <Button
-                onClick={fetchRecord}
-                isLoading={isLoading}
-                loadingText="Loading..."
-                text="Join"
-                className="w-1/2 mx-auto"
               />
             </div>
-          </div>
+            <Button
+              onClick={() => fetchRecord()}
+              isLoading={isJoiningRecord}
+              loadingText="Joining..."
+              text="Join Split"
+              className="w-full"
+            />
 
-          {status && (
-            <div className="w-full">
-              <p className="px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-center flex items-center justify-center">
-                <AlertTriangle size={20} className="mr-2 flex-shrink-0" />
-                {status}
-              </p>
-            </div>
-          )}
+            {status && (
+              <div className="mt-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg flex items-center gap-2">
+                <AlertTriangle size={18} className="flex-shrink-0" />
+                <span className="text-sm">{status}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
+  // Main content with collapsible sections
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
-      {/* Enhanced gradient background */}
-      <div className="absolute inset-0 ">
-        <div
-          className="absolute top-0 left-0 right-0 bg-gradient-to-br from-indigo-500 via-indigo-400 to-purple-500 dark:from-indigo-700 dark:via-indigo-600 dark:to-purple-800"
-          style={{
-            height: 'calc(180px + 8vh)',
-            clipPath: 'ellipse(150% 100% at 50% 0%)',
-          }}
-        />
-      </div>
-      {/* Content container with spacing matching Vue page */}
-      <div className="max-w-xl mx-auto px-4 py-8 absolute top-0 w-full">
-        <div className="text-center mb-4">
-          <h1 className="text-3xl font-bold text-white mb-2">Split and Pay</h1>
-          <p className="text-white text-base mb-2">
-            <b>{hostParticipant?.name || 'Someone'}</b> has invited you to
-            settle a <br /> shared expense
-          </p>
-        </div>
-
-        {/* Main content when record is available with improved card styling */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-start justify-center px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
+      <div className="max-w-xl mx-auto py-6 relative w-full z-10">
         {record && !showPasswordModal && (
-          <div className="bg-white rounded-2xl">
-            <SplitDetails record={record} />
-            {/* Improved Participants section */}
-            {!showSettleComponent && (
-              <div className="border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-6">
-                <div className="text-center space-y-2 mb-4">
-                  <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-                    Who are you?
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    Select your name below to continue.
-                  </p>
-                </div>
+          <div className="space-y-3">
+            {/* Section 1: Split Details */}
+            <CollapsibleSection
+              id="details"
+              title={SECTION_METADATA.details.title}
+              collapsedTitle={SECTION_METADATA.details.collapsedTitle}
+              isExpanded={expandedSections.includes('details')}
+              status={sectionStatuses.details}
+              onToggle={handleToggleSection}
+              transitionDelay={SECTION_DELAYS.details}
+              expandedContent={<SplitDetailExpanded record={record} />}
+              collapsedContent={
+                <SplitDetailCollapsed
+                  record={record}
+                  onImageClick={() => setShowEnlargedImage(true)}
+                />
+              }
+            />
 
-                {participants.length > 1 ? (
-                  <div className="grid grid-cols-1 gap-2 mb-4">
-                    {participants
-                      .filter((p) => p.is_host === false)
-                      .map((participant, index) => (
-                        <div
-                          key={index}
-                          className={`flex justify-between items-center px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                            selectedParticipant?.id === participant.id
-                              ? 'bg-indigo-100 dark:bg-indigo-900 border-2 border-indigo-500 dark:border-indigo-400'
-                              : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-indigo-200 dark:hover:border-indigo-700'
-                          }`}
-                          onClick={() => handleParticipantSelect(participant)}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                selectedParticipant?.id === participant.id
-                                  ? 'bg-indigo-500 text-white'
-                                  : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                              }`}
-                            >
-                              <span className="text-sm font-medium">
-                                {participant.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-gray-800 dark:text-gray-200 font-medium">
-                                {participant.name}
-                              </span>
-                              <span
-                                className={`text-xs ${participant.is_paid ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}
-                              >
-                                {participant.is_paid ? '✓ Paid' : '○ Not Paid'}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center">
-                            <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                              {formatCurrencyAmount(
-                                participant.amount,
-                                record.currency
-                              )}
-                            </span>
-                            {selectedParticipant?.id === participant.id && (
-                              <CheckCircle
-                                size={20}
-                                className="ml-2 text-indigo-500"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <div className="bg-red-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-4 py-3 text-center opacity-80">
-                    <div className="text-sm text-gray-400 dark:text-gray-300">
-                      👻 You are early, no one has joined yet
-                    </div>
-                  </div>
-                )}
-
-                <AddNewParticipant
+            {/* Section 2: Select Name */}
+            <CollapsibleSection
+              id="name"
+              title={SECTION_METADATA.name.title}
+              collapsedTitle={SECTION_METADATA.name.collapsedTitle}
+              isExpanded={expandedSections.includes('name')}
+              status={sectionStatuses.name}
+              hasError={nameHasError}
+              onToggle={handleToggleSection}
+              transitionDelay={SECTION_DELAYS.name}
+              expandedContent={
+                <SelectNameExpanded
                   record={record}
                   participants={participants}
-                  numberOfPax={numberOfPax}
-                  showNewNameInput={showNewNameInput}
-                  newParticipantName={newParticipantName}
                   selectedParticipant={selectedParticipant}
-                  onNewNameToggle={handleNewNameToggle}
+                  newParticipantName={newParticipantName}
+                  numberOfPax={numberOfPax}
+                  onParticipantSelect={handleParticipantSelect}
                   onNewParticipantNameChange={setNewParticipantName}
-                />
-              </div>
-            )}
-
-            {showSettleComponent && record ? (
-              <>
-                {record.settle_mode === 'FRIEND' && (
-                  <SplitFriend
-                    record={record}
-                    selectedParticipant={selectedParticipant}
-                    newParticipantName={newParticipantName}
-                    setNewParticipantName={setNewParticipantName}
-                    handleUpdateRecord={handleUpdateRecord}
-                    setParticipantAmount={setParticipantAmount}
-                    participantAmount={participantAmount}
-                    participants={participants}
-                    markAsPaid={markAsPaid}
-                    setMarkAsPaid={setMarkAsPaid}
-                    handleBack={resetUIState}
-                    setSelectedPaymentMethod={setSelectedPaymentMethod}
-                  />
-                )}
-
-                {record.settle_mode === 'PERPAX' && (
-                  <SplitPerPax
-                    record={record}
-                    selectedParticipant={selectedParticipant}
-                    newParticipantName={newParticipantName}
-                    handleUpdateRecord={handleUpdateRecord}
-                    setParticipantAmount={setParticipantAmount}
-                    participantAmount={participantAmount}
-                    markAsPaid={markAsPaid}
-                    setMarkAsPaid={setMarkAsPaid}
-                    handleBack={resetUIState}
-                    setSelectedPaymentMethod={setSelectedPaymentMethod}
-                  />
-                )}
-
-                {record.settle_mode === 'HOST' && (
-                  <SplitHost
-                    record={record}
-                    selectedParticipant={selectedParticipant}
-                    handleUpdateRecord={handleUpdateRecord}
-                    setParticipantAmount={setParticipantAmount}
-                    participantAmount={participantAmount}
-                    markAsPaid={markAsPaid}
-                    setMarkAsPaid={setMarkAsPaid}
-                    participants={participants}
-                    handleBack={resetUIState}
-                    setSelectedPaymentMethod={setSelectedPaymentMethod}
-                  />
-                )}
-              </>
-            ) : (
-              <>
-                <button
-                  className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition-all duration-200 font-medium shadow-md text-lg mt-6"
-                  onClick={() => {
-                    if (
-                      selectedParticipant ||
-                      (newParticipantName.trim() &&
-                        record?.settle_mode !== 'HOST')
-                    ) {
-                      setShowSettleComponent(true);
-                    } else {
-                      handleUpdateRecord();
-                    }
+                  onClearParticipantSelection={() => {
+                    setSelectedParticipant(null);
+                    setIsUpdatingParticipant(false);
                   }}
-                  disabled={
-                    !selectedParticipant &&
-                    (record?.settle_mode === 'HOST' ||
-                      !newParticipantName.trim())
-                  }
-                >
-                  {selectedParticipant
-                    ? `Join as ${selectedParticipant.name}`
-                    : newParticipantName.trim()
-                      ? `Join as ${newParticipantName}`
-                      : 'Join Expense'}
-                </button>
-              </>
-            )}
+                  onProceed={handleNameProceed}
+                />
+              }
+              collapsedContent={
+                <SelectNameCollapsed
+                  selectedParticipant={selectedParticipant}
+                  newParticipantName={newParticipantName}
+                />
+              }
+            />
+
+            {/* Section 3: Amount */}
+            <CollapsibleSection
+              id="amount"
+              title={SECTION_METADATA.amount.title}
+              collapsedTitle={SECTION_METADATA.amount.collapsedTitle}
+              isExpanded={
+                expandedSections.includes('amount') && !isDuplicateName
+              }
+              status={isDuplicateName ? 'upcoming' : sectionStatuses.amount}
+              hasError={amountHasError}
+              onToggle={handleToggleSection}
+              transitionDelay={SECTION_DELAYS.amount}
+              expandedContent={
+                <AmountExpanded
+                  record={record}
+                  participantAmount={participantAmount}
+                  setParticipantAmount={setParticipantAmount}
+                  selectedParticipant={selectedParticipant}
+                  participants={participants}
+                  newParticipantName={newParticipantName}
+                  onProceed={handleAmountProceed}
+                />
+              }
+              collapsedContent={
+                <AmountCollapsed
+                  participantAmount={participantAmount}
+                  record={record}
+                />
+              }
+            />
+
+            {/* Section 4: Payment */}
+            <CollapsibleSection
+              id="payment"
+              title={SECTION_METADATA.payment.title}
+              collapsedTitle={SECTION_METADATA.payment.collapsedTitle}
+              isExpanded={
+                expandedSections.includes('payment') && !isDuplicateName
+              }
+              status={isDuplicateName ? 'upcoming' : sectionStatuses.payment}
+              onToggle={handleToggleSection}
+              transitionDelay={SECTION_DELAYS.payment}
+              expandedContent={
+                <PaymentExpanded
+                  record={record}
+                  setSelectedPaymentMethod={setSelectedPaymentMethod}
+                  markAsPaid={markAsPaid}
+                  setMarkAsPaid={setMarkAsPaid}
+                  selectedParticipant={selectedParticipant}
+                />
+              }
+              collapsedContent={
+                <PaymentCollapsed
+                  selectedPaymentMethod={selectedPaymentMethod}
+                />
+              }
+            />
+
+            {/* Submit Button - appears after payment method selected */}
+            <FixedFooter
+              isVisible={isFooterVisible}
+              isLoading={isSubmitting}
+              onSubmit={handleUpdateRecord}
+              isUpdate={isUpdatingParticipant}
+              successMessage={successMessage}
+              isPaid={markAsPaid}
+              onReset={resetUIState}
+            />
           </div>
         )}
 
-        {/* Promotional Message */}
-        {showPromo && (
-          <AppPromoModal handleModalClose={handlePromoModalClose} />
-        )}
-
-        {/* Status message with improved styling */}
-        {status && !showPasswordModal && (
+        {/* Error message */}
+        {status && !showPasswordModal && !status.includes('success') && (
           <div className="mt-4 text-center animate-fadeIn">
-            <p
-              className={`px-4 py-3 rounded-lg flex items-center justify-center ${
-                status.includes('success')
-                  ? 'bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
-                  : 'bg-red-100 dark:bg-red-900/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
-              }`}
-            >
-              {status.includes('success') ? (
-                <CheckCircle size={20} className="mr-2" />
-              ) : (
-                <AlertCircle size={20} className="mr-2" />
-              )}
+            <p className="px-4 py-3 rounded-lg flex items-center justify-center bg-red-100 dark:bg-red-900/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300">
+              <AlertCircle size={20} className="mr-2" />
               {status}
             </p>
           </div>
         )}
       </div>
-      {/* Add custom loader styling */}
-      <style jsx>{`
-        .running-loader {
-          position: relative;
-          width: 100px;
-          height: 100px;
-          margin: 0 auto;
-          text-align: center;
-        }
 
-        .runner {
-          width: 20px;
-          height: 20px;
-          background-color: #4f46e5;
-          border-radius: 50%;
-          position: absolute;
-          top: 30px;
-          left: 0;
-          animation:
-            run 0.5s linear infinite,
-            bounce 0.5s ease-in-out infinite;
-        }
-
-        .ground {
-          position: absolute;
-          bottom: 20px;
-          left: 0;
-          width: 100%;
-          height: 4px;
-          background-color: #dcdcdc;
-          overflow: hidden;
-        }
-
-        .ground::before {
-          content: '';
-          position: absolute;
-          width: 200%;
-          height: 4px;
-          background: repeating-linear-gradient(
-            90deg,
-            #ccc,
-            #ccc 10px,
-            #eee 10px,
-            #eee 20px
-          );
-          animation: moveGround 1s linear infinite;
-        }
-
-        .loading-text {
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          font-size: 14px;
-          color: #4a4a4a;
-          font-weight: 600;
-          margin-top: 3rem;
-        }
-
-        @keyframes run {
-          0% {
-            left: 0;
-          }
-          100% {
-            left: calc(100% - 20px);
-          }
-        @keyframes run {
-          0% {
-            left: 0;ounce {
-          }%,
-          100% {
-            left: calc(100% - 20px);
-          }
-        } 50% {
-            top: 10px;
-        @keyframes bounce {
-          0%,
-          100% {
-            top: 30px;eGround {
-          }% {
-          50% {nsform: translateX(0);
-            top: 10px;
-          }00% {
-        }   transform: translateX(-20px);
-          }
-        @keyframes moveGround {
-          0% {
-            transform: translateX(0);
-          }rom {
-          100% {ity: 0;
-            transform: translateX(-20px);
-          }o {
-        }   opacity: 1;
-          }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;eIn {
-          }rom {
-          to {ansform: scale(0.95);
-            opacity: 1;
-          }
-        } to {
-            transform: scale(1);
-        @keyframes scaleIn {
-          from {
-            transform: scale(0.95);
-            opacity: 0;
-          }yframes fadeInUp {
-          to { {
-            transform: scale(1);
-            opacity: 1;translateY(10px);
-          }
-        } to {
-            opacity: 1;
-        @keyframes fadeInUp {ateY(0);
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }imate-fadeIn {
-          to {ation: fadeIn 0.3s ease-out forwards;
-            opacity: 1;
-            transform: translateY(0);
-          }imate-scaleIn {
-        } animation: scaleIn 0.3s ease-out forwards;
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
-        } animation: fadeInUp 0.4s ease-out forwards;
-        }
-        .animate-scaleIn {
-          animation: scaleIn 0.3s ease-out forwards;
-        }
-}
-        .animate-fadeInUp {          animation: fadeInUp 0.4s ease-out forwards;        }      `}</style>{' '}
+      {/* Enlarged image modal */}
+      {showEnlargedImage &&
+        record?.transaction_images &&
+        record.transaction_images.length > 0 && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 cursor-zoom-out"
+            onClick={() => setShowEnlargedImage(false)}
+          >
+            <div className="relative w-[90vw] h-[90vh] max-w-[600px] max-h-[600px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={record.transaction_images[0]?.image_url || ''}
+                alt="Enlarged Receipt"
+                className="object-contain w-full h-full"
+              />
+            </div>
+          </div>
+        )}
     </div>
   );
 }

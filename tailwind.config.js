@@ -48,6 +48,10 @@ module.exports = {
       animation: {
         'fadeIn': 'fadeIn 0.3s ease-out forwards',
         'scaleIn': 'scaleIn 0.3s ease-out forwards',
+        'section-expand': 'sectionExpand 300ms ease-out forwards',
+        'section-collapse': 'sectionCollapse 300ms ease-out forwards',
+        'fade-to-hint': 'fadeToHint 500ms ease-out forwards',
+        'fade-from-hint': 'fadeFromHint 400ms ease-out forwards',
       },
       keyframes: {
         fadeIn: {
@@ -57,6 +61,22 @@ module.exports = {
         scaleIn: {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        sectionExpand: {
+          '0%': { opacity: '0', maxHeight: '0', transform: 'translateY(-8px)' },
+          '100%': { opacity: '1', maxHeight: '1000px', transform: 'translateY(0)' },
+        },
+        sectionCollapse: {
+          '0%': { opacity: '1', maxHeight: '1000px', transform: 'translateY(0)' },
+          '100%': { opacity: '0', maxHeight: '0', transform: 'translateY(-8px)' },
+        },
+        fadeToHint: {
+          '0%': { opacity: '1', filter: 'blur(0)' },
+          '100%': { opacity: '0.4', filter: 'blur(1px)' },
+        },
+        fadeFromHint: {
+          '0%': { opacity: '0.4', filter: 'blur(1px)' },
+          '100%': { opacity: '1', filter: 'blur(0)' },
         },
       },
     },

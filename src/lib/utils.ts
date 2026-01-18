@@ -1,5 +1,3 @@
-import { Tables } from './database.types';
-
 export function formatLocalDateTime(date: string | null | undefined) {
   return date
     ? new Date(date).toLocaleDateString('en-US', {
@@ -44,9 +42,15 @@ export type FriendMetadata = {
 
 export type SettleMetadata = HostMetadata | PerPaxMetadata | FriendMetadata;
 
+// Type for records that have settle mode and metadata (works with both table row and view)
+type HasSettleMetadata = {
+  settle_mode: string | null;
+  settle_metadata: unknown;
+};
+
 export function retrieveSettleMetadata<
   T extends SettleMetadata = SettleMetadata,
->(record: Tables<'one_time_split_expenses'>): T {
+>(record: HasSettleMetadata): T {
   let metadata: SettleMetadata;
 
   switch (record.settle_mode) {

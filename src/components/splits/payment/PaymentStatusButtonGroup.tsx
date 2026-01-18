@@ -1,4 +1,4 @@
-import { SquareCheckBig } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 
 interface PaymentStatusButtonGroupProps {
   markAsPaid: boolean;
@@ -11,44 +11,65 @@ export default function PaymentStatusButtonGroup({
   setMarkAsPaid,
 }: PaymentStatusButtonGroupProps) {
   return (
-    <div>
-      <div className="flex space-x-3 items-center text-gray-600 dark:text-gray-400 mb-4">
-        <SquareCheckBig size={20} color="grey" />
-        <span>Have you already paid?</span>
-      </div>
+    <div className="flex justify-center py-2">
+      {/* Segmented Control - iOS style */}
+      <div className="relative inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+        {/* Sliding Active Indicator */}
+        <div
+          className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 ease-out ${
+            markAsPaid ? 'left-[calc(50%+2px)]' : 'left-1'
+          }`}
+        />
 
-      {/* Payment Toggle - ButtonGroup Style */}
-      <div className="w-4/5 mx-auto">
-        <div className="flex">
-          <button
-            type="button"
-            onClick={() => setMarkAsPaid(false)}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-stone-50/50 border rounded-l-lg shadow ${
+        {/* Buttons */}
+        <button
+          type="button"
+          onClick={() => setMarkAsPaid(false)}
+          className="relative flex items-center gap-1.5 px-5 py-1.5 text-sm font-medium transition-colors duration-200 z-10"
+        >
+          <X
+            size={14}
+            strokeWidth={2.5}
+            className={
               !markAsPaid
-                ? 'bg-stone-100/50 text-gray-900 border-stone-500'
-                : 'bg-white text-gray-400 border-stone-200'
-            }`}
+                ? 'text-red-500 dark:text-red-400'
+                : 'text-gray-400 dark:text-gray-500'
+            }
+          />
+          <span
+            className={
+              !markAsPaid
+                ? 'text-gray-700 dark:text-gray-200'
+                : 'text-gray-500 dark:text-gray-400'
+            }
           >
-            <span
-              className={`${!markAsPaid ? 'font-bold text-stone-500' : ''}`}
-            >
-              NOT YET
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMarkAsPaid(true)}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-green-50/50 shadow border rounded-r-lg ${
+            Unpaid
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMarkAsPaid(true)}
+          className="relative flex items-center gap-1.5 px-5 py-1.5 text-sm font-medium transition-colors duration-200 z-10"
+        >
+          <Check
+            size={14}
+            strokeWidth={2.5}
+            className={
               markAsPaid
-                ? 'bg-green-100/50 text-gray-900 border-green-600'
-                : 'bg-white text-gray-400 border-stone-200'
-            }`}
+                ? 'text-green-500 dark:text-green-400'
+                : 'text-gray-400 dark:text-gray-500'
+            }
+          />
+          <span
+            className={
+              markAsPaid
+                ? 'text-gray-700 dark:text-gray-200'
+                : 'text-gray-500 dark:text-gray-400'
+            }
           >
-            <span className={`${markAsPaid ? 'font-bold text-green-700' : ''}`}>
-              YES
-            </span>
-          </button>
-        </div>
+            Paid
+          </span>
+        </button>
       </div>
     </div>
   );
