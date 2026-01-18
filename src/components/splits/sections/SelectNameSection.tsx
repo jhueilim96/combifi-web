@@ -26,6 +26,13 @@ export function SelectNameExpanded({
     record.settle_mode !== 'HOST' &&
     !(record.settle_mode === 'PERPAX' && participants.length >= numberOfPax);
 
+  // Check for duplicate name (case-insensitive)
+  const isDuplicateName =
+    newParticipantName.trim() !== '' &&
+    participants.some(
+      (p) => p.name.toLowerCase() === newParticipantName.trim().toLowerCase()
+    );
+
   const handleParticipantClick = (
     participant: Tables<'one_time_split_expenses_participants'>
   ) => {
@@ -34,7 +41,7 @@ export function SelectNameExpanded({
   };
 
   const handleNewNameSubmit = () => {
-    if (newParticipantName.trim()) {
+    if (newParticipantName.trim() && !isDuplicateName) {
       onProceed();
     }
   };
@@ -87,52 +94,63 @@ export function SelectNameExpanded({
 
         {/* Add new participant input */}
         {canAddNewParticipant && (
-          <div
-            className={`mt-4 flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200 ${
-              newParticipantName.trim()
-                ? 'bg-gray-50 dark:bg-gray-800/50 border-2 border-indigo-500 dark:border-indigo-400'
-                : 'bg-gray-100 dark:bg-gray-800 border-2 border-transparent'
-            }`}
-          >
-            <UserPlus
-              size={18}
-              className={`flex-shrink-0 transition-colors ${
-                newParticipantName.trim()
-                  ? 'text-indigo-500 dark:text-indigo-400'
-                  : 'text-gray-400 dark:text-gray-500'
+          <div className="mt-4 flex flex-col">
+            <div
+              className={`flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200 ${
+                isDuplicateName
+                  ? 'bg-red-50 dark:bg-red-900/20 border-2 border-red-500 dark:border-red-400'
+                  : newParticipantName.trim()
+                    ? 'bg-gray-50 dark:bg-gray-800/50 border-2 border-indigo-500 dark:border-indigo-400'
+                    : 'bg-gray-100 dark:bg-gray-800 border-2 border-transparent'
               }`}
-            />
-            <input
-              type="text"
-              placeholder="Or type name to join..."
-              className="bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none w-40"
-              value={newParticipantName}
-              onChange={(e) => {
-                onNewParticipantNameChange(e.target.value);
-                // Clear selected participant when typing a new name
-                if (e.target.value && selectedParticipant) {
-                  onClearParticipantSelection();
-                }
-              }}
-              onFocus={() => {
-                // Clear selected participant when focusing on new name input
-                if (selectedParticipant) {
-                  onClearParticipantSelection();
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleNewNameSubmit();
-                }
-              }}
-            />
-            {newParticipantName.trim() && (
-              <button
-                onClick={handleNewNameSubmit}
-                className="text-sm font-medium text-gray-700 dark:text-gray-800 bg-white dark:bg-gray-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-300 transition-colors shadow-sm"
-              >
-                Join
-              </button>
+            >
+              <UserPlus
+                size={18}
+                className={`flex-shrink-0 transition-colors ${
+                  isDuplicateName
+                    ? 'text-red-500 dark:text-red-400'
+                    : newParticipantName.trim()
+                      ? 'text-indigo-500 dark:text-indigo-400'
+                      : 'text-gray-400 dark:text-gray-500'
+                }`}
+              />
+              <input
+                type="text"
+                placeholder="Or type name to join..."
+                className="bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none w-40"
+                value={newParticipantName}
+                onChange={(e) => {
+                  onNewParticipantNameChange(e.target.value);
+                  // Clear selected participant when typing a new name
+                  if (e.target.value && selectedParticipant) {
+                    onClearParticipantSelection();
+                  }
+                }}
+                onFocus={() => {
+                  // Clear selected participant when focusing on new name input
+                  if (selectedParticipant) {
+                    onClearParticipantSelection();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleNewNameSubmit();
+                  }
+                }}
+              />
+              {newParticipantName.trim() && !isDuplicateName && (
+                <button
+                  onClick={handleNewNameSubmit}
+                  className="text-sm font-medium text-gray-700 dark:text-gray-800 bg-white dark:bg-gray-200 px-4 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-300 transition-colors shadow-sm"
+                >
+                  Join
+                </button>
+              )}
+            </div>
+            {isDuplicateName && (
+              <p className="text-red-500 dark:text-red-400 text-xs mt-2 ml-2">
+                This name is already taken. Please enter a different name.
+              </p>
             )}
           </div>
         )}
