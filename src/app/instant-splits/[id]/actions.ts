@@ -42,7 +42,7 @@ export async function getRecord(
     if (record.transaction_images && record.transaction_images.length > 0) {
       for (const image of record.transaction_images) {
         if (image.image_key) {
-          const response = await getFileSignedURL(image.image_key, password);
+          const response = await getFileSignedURL(image.image_key);
           if (response) {
             image.image_url = response.data.shareUrl;
           }
@@ -58,8 +58,7 @@ export async function getRecord(
           new Date(paymentMethod.image_expired_at) < new Date()
         ) {
           const response = await getPaymentMethodImageUrl(
-            paymentMethod.image_key!,
-            password
+            paymentMethod.image_key!
           );
           paymentMethod.image_url = response.data.shareUrl;
           paymentMethod.image_expired_at = response.data.expiredAt;
@@ -197,8 +196,8 @@ export async function updateParticipantRecord(
 
   try {
     // Create client and establish anonymous session for RLS policy
+    // const supabaseClient = createSupabaseClient(password);
     const supabaseClient = createSupabaseClient(password);
-
     // Update the participant record with the new amount
     const { error } = await supabaseClient
       .from('one_time_split_expenses_participants')
@@ -233,10 +232,10 @@ export async function updateParticipantRecord(
   }
 }
 
-async function getPaymentMethodImageUrl(imageKey: string, password: string) {
+async function getPaymentMethodImageUrl(imageKey: string) {
   try {
     // Get signed URL from backend
-    const response = await request(`/users/QR/${imageKey}/share`, password);
+    const response = await request(`/users/QR/${imageKey}/share`);
     if (!response.success) {
       throw new Error('Failed to get shared URL');
     }
@@ -247,10 +246,10 @@ async function getPaymentMethodImageUrl(imageKey: string, password: string) {
   }
 }
 
-async function getFileSignedURL(key: string, password: string) {
+async function getFileSignedURL(key: string) {
   try {
     // Get signed URL from backend
-    const response = await request(`/files/${key}/share`, password);
+    const response = await request(`/files/${key}/share`);
     if (!response.success) {
       throw new Error('Failed to get shared URL');
     }
@@ -261,25 +260,13 @@ async function getFileSignedURL(key: string, password: string) {
   }
 }
 
-async function request(
-  endpoint: string,
-  password: string,
-  options: RequestInit = {}
-) {
-  const {
-    data: { session },
-  } = await createSupabaseClient(password).auth.signInAnonymously();
+async function request(endpoint: string, options: RequestInit = {}) {
   const url = `${process.env.NEXT_PUBLIC_WORKER_BASE_URL}${endpoint}`;
-  // console.log('session', session);
-  const headers = {
-    ...(session?.access_token && {
-      Authorization: `Bearer ${session.access_token}`,
-    }),
-  };
+
   const response = await fetch(url, {
     ...options,
     headers: {
-      ...headers,
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
       ...options.headers,
     },
   });
