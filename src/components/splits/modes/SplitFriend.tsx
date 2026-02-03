@@ -46,7 +46,9 @@ export default function SplitFriend({
   const [totalContributed, setTotalContributed] = useState(0);
   const {
     validationError,
+    validationWarning,
     updateValidationError,
+    updateValidationWarning,
     resetValidationError,
     handleValidation,
   } = useValidationError();
@@ -59,9 +61,20 @@ export default function SplitFriend({
   const paymentInstruction =
     retrieveSettleMetadata<FriendMetadata>(record).paymentInstruction;
 
+  // The maximum amount available for this participant (independent of current input)
+  const availableAmount =
+    record.amount - totalContributed + (selectedParticipant?.amount || 0);
+
   const handleAmountChange = (amount: string) => {
     setParticipantAmount(amount);
     handleValidation(input, 'amount', amount, validateionSchema);
+
+    const parsed = parseFloat(amount);
+    if (!isNaN(parsed) && parsed > availableAmount) {
+      updateValidationWarning('amount', 'Amount exceeds the remaining balance');
+    } else {
+      updateValidationWarning('amount', null);
+    }
   };
 
   useEffect(() => {
@@ -164,6 +177,13 @@ export default function SplitFriend({
         Remaining:{' '}
         {formatCurrencyAmount(displayRemainingAmount, record.currency)}
       </p>
+
+      {/* Validation warning */}
+      {validationWarning['amount'] && (
+        <p className="text-center text-sm text-amber-600 dark:text-amber-400 mb-4">
+          {validationWarning['amount']}
+        </p>
+      )}
 
       {/* Validation error */}
       {validationError['amount'] && (

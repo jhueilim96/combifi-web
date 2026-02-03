@@ -25,7 +25,12 @@ export function AmountExpanded({
   onProceed,
 }: AmountSectionProps) {
   const settleMode = record.settle_mode;
-  const { validationError, handleValidation } = useValidationError();
+  const {
+    validationError,
+    validationWarning,
+    updateValidationWarning,
+    handleValidation,
+  } = useValidationError();
   const [showFullInstruction, setShowFullInstruction] = useState(false);
 
   // Calculate total contributed for FRIEND mode
@@ -85,6 +90,12 @@ export function AmountExpanded({
     selectedParticipant,
   ]);
 
+  // The maximum amount available for this participant (independent of current input)
+  const availableAmount =
+    settleMode === 'FRIEND'
+      ? record.amount - totalContributed + (selectedParticipant?.amount || 0)
+      : 0;
+
   // Handle amount change for FRIEND mode
   const handleAmountChange = (value: string) => {
     const cleanValue = value.replace(/[^0-9.]/g, '');
@@ -95,6 +106,18 @@ export function AmountExpanded({
       cleanValue,
       participantInputSchema
     );
+
+    if (settleMode === 'FRIEND') {
+      const parsed = parseFloat(cleanValue);
+      if (!isNaN(parsed) && parsed > availableAmount) {
+        updateValidationWarning(
+          'amount',
+          'Amount exceeds the remaining balance'
+        );
+      } else {
+        updateValidationWarning('amount', null);
+      }
+    }
   };
 
   // Handle proceed to next section
@@ -162,6 +185,13 @@ export function AmountExpanded({
       ) : (
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
           {getModeText()}
+        </p>
+      )}
+
+      {/* Validation warning */}
+      {validationWarning['amount'] && (
+        <p className="text-center text-sm text-amber-600 dark:text-amber-400 mb-4">
+          {validationWarning['amount']}
         </p>
       )}
 

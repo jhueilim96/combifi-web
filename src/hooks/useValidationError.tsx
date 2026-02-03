@@ -13,6 +13,12 @@ export default function useValidationError() {
     generic: null,
   });
 
+  const [validationWarning, setValidationWarning] = useState<{
+    amount: string | null;
+  }>({
+    amount: null,
+  });
+
   const updateValidationError = (
     field: 'name' | 'amount' | 'generic',
     message: string | null
@@ -20,11 +26,21 @@ export default function useValidationError() {
     setValidationError((prev) => ({ ...prev, [field]: message }));
   };
 
+  const updateValidationWarning = (field: 'amount', message: string | null) => {
+    setValidationWarning((prev) => ({ ...prev, [field]: message }));
+  };
+
   const resetValidationError = () => {
     setValidationError({
       name: null,
       amount: null,
       generic: null,
+    });
+  };
+
+  const resetValidationWarning = () => {
+    setValidationWarning({
+      amount: null,
     });
   };
 
@@ -59,8 +75,11 @@ export default function useValidationError() {
 
   return {
     validationError,
+    validationWarning,
     updateValidationError,
+    updateValidationWarning,
     resetValidationError,
+    resetValidationWarning,
     handleValidation,
   };
 }
