@@ -42,7 +42,7 @@ export const runtime = 'edge';
 
 // Development bypass - set to a password to skip the modal during dev
 // e.g., 'TEST' to bypass, or '' to disable
-const DEV_BYPASS_PASSWORD = process.env.NODE_ENV === 'development' ? '' : '';
+const DEV_BYPASS_PASSWORD = process.env.NEXT_PUBLIC_DEV_BYPASS_PASSWORD ?? '';
 
 export default function RecordPage() {
   const params = useParams();
@@ -150,6 +150,11 @@ export default function RecordPage() {
   const fetchRecord = async (passwordOverride?: string) => {
     const pwd = passwordOverride || password;
     if (!id || !pwd) return;
+    // A partly typed code can only fail; say so before asking the server.
+    if (pwd.length < 4) {
+      setStatus('Enter all 4 characters of the code.');
+      return;
+    }
 
     setIsJoiningRecord(true);
     setStatus('');
@@ -157,6 +162,15 @@ export default function RecordPage() {
     try {
       const data = await getRecord(id, pwd);
       const participantsData = await getParticipantRecords(id, pwd);
+      // The details view does not check the code, but participant rows do,
+      // and every split has the host's row. No rows means a wrong code; going
+      // on would show no names and every save would be silently refused.
+      if (!participantsData?.length) {
+        setStatus(
+          "That code doesn't match this split. Check it and try again."
+        );
+        return;
+      }
       setRecord(data);
       setParticipants(
         Array.isArray(participantsData) ? participantsData : [participantsData]

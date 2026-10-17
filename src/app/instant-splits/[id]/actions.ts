@@ -1,13 +1,50 @@
 'use server';
 
 import { Tables } from '@/lib/database.types';
-import { createSupabaseClient } from '@/lib/supabase';
-import { QueryData } from '@supabase/supabase-js';
 import {
   InsertParticipantInput,
   UpdateParticipantInput,
 } from '@/lib/validations';
 import { InstantSplitDetailedView } from '@/lib/viewTypes';
+
+// The split, its participants and the host's payment methods all come from
+// the Worker, which checks the code itself (pennywise-worker
+// src/instantSplitWeb.ts). The anon key no longer reads or writes these
+// tables. Worker errors come back as { success: false, data: { code } }.
+async function worker<T>(endpoint: string, body?: unknown): Promise<T> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_WORKER_BASE_URL}${endpoint}`,
+    body === undefined
+      ? { cache: 'no-store' }
+      : {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          cache: 'no-store',
+        }
+  );
+  const json = await response.json().catch(() => null);
+  if (!response.ok || !json?.success) {
+    throw new Error(
+      json?.data?.code ?? json?.data?.message ?? 'Request failed'
+    );
+  }
+  return json.data as T;
+}
+
+type Participant = Tables<'one_time_split_expenses_participants'>;
+
+async function openSplit(
+  id: string,
+  password: string
+): Promise<InstantSplitDetailedView & { participants: Participant[] }> {
+  try {
+    return await worker(`/instant-splits/${id}/open`, { code: password });
+  } catch (error) {
+    console.error('Error opening split:', error);
+    throw new Error('Access denied or record not found');
+  }
+}
 
 export async function getRecord(
   id: string,
@@ -18,25 +55,9 @@ export async function getRecord(
   }
 
   try {
-    // Note: view_instant_split_details is a custom view - regenerate types to remove 'as any'
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const { data, error } = await (createSupabaseClient(password) as any)
-      /* eslint-enable @typescript-eslint/no-explicit-any */
-      .from('view_instant_split_details')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching record:', error);
-      throw new Error('Access denied or record not found');
-    }
-
-    if (!data) {
-      throw new Error('Record not found');
-    }
-
-    const record = data as unknown as InstantSplitDetailedView;
+    const record: InstantSplitDetailedView & { participants?: Participant[] } =
+      await openSplit(id, password);
+    delete record.participants;
 
     // Handle transaction images - fetch signed URLs
     if (record.transaction_images && record.transaction_images.length > 0) {
@@ -66,22 +87,15 @@ export async function getRecord(
       }
     }
 
-    return record;
+    return record as InstantSplitDetailedView;
   } catch (error) {
     console.error('Error fetching record:', error);
     throw error;
   }
 }
 
-const getInstantSplitPublicDataQuery = (id: string) =>
-  createSupabaseClient('', true)
-    .from('one_time_split_expenses')
-    .select('date,description,amount,currency,' + 'profiles (name)')
-    .eq('id', id)
-    .eq('is_deleted', false)
-    .single();
-
-type InstantSplitPublicData = QueryData<typeof getInstantSplitPublicDataQuery>;
+// Only date, description, amount, currency and the host's name are returned.
+type InstantSplitPublicData = Partial<Tables<'one_time_split_expenses'>>;
 
 export async function getPublicRecord(
   id: string
@@ -91,51 +105,55 @@ export async function getPublicRecord(
   }
 
   try {
-    // console.log('Fetching record with ID:', id);
-    const { data, error } = await getInstantSplitPublicDataQuery(id);
-
-    if (error) {
-      console.error('Error fetching record:', error);
-      throw new Error('Access denied or record not found');
-    }
-
-    if (!data) {
-      throw new Error('Record not found');
-    }
-
-    return data as InstantSplitPublicData;
+    return await worker<InstantSplitPublicData>(
+      `/instant-splits/${id}/preview`
+    );
   } catch (error) {
     console.error('Error fetching record:', error);
-    throw error;
+    throw new Error('Access denied or record not found');
   }
 }
 
 export async function getParticipantRecords(
   id: string,
   password: string
-): Promise<Tables<'one_time_split_expenses_participants'>[]> {
+): Promise<Participant[]> {
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
-
   try {
-    // console.log('Fetching record participants with ID:', id);
-    const { data, error } = await createSupabaseClient(password)
-      .from('one_time_split_expenses_participants')
-      .select('*')
-      .eq('expense_id', id)
-      .eq('is_deleted', false);
-
-    if (error) {
-      console.error('Error fetching record participants:', error);
-      throw new Error('Access denied or record not found');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error fetching record:', error);
-    throw error;
+    return (await openSplit(id, password)).participants ?? [];
+  } catch {
+    // A wrong code reads as no participants; the page reports it.
+    return [];
   }
+}
+
+// The Worker checks the code, refuses the host's row, stamps updated_at (so
+// every app version pulls the change) and notifies the host when paid.
+async function saveParticipant(
+  id: string,
+  password: string,
+  participantId: string | null,
+  data: InsertParticipantInput | UpdateParticipantInput
+) {
+  try {
+    await worker(`/instant-splits/${id}/participants`, {
+      code: password,
+      participantId,
+      name: data.name,
+      amount: parseFloat(data.amount),
+      currency: data.currency,
+      isPaid: data.markAsPaid,
+      paymentMethodMetadata: data.paymentMethodMetadata ?? null,
+    });
+  } catch (error) {
+    console.error('[DEBUG] saveParticipant - Worker error:', error);
+    throw new Error(
+      `Save failed: ${error instanceof Error ? error.message : 'unknown'}`
+    );
+  }
+  return { success: true };
 }
 
 export async function insertParticipantRecord(
@@ -146,42 +164,7 @@ export async function insertParticipantRecord(
   if (!id || !password) {
     throw new Error('Record ID and password are required');
   }
-
-  try {
-    // Create client and establish anonymous session for RLS policy
-    const supabaseClient = createSupabaseClient(password);
-
-    // Update the participant record with the new amount
-    const { error } = await supabaseClient
-      .from('one_time_split_expenses_participants')
-      .insert({
-        amount: parseFloat(data.amount),
-        expense_id: id,
-        converted_amount: parseFloat(data.amount),
-        converted_currency: data.currency,
-        is_host: false,
-        is_paid: data.markAsPaid,
-        name: data.name,
-        payment_method_metadata: data.paymentMethodMetadata,
-      });
-
-    if (error) {
-      console.error('[DEBUG] insertParticipantRecord - Supabase error:', {
-        error,
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-      });
-      throw new Error(`Insert failed: ${error.message} (Code: ${error.code})`);
-    }
-
-    console.log('[DEBUG] insertParticipantRecord - Success');
-    return { success: true };
-  } catch (error) {
-    console.error('[DEBUG] insertParticipantRecord - Caught error:', error);
-    throw error;
-  }
+  return saveParticipant(id, password, null, data);
 }
 
 export async function updateParticipantRecord(
@@ -193,43 +176,7 @@ export async function updateParticipantRecord(
   if (!id || !password || !participantId) {
     throw new Error('Record ID, password, and participant ID are required');
   }
-
-  try {
-    // Create client and establish anonymous session for RLS policy
-    // const supabaseClient = createSupabaseClient(password);
-    const supabaseClient = createSupabaseClient(password);
-    // Update the participant record with the new amount
-    const { error } = await supabaseClient
-      .from('one_time_split_expenses_participants')
-      .update({
-        amount: parseFloat(data.amount),
-        is_paid: data.markAsPaid,
-        name: data.name,
-        converted_amount: parseFloat(data.amount),
-        converted_currency: data.currency,
-        payment_method_metadata: data.paymentMethodMetadata,
-      })
-      .eq('id', participantId)
-      .eq('expense_id', id)
-      .eq('is_deleted', false);
-
-    if (error) {
-      console.error('[DEBUG] updateParticipantRecord - Supabase error:', {
-        error,
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-      });
-      throw new Error(`Update failed: ${error.message} (Code: ${error.code})`);
-    }
-
-    console.log('[DEBUG] updateParticipantRecord - Success');
-    return { success: true };
-  } catch (error) {
-    console.error('[DEBUG] updateParticipantRecord - Caught error:', error);
-    throw error;
-  }
+  return saveParticipant(id, password, participantId, data);
 }
 
 async function getPaymentMethodImageUrl(imageKey: string) {
