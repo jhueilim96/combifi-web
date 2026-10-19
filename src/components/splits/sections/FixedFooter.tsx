@@ -39,13 +39,13 @@ export default function FixedFooter({
         onClick={onSubmit}
         disabled={isLoading}
         className={`
-          w-full py-4 px-6 rounded-xl font-semibold text-white
+          w-full py-4 px-6 rounded-xl font-semibold text-ink border border-brand-border
           flex items-center justify-center gap-2
           transition-all duration-200
           ${
             isLoading
-              ? 'bg-indigo-300 dark:bg-indigo-800 cursor-not-allowed'
-              : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 active:scale-[0.98]'
+              ? 'bg-brand-disabled opacity-70 cursor-not-allowed'
+              : 'bg-brand hover:bg-brand-hover active:scale-[0.98]'
           }
         `}
       >

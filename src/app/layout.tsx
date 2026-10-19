@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist_Mono, Rubik } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from 'next-themes';
 // import ThemeSwitcher from "@/components/ThemeSwitcher";
 // import dynamic from "next/dynamic";
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+// Rubik is the app's font (m-splitzy assets/fonts/experiments/rubik).
+const appSans = Rubik({
+  variable: '--font-app-sans',
   subsets: ['latin'],
 });
 
@@ -46,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${appSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground`}
       >
         <ThemeProvider
           attribute="class"
