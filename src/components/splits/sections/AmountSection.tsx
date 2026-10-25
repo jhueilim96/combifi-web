@@ -253,7 +253,7 @@ export function AmountExpanded({
       <button
         type="button"
         onClick={handleProceed}
-        className="w-full mt-4 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors"
+        className="w-full mt-4 py-3 px-4 bg-brand hover:bg-brand-hover text-ink border border-brand-border font-semibold rounded-xl transition-colors"
       >
         Continue to Payment
       </button>

@@ -58,7 +58,7 @@ export const BUTTON_STYLES = {
 
   // Primary button
   primary:
-    'bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg px-4 py-3 font-medium transition-all duration-200',
+    'bg-brand hover:bg-brand-hover text-ink border border-brand-border rounded-xl px-4 py-3 font-semibold transition-all duration-200',
 
   // Secondary button
   secondary:
